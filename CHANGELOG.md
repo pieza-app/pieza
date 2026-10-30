@@ -1,5 +1,11 @@
 # Cambios
 
+## Sin publicar
+- **Lo que aprendimos al migrar Graba:** `ia` 0.3.0 (seguridad): los errores traen `plantilla` para que la interfaz los traduzca
+  sin copiar la tabla, un CLI sin las protecciones obligatorias pide actualizarse en vez de fallar raro, `--help` sin las variables
+  de la app y Claude con `--tools` si lo conoce. `nucleo` 0.4.0: textos de config con su propio máximo y `guardar_config` conserva
+  lo que no conoce. `pieza.py` respeta la sangría de los JSON de la app.
+
 ## 0.7.0 — 2026-10-30
 - **Portada en 3D:** piezas con volumen dibujadas con WebGL propio (sin librerías) y una terminal que las enchufa una a una;
   sin WebGL, con movimiento reducido o en equipos lentos, el rompecabezas de siempre.

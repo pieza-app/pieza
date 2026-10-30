@@ -27,5 +27,11 @@ Variables que entiende: `<ID>_RECURSOS` (raíz de la app) y `<ID>_DATOS` (carpet
 "config": {"idioma_ui": ["es", "en"], "bienvenida": "bool", "carpeta": {"tipo": "texto", "interfaz": false}}
 ```
 
-Una lista = valores posibles; `"bool"`, `"texto"` (hasta 2000 caracteres) o `"numero"` = tipo; `{"tipo": …, "interfaz": false}` = una
+Una lista = valores posibles; `"bool"`, `"texto"` (hasta 2000 caracteres) o `"numero"` = tipo; `{"tipo": "texto", "max": 200000}`
+para un texto más largo; `guardar_config` conserva en el archivo las claves que no conoce. `{"tipo": …, "interfaz": false}` = una
 clave que la interfaz no puede cambiar (la cambia el host después de algo que hizo la persona en el sistema, como elegir una carpeta).
+
+### Datos a la vista (`"datos": "visible"`)
+
+Con `"datos": "visible"` la carpeta es `~/<Nombre>/.<id>/` (como Graba: `~/Graba/.graba`), creada en 0700. En las pruebas, `<ID>_DATOS`
+apunta a una carpeta temporal: nunca se tocan los datos reales.

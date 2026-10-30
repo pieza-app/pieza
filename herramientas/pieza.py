@@ -93,10 +93,23 @@ def leer(ruta, defecto=None):
         return defecto
 
 
-def escribir(ruta, valor):
+def escribir(ruta, valor, indent=None):
+    """JSON atómico. Si el archivo ya existe, respeta su sangría (2 espacios, una tabulación…): así un en.json de la app no
+    queda con un diff de cientos de líneas por un cambio de formato."""
+    if indent is None:
+        indent = 1
+        try:
+            with open(ruta, encoding="utf-8") as f:
+                for linea in f:
+                    m = re.match(r"^([ \t]+)\S", linea)
+                    if m:
+                        indent = m.group(1) if "\t" in m.group(1) else len(m.group(1))
+                        break
+        except OSError:
+            pass
     tmp = ruta + ".tmp"
     with open(tmp, "w", encoding="utf-8", newline="\n") as f:
-        f.write(json.dumps(valor, ensure_ascii=False, indent=1) + "\n")
+        f.write(json.dumps(valor, ensure_ascii=False, indent=indent) + "\n")
     os.replace(tmp, ruta)
 
 

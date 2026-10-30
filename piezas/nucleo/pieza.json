@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "nucleo",
- "version": "0.3.0",
+ "version": "0.4.0",
  "estado": "lista",
  "nombre": "Núcleo",
  "icono": "icono.svg",
@@ -26,6 +26,11 @@
  "acciones": {},
  "textos": {},
  "cambios": [
+  {
+   "version": "0.4.0",
+   "tipo": "mejora",
+   "resumen": "Lo que pidió Graba: un texto de config con su propio máximo ({\"tipo\": \"texto\", \"max\": 200000}) y guardar_config conserva las claves que no conoce (las que escribe el host)."
+  },
   {
    "version": "0.3.0",
    "tipo": "mejora",

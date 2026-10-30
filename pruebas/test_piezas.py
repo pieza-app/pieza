@@ -37,7 +37,7 @@ class AppDePrueba(unittest.TestCase):
             import json, os, sys
             entrada = "" if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
             if "--help" in sys.argv:
-                print("--safe-mode"); sys.exit(0)
+                print("--safe-mode --strict-mcp-config --disallowedTools"); sys.exit(0)
             archivos = {{n: open(n).read() for n in os.listdir(".") if n.endswith(".md")}}
             json.dump({{"argv": sys.argv, "stdin": entrada, "cwd": os.getcwd(), "archivos": archivos,
                        "env": {{k: v for k, v in os.environ.items() if k.startswith(("PRUEBA_", "CLAUDE_CODE"))}}}},
@@ -98,6 +98,22 @@ class Nucleo(AppDePrueba):
 class IA(AppDePrueba):
     def preguntar(self, ia, extra=""):
         return self.py(f"import ia; t, e = ia.preguntar({SECRETO!r}, ia={ia!r}{extra}); print(t.strip(), e)")
+
+    def test_cli_viejo_pide_actualizar_y_no_corre(self):
+        viejo = os.path.join(self.tmp.name, "viejo")
+        os.makedirs(viejo)
+        with open(os.path.join(viejo, "claude"), "w") as f:
+            f.write(f"#!{sys.executable}\nimport sys\nif '--help' in sys.argv: print('-p --print'); sys.exit(0)\n"
+                    f"open({self.registro!r}, 'w').write('corrio')\nprint('listo')\n")
+        os.chmod(os.path.join(viejo, "claude"), 0o755)
+        env = {**self.env, "PATH": viejo + os.pathsep + "/usr/bin:/bin"}
+        r = subprocess.run([sys.executable, "-c", "import ia, json; t, e = ia.preguntar('hola', ia='claude'); print(json.dumps(e))"],
+                           cwd=os.path.join(self.app, "bin"), env=env, capture_output=True, text=True)
+        e = json.loads(r.stdout)
+        self.assertEqual(e["codigo"], "actualizar")
+        self.assertIn("{app}", e["plantilla"])
+        self.assertEqual(e["valores"]["app"], "Prueba")
+        self.assertFalse(os.path.exists(self.registro))  # nunca se corrió sin las protecciones
 
     def test_claude_sin_herramientas_ni_memoria_y_pedido_por_stdin(self):
         self.assertIn("listo None", self.preguntar("claude"))
@@ -189,6 +205,15 @@ class Herramienta(AppDePrueba):
         # Se SUGIERE el marketplace de Pieza; nadie lo recibe activado por abrir el repo.
         self.assertIn("pieza", ajustes["extraKnownMarketplaces"])
         self.assertNotIn("enabledPlugins", ajustes)
+
+    def test_en_json_conserva_su_sangria(self):
+        ruta = os.path.join(self.app, "ui", "idiomas", "en.json")
+        with open(ruta, "w") as f:
+            json.dump({"codigo": "en", "nombre": "English", "textos": {"Hola": "Hello"}}, f, indent=2)
+        correr(PIEZA, "agregar", "i18n", self.app)
+        texto = open(ruta).read()
+        self.assertIn('\n  "codigo"', texto)
+        self.assertIn("Hola", texto)
 
     def test_archivos_solo_de_algunas_plataformas(self):
         ruta = os.path.join(self.app, "app.json")

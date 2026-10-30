@@ -39,8 +39,11 @@ Las apps hoy tienen su propio `bin/ia.py`, así que `pieza.py agregar ia` no lo 
 - **El host llama `probar` con un archivo de entrada**, no con la IA como argumento: `ia.py probar <entrada.json> <salida.json>`
   con `{"ia": "claude"}`. En Swift, `Procesador.conEntrada("ia.py", "probar", ["ia": ia])`; en Electron, lo mismo con el JSON de
   entrada. Cambia esas dos llamadas al adoptar la pieza.
-- **Errores:** `preguntar` devuelve `(texto, None)` o `(None, {"codigo", "valores"})`. El patrón recomendado para un script es
-  responder `{"ok": false, "error": ia.frase(error), "codigo": error["codigo"]}`: la interfaz muestra `error` (ya en español, se
-  traduce con su `T`) y puede decidir por `codigo` (por ejemplo, ofrecer instalar la IA).
+- **Errores:** `preguntar` devuelve `(texto, None)` o `("", {"codigo", "plantilla", "valores"})`. Un script responde
+  `{"ok": false, "codigo": …, "plantilla": …, "valores": …}` y la interfaz muestra `Tp(r.plantilla, r.valores)`: la plantilla es la
+  frase en español (clave de `en.json`, ya viene en `textos` de la pieza), así nadie copia la tabla `ERRORES`. Decide por `codigo`
+  (`no_instalada` → ofrecer instalarla; `actualizar` → pedir actualizar el CLI). `ia.frase(error)` la da en español para registros.
+- **Borra la prueba nativa del CLI** en Swift y Electron: si el host lanzaba `claude`/`codex` directo para «Probar», lo hacía sin
+  las protecciones. Todo pasa por `ia.py probar`.
 - Lo propio de la app (frases de su asistente, instrucciones fijas como «responde solo con…») va en sus módulos, no en esta copia:
   así `pieza.py actualizar` puede traer las versiones nuevas sin chocar.

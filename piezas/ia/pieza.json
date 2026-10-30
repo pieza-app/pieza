@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "ia",
- "version": "0.2.0",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "Tu IA",
  "icono": "icono.svg",
@@ -87,13 +87,20 @@
   "No encontré {ia} en este computador. Revisa en Ajustes → Tu IA.": "I couldn't find {ia} on this computer. Check Settings → Your AI.",
   "{ia} se demoró demasiado en responder. Inténtalo de nuevo.": "{ia} took too long to answer. Please try again.",
   "{ia} no respondió. {detalle}": "{ia} didn't answer. {detalle}",
-  "No conozco esa IA.": "I don't know that AI."
+  "No conozco esa IA.": "I don't know that AI.",
+  "Actualiza {ia} para usarla con {app}: tu versión no conoce las protecciones que necesitamos.": "Update {ia} to use it with {app}: your version doesn't know the protections we need."
  },
  "compatible": {
   "nucleo": ">=0.2.0 <1.0.0"
  },
  "red_nota": "La app no sale a internet: la IA de la persona se conecta a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
  "cambios": [
+  {
+   "version": "0.3.0",
+   "tipo": "mejora",
+   "seguridad": true,
+   "resumen": "Lo que pidió Graba al migrar: los errores traen «plantilla» (la interfaz hace Tp(plantilla, valores) sin copiar la tabla ERRORES); un CLI sin las protecciones obligatorias da el error «actualizar» claro en vez de su propio error; --help se pregunta sin las variables de la app y otra vez si el CLI cambia; Claude con --tools si lo conoce (las demás herramientas ni se cargan)."
+  },
   {
    "version": "0.2.0",
    "tipo": "arreglo",
