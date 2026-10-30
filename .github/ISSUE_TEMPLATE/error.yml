@@ -1,0 +1,43 @@
+name: 🐞 Algo falla / Something's broken
+description: Una pieza, pieza.py, un flujo o «Pieza al día» no hizo lo que debía. Solo con datos ficticios. / Fictional data only.
+labels: [error]
+body:
+  - type: dropdown
+    id: donde
+    attributes:
+      label: ¿Dónde? / Where?
+      options:
+        - "Una pieza / A piece"
+        - "herramientas/pieza.py"
+        - "Un flujo (skill) / A flow (skill)"
+        - "«Pieza al día» (workflow)"
+        - "La página / The page"
+        - "Otro / Other"
+    validations: { required: true }
+  - type: input
+    id: pieza
+    attributes:
+      label: Pieza y versión (si aplica) / Piece and version (if any)
+      description: Está en piezas.json de tu app o con `python3 herramientas/pieza.py estado <app>`.
+      placeholder: ia 0.1.0
+  - type: textarea
+    id: que
+    attributes:
+      label: ¿Qué pasó? / What happened?
+      description: Qué hiciste (el comando exacto, si fue pieza.py), qué esperabas y qué pasó en cambio.
+    validations: { required: true }
+  - type: textarea
+    id: salida
+    attributes:
+      label: La salida o el error (sin datos reales) / Output or error (no real data)
+      render: text
+  - type: dropdown
+    id: sistema
+    attributes:
+      label: Sistema / System
+      options: [Mac, Windows, Linux, iPhone, Android, GitHub Actions]
+    validations: { required: true }
+  - type: textarea
+    id: extra
+    attributes:
+      label: Algo más / Anything else

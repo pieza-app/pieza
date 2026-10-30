@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: 🔒 Reportar una falla de seguridad (en privado)
+    url: https://github.com/pieza-app/pieza/security/advisories/new
+    about: No la publiques en un issue así la arreglamos antes. / Please report vulnerabilities privately.
+  - name: 💬 Conversar, preguntar o mostrar la app que armaste
+    url: https://github.com/pieza-app/pieza/discussions
+    about: Dudas de uso, ideas a medio cocinar y tus apps hechas con Pieza. / Questions, rough ideas and the apps you built.

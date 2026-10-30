@@ -7,21 +7,31 @@ on:
   schedule:
     - cron: "17 13 * * 1"
   workflow_dispatch:
-permissions:
-  contents: write
-  pull-requests: write
-  issues: write
+# Actions fijadas por SHA con su versión en un comentario (Dependabot las sube en cada app). Las expresiones de GitHub nunca van
+# dentro de `run:`: pasan por `env:`.
+permissions: {}
 concurrency: pieza-al-dia
 jobs:
   revisar:
     runs-on: ubuntu-latest
+    # Lo justo: empujar la rama pieza/al-dia, abrir el PR y abrir o cerrar el issue.
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      # El checkout de la app SÍ guarda la credencial: el paso siguiente hace `git push` de la rama pieza/al-dia. Es el token de
+      # este workflow (con los permisos de arriba, vence al terminar) y solo corre pieza.py de pieza-app/pieza, nunca código de un PR.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: true
+      # La base solo se lee: sin credenciales (y su .git se borra antes de commitear).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: pieza-app/pieza
           path: .pieza-base
-      - uses: actions/setup-python@v5
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
       - name: Actualizar lo que se puede solo
@@ -50,9 +60,10 @@ jobs:
       - name: Avisar lo que hay que hacer a mano
         env:
           GH_TOKEN: ${{ github.token }}
+          RAMA_PRINCIPAL: ${{ github.event.repository.default_branch }}
         run: |
           set -euo pipefail
-          git switch -q "${{ github.event.repository.default_branch }}" 2>/dev/null || true
+          git switch -q "$RAMA_PRINCIPAL" 2>/dev/null || true
           python3 .pieza-base/herramientas/pieza.py aviso . > "$RUNNER_TEMP/aviso.md" || true
           TITULO="Pieza al día: actualizaciones que se hacen a mano"
           NUM=$(gh issue list --state open --search "in:title \"$TITULO\"" --json number -q '.[0].number' || true)

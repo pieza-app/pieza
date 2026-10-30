@@ -1,3 +1,5 @@
+# Pruebas en cada cambio y en cada pull request: valida todos los pieza.json, corre las pruebas y la revisión de privacidad.
+# Actions fijadas por SHA (Dependabot las sube con unos días de espera), permisos mínimos y sin credenciales guardadas.
 name: revisar
 on: [push, pull_request]
 permissions:
@@ -9,8 +11,10 @@ jobs:
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
       - run: bash pruebas/correr.sh

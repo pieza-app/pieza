@@ -1,0 +1,41 @@
+name: 🧪 Lo probé en mi computador / I tested it on my computer
+description: Cuéntanos cómo le fue a una pieza o a pieza.py en tu sistema (sobre todo Windows y Linux). / How it went on your system.
+labels: [probar]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ¡Gracias! Probar en un computador de verdad es de las ayudas que más sirven: Windows no lo podemos probar en GitHub.
+        Usa solo datos ficticios. / Thanks! Testing on a real computer is one of the most useful things you can do. Fictional data only.
+  - type: dropdown
+    id: sistema
+    attributes:
+      label: Sistema / System
+      options: [Windows 11, Windows 10, "Linux (Ubuntu, Debian…)", "Linux (Fedora, Arch, otro / other)", Mac, iPhone, Android]
+    validations: { required: true }
+  - type: input
+    id: detalle
+    attributes:
+      label: Versión del sistema y de Python / OS and Python version
+      placeholder: Windows 11 23H2 · Python 3.13 / Ubuntu 24.04 · Python 3.12
+    validations: { required: true }
+  - type: input
+    id: que
+    attributes:
+      label: ¿Qué probaste? / What did you test?
+      placeholder: "pieza ia 0.1.0 en mi app / pieza.py iniciar + agregar / el flujo para crear una app"
+    validations: { required: true }
+  - type: checkboxes
+    id: revisado
+    attributes:
+      label: Lo que funcionó / What worked
+      options:
+        - label: "`bash pruebas/correr.sh` pasa / passes"
+        - label: "`pieza.py iniciar` y `agregar` dejaron la app lista / set up the app"
+        - label: "`pieza.py estado` y `actualizar` no pisaron mis cambios / didn't overwrite my changes"
+        - label: La pieza hizo lo que dice su ficha (pantallas, permisos, red) / The piece did what its card says
+        - label: "«Pieza al día» abrió el PR o el issue en mi app / opened the PR or issue in my app"
+  - type: textarea
+    id: problemas
+    attributes:
+      label: Lo que falló o se vio raro (capturas bienvenidas) / What failed or looked odd (screenshots welcome)

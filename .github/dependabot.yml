@@ -1,0 +1,15 @@
+# Dependabot: avisa cuando hay versiones nuevas de las actions (fijadas por SHA) y abre un pull request para revisarlas.
+# Pieza no tiene paquetes de npm ni de pip: solo biblioteca estándar.
+# `cooldown`: espera unos días antes de proponer una versión recién publicada; si una action fue secuestrada, casi siempre se
+# descubre y se retira en ese plazo. Las alertas de seguridad no esperan. Nada se junta solo: cada PR se revisa como cualquier aporte.
+# plantillas/pieza-al-dia.yml no está en .github/workflows, así que Dependabot no lo ve: pruebas/correr.sh exige que use las
+# mismas versiones fijadas que los workflows de aquí. Al juntar un PR de Dependabot, súbelas también en la plantilla.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+    cooldown: { default-days: 7 }
+    groups:
+      actions: { patterns: ["*"] }
+    commit-message: { prefix: "Actions" }

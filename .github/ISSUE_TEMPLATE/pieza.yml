@@ -1,0 +1,56 @@
+name: 🧩 Proponer una pieza / Propose a piece
+description: Algo que dos apps o más necesitan y conviene escribir una sola vez. / Something two or more apps need, written once.
+labels: [pieza]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Antes, mira el [catálogo](https://github.com/pieza-app/pieza/blob/main/docs/catalogo.md): puede que ya exista o esté «por extraer».
+        Basta con contarla en palabras; si quieres programarla, [CONTRIBUTING.md](https://github.com/pieza-app/pieza/blob/main/CONTRIBUTING.md#cómo-proponer-una-pieza-nueva) dice cómo.
+        / Check the catalog first. Describing it in words is enough.
+  - type: input
+    id: nombre
+    attributes:
+      label: Nombre corto / Short name
+      placeholder: "calendario, portapapeles, exportar-pdf…"
+    validations: { required: true }
+  - type: textarea
+    id: que
+    attributes:
+      label: ¿Qué resuelve? / What does it solve?
+      description: Una o dos frases, desde quien usa la app.
+    validations: { required: true }
+  - type: textarea
+    id: apps
+    attributes:
+      label: ¿Qué apps la necesitan y dónde está hoy? / Which apps need it and where does it live today?
+      description: Si ya existe en una app, la ruta del archivo (de esa versión partimos). Una pieza nace cuando la usan dos apps o más.
+    validations: { required: true }
+  - type: checkboxes
+    id: plataformas
+    attributes:
+      label: Plataformas / Platforms
+      options:
+        - label: Mac
+        - label: Windows
+        - label: Linux
+        - label: iPhone
+        - label: Android
+  - type: textarea
+    id: permisos
+    attributes:
+      label: Permisos y red / Permissions and network
+      description: ¿Pide algún permiso del sistema (micrófono, pantalla, calendario…) y para qué? ¿Sale a internet? ¿A qué dominios? «Ninguno» también es una respuesta.
+    validations: { required: true }
+  - type: textarea
+    id: pantallas
+    attributes:
+      label: ¿Qué suma a la app? (opcional) / What does it add to the app? (optional)
+      description: Pantallas, pasos de la bienvenida, ajustes, lo que la persona tiene que hacer a mano (crear una cuenta, una llave…).
+  - type: checkboxes
+    id: ayudar
+    attributes:
+      label: ¿Te animas a ayudar? / Want to help?
+      options:
+        - label: Me gustaría extraerla o programarla (con o sin IA) / I'd like to build it
+        - label: Puedo probarla en mi app / I can test it in my app
