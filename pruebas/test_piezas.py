@@ -185,17 +185,45 @@ class Herramienta(AppDePrueba):
     def test_iniciar_deja_al_dia_y_plugin(self):
         self.assertTrue(os.path.isfile(os.path.join(self.app, ".github", "workflows", "pieza-al-dia.yml")))
         with open(os.path.join(self.app, ".claude", "settings.json")) as f:
-            self.assertTrue(json.load(f)["enabledPlugins"]["pieza@pieza"])
+            ajustes = json.load(f)
+        # Se SUGIERE el marketplace de Pieza; nadie lo recibe activado por abrir el repo.
+        self.assertIn("pieza", ajustes["extraKnownMarketplaces"])
+        self.assertNotIn("enabledPlugins", ajustes)
 
-    def _base_con_version(self, tipo, version="0.1.1", seguridad=False):
-        """Copia la base a un temporal y le sube la versión a «ia» con un cambio de este tipo."""
+    def test_si_pide_mas_no_se_actualiza_solo(self):
+        nueva = self._base_con_version("mejora", cambiar={"red": ["ejemplo.com"]})
+        e = json.loads(correr(nueva, "estado", self.app, "--json").stdout)
+        ia = next(x for x in e if x["pieza"] == "ia")
+        self.assertEqual((ia["pide_mas"], ia["automatico"]), (True, False))
+        self.assertEqual(correr(nueva, "actualizar", self.app, "--automatico").stdout.strip(), "")
+
+    def test_archivo_que_ya_no_es_de_la_pieza(self):
+        nueva = self._base_con_version("arreglo")
+        base = os.path.dirname(os.path.dirname(nueva))
+        ruta = os.path.join(base, "piezas", "ia", "pieza.json")
+        with open(ruta) as f:
+            p = json.load(f)
+        p["archivos"] = {"python/ia.py": "bin/ia_nueva.py"}
+        with open(ruta, "w") as f:
+            json.dump(p, f)
+        salida = correr(nueva, "actualizar", self.app).stdout
+        self.assertIn("ya no es de la pieza: bin/ia.py", salida)
+        self.assertTrue(os.path.isfile(os.path.join(self.app, "bin", "ia.py")))  # nunca se borra solo
+        lock = json.load(open(os.path.join(self.app, "piezas.json")))["piezas"]["ia"]["archivos"]
+        self.assertEqual(sorted(lock), ["bin/ia_nueva.py"])
+
+    def _base_con_version(self, tipo, version=None, seguridad=False, cambiar=None):
+        """Copia la base a un temporal y le sube la versión a «ia» con un cambio de este tipo (y lo que diga `cambiar`)."""
         import shutil
         base = os.path.join(self.tmp.name, "base")
         shutil.copytree(BASE, base, ignore=shutil.ignore_patterns(".git", "__pycache__"))
         ruta = os.path.join(base, "piezas", "ia", "pieza.json")
         with open(ruta) as f:
             p = json.load(f)
+        x, y, z = map(int, p["version"].split("."))
+        version = version or (f"{x}.{y + 1}.0" if tipo == "rompe" else f"{x}.{y}.{z + 1}")
         p["version"] = version
+        p.update(cambiar or {})
         c = {"version": version, "tipo": tipo, "resumen": "prueba", "seguridad": seguridad}
         if tipo == "rompe":
             c["migrar"] = ["Cambia ejecutar_ia por ejecutar."]
@@ -216,7 +244,7 @@ class Herramienta(AppDePrueba):
         self.assertEqual(correr(nueva, "aviso", self.app).stdout.strip(), "")
 
     def test_lo_que_rompe_va_a_mano_con_pasos(self):
-        nueva = self._base_con_version("rompe", version="0.2.0")
+        nueva = self._base_con_version("rompe")
         self.assertIn("a mano", correr(nueva, "estado", self.app).stdout)
         self.assertEqual(correr(nueva, "actualizar", self.app, "--automatico").stdout.strip(), "")
         self.assertIn("Cambia ejecutar_ia por ejecutar.", correr(nueva, "aviso", self.app).stdout)

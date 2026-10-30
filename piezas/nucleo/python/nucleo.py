@@ -17,25 +17,33 @@ argumento es siempre el JSON de salida. `script()` implementa ese contrato para 
 """
 import json
 import os
+import re
 import sys
 import tempfile
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 MAXIMO_ENTRADA = 5 * 1024 * 1024
 _app = None
 _privadas = set()
 
 
+def _id_de(carpeta):
+    d = leer_json(os.path.join(carpeta, "app.json"), {})
+    return d.get("id") if isinstance(d, dict) and isinstance(d.get("id"), str) else None
+
+
 def recursos():
-    """Carpeta raíz de la app (donde están app.json, bin/, ui/). La app la pasa en <ID>_RECURSOS; si no, se busca hacia arriba."""
-    for clave, valor in os.environ.items():
-        if clave.endswith("_RECURSOS") and valor and os.path.isfile(os.path.join(valor, "app.json")):
-            return valor
+    """Carpeta raíz de la app (donde están app.json, bin/, ui/). Primero la de este archivo (subiendo hasta 4 niveles): así otra
+    app no puede hacerse pasar por esta con su variable. Si el script vive fuera (desarrollo), vale <ID>_RECURSOS solo cuando el
+    prefijo de la variable es el id de ese app.json."""
     aqui = os.path.dirname(os.path.abspath(__file__))
     for _ in range(4):
         if os.path.isfile(os.path.join(aqui, "app.json")):
             return aqui
         aqui = os.path.dirname(aqui)
+    for clave, valor in sorted(os.environ.items()):
+        if clave.endswith("_RECURSOS") and valor and _id_de(valor) and clave == _id_de(valor).upper() + "_RECURSOS":
+            return valor
     raise RuntimeError("No encontré app.json: la app debe tener uno en su raíz (ver piezas/nucleo/README.md).")
 
 
@@ -44,7 +52,7 @@ def app():
     global _app
     if _app is None:
         d = leer_json(os.path.join(recursos(), "app.json"), {})
-        if not (isinstance(d.get("id"), str) and d["id"].isalnum() and d["id"].islower()):
+        if not (isinstance(d.get("id"), str) and re.fullmatch(r"[a-z][a-z0-9]{0,30}", d["id"])):
             raise RuntimeError("app.json: «id» debe ser minúsculas y letras/números (ej. «esquema»).")
         d.setdefault("nombre", d["id"].capitalize())
         d.setdefault("datos", "sistema")

@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "ia",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Tu IA",
  "icono": "icono.svg",
@@ -90,10 +90,16 @@
   "No conozco esa IA.": "I don't know that AI."
  },
  "compatible": {
-  "nucleo": ">=0.1.0 <1.0.0"
+  "nucleo": ">=0.2.0 <1.0.0"
  },
  "red_nota": "La app no sale a internet: la IA de la persona se conecta a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "arreglo",
+   "resumen": "Seguridad: la IA siempre corre en una carpeta temporal; la carpeta a revisar solo se agrega para leer (su configuración, hooks y AGENTS.md ya no se cargan). Claude sin configuración de proyecto (--setting-sources user) si lo conoce. Detectar opciones del CLI exige la opción exacta.",
+   "seguridad": true
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

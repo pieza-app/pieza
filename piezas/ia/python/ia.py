@@ -20,6 +20,7 @@ Uso: ia.py probar <entrada.json {"ia": "claude"}> <salida.json>   → {ia, ok, e
      ia.py lista <salida.json>                                     → {ias: [{id, nombre, instalada}], elegida}
 """
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -105,7 +106,7 @@ def _soporta(cmd, opcion):
             _ayuda[cmd] = (r.stdout or "") + (r.stderr or "")
         except (OSError, subprocess.SubprocessError):
             _ayuda[cmd] = ""
-    return opcion in _ayuda[cmd]
+    return re.search(r"(?<![\w-])" + re.escape(opcion) + r"(?![\w-])", _ayuda[cmd]) is not None
 
 
 def _entorno():
@@ -149,13 +150,16 @@ def ejecutar(prompt, *, ia=None, timeout=600, archivos=(), leer=None, no_leer=()
                 pass
         if copias and not puede_leer(ia):
             copias = []
-        carpeta = leer or tmp
+        # La IA SIEMPRE corre en la carpeta temporal: si corriera dentro de la carpeta que revisa, su CLI cargaría la configuración
+        # de ese repo (AGENTS.md, GEMINI.md, .claude/settings.json con hooks que ejecutan comandos). La carpeta solo se agrega
+        # para leer, y se le dice dónde está en el pedido (por la entrada estándar, nunca como argumento).
+        carpeta = tmp
+        if leer:
+            prompt = f"La carpeta que puedes leer (solo leer) está en: {leer}\n\n" + prompt
 
         if ia == "codex":
             salida = os.path.join(tmp, "respuesta.txt")
             cmd = [cmd0, "exec", "--skip-git-repo-check", "-s", "read-only", "-C", carpeta, "-o", salida]
-            if leer and copias:
-                cmd += ["--add-dir", tmp]
             cmd += [x for c in copias if c.endswith(IMAGENES) for x in ("-i", c)]
             cmd += (["-m", modelo] if modelo else []) + ["-"]
             r = subprocess.run(cmd, input=prompt, text=True, encoding="utf-8", capture_output=True, timeout=timeout, cwd=carpeta, env=entorno)
@@ -182,8 +186,6 @@ def ejecutar(prompt, *, ia=None, timeout=600, archivos=(), leer=None, no_leer=()
         if leer or copias:
             for d in [leer] if leer else []:
                 cmd += ["--add-dir", d]
-            if leer and copias:
-                cmd += ["--add-dir", tmp]
             cmd += ["--allowedTools", "Read,Glob,Grep", "--disallowedTools", ",".join(PROHIBIDO + _sin_secretos(no_leer))]
         else:
             cmd += ["--disallowedTools", "*"]
@@ -191,6 +193,8 @@ def ejecutar(prompt, *, ia=None, timeout=600, archivos=(), leer=None, no_leer=()
             cmd += ["--model", modelo]
         if _soporta(cmd0, "--safe-mode"):
             cmd.append("--safe-mode")
+        if _soporta(cmd0, "--setting-sources"):
+            cmd += ["--setting-sources", "user"]  # nunca la configuración (ni los hooks) de un proyecto
         return subprocess.run(cmd, input=prompt, text=True, encoding="utf-8", capture_output=True, timeout=timeout, cwd=carpeta,
                               env={**entorno, **SIN_MEMORIA_CLAUDE})
 

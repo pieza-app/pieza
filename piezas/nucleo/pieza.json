@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "nucleo",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Núcleo",
  "icono": "icono.svg",
@@ -26,6 +26,12 @@
  "acciones": {},
  "textos": {},
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "arreglo",
+   "resumen": "Seguridad: la app se reconoce primero por el app.json junto al script; la variable <ID>_RECURSOS solo vale si su prefijo es el id de esa app (otra app ya no puede hacerse pasar por esta). El id solo acepta a-z y 0-9.",
+   "seguridad": true
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

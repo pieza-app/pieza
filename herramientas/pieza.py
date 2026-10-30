@@ -36,7 +36,9 @@ import shutil
 import sys
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PIEZAS = os.path.join(BASE, "piezas")
+#: De dónde se leen las piezas. «Pieza al día» corre esta herramienta fijada a una versión y le pasa las piezas nuevas solo
+#: como datos (PIEZA_CATALOGO): así nunca ejecuta código que no fijó la app.
+PIEZAS = os.environ.get("PIEZA_CATALOGO") or os.path.join(BASE, "piezas")
 ID = re.compile(r"^[a-z][a-z0-9-]{1,40}$")
 SCRIPT = re.compile(r"^\w+\.py$")
 VERSION = re.compile(r"^\d+\.\d+\.\d+$")
@@ -362,7 +364,6 @@ def iniciar(app, aid, nombre):
     ajustes_ruta = os.path.join(app, ".claude", "settings.json")
     ajustes = leer(ajustes_ruta, {}) or {}
     ajustes.setdefault("extraKnownMarketplaces", {}).setdefault("pieza", {"source": {"source": "github", "repo": "pieza-app/pieza"}})
-    ajustes.setdefault("enabledPlugins", {}).setdefault("pieza@pieza", True)
     os.makedirs(os.path.dirname(ajustes_ruta), exist_ok=True)
     escribir(ajustes_ruta, ajustes)
     print(f"+ {ajustes_ruta}")
@@ -397,16 +398,27 @@ def copiar(pid, app, forzar=False, lock=None):
         os.makedirs(os.path.dirname(dst), exist_ok=True)
         shutil.copy2(fuente, dst)
         copiados[destino] = huella(dst)
-    # Config: suma las claves que la pieza necesita a app.json (sin tocar las que ya existen).
+    # Archivos que la versión anterior traía y esta ya no: nunca se borran solos (la app puede usarlos); se avisa y salen del candado.
+    for viejo in antes.get("archivos", {}):
+        if viejo not in copiados:
+            print(f"    ! ya no es de la pieza: {viejo} (bórralo si la app no lo usa)")
+    # Config: suma las claves que la pieza necesita a app.json. Una clave que ya existe no se pisa, pero si es una lista de
+    # valores posibles se le suman los nuevos (si no, la app descartaría en silencio un valor que la pieza ahora acepta).
     ruta_app = os.path.join(app, "app.json")
     a = leer(ruta_app)
     if a is not None and p.get("config"):
         a.setdefault("config", {})
         for k, v in p["config"].items():
-            a["config"].setdefault(k, v)
+            actual = a["config"].setdefault(k, v)
+            if isinstance(actual, list) and isinstance(v, list):
+                actual.extend(x for x in v if x not in actual)
         escribir(ruta_app, a)
     # Textos: suma al inglés de la app las frases que falten.
     en = _textos_en(app)
+    if not en and p.get("textos") and os.path.isdir(os.path.join(app, "ui")):
+        en = os.path.join(app, "ui", "idiomas", "en.json")
+        os.makedirs(os.path.dirname(en), exist_ok=True)
+        escribir(en, {"codigo": "en", "nombre": "English", "textos": {}})
     if en and p.get("textos"):
         d = leer(en, {})
         textos = d.setdefault("textos", {})
@@ -552,8 +564,14 @@ def aviso(app):
 
 
 def diferencias(app, pid):
+    if not ID.match(pid):
+        sys.exit("El id de una pieza va en minúsculas, números y guiones.")
+    fuente = candado(app)["piezas"].get(pid, {}).get("fuente")
+    if fuente:  # de la comunidad: se compara con el commit que se instaló, verificado con sus huellas
+        import comunidad
+        _EXTRA[pid], _ = comunidad.descargar(pid, sin_revisar=fuente.get("revision") != "revisada")
     for origen, destino in pieza(pid).get("archivos", {}).items():
-        base = open(os.path.join(PIEZAS, pid, origen), encoding="utf-8").read().splitlines(keepends=True)
+        base = open(os.path.join(carpeta_de(pid), origen), encoding="utf-8").read().splitlines(keepends=True)
         ruta = os.path.join(app, destino)
         local = open(ruta, encoding="utf-8").read().splitlines(keepends=True) if os.path.exists(ruta) else []
         sys.stdout.writelines(difflib.unified_diff(base, local, f"base/{origen}", f"app/{destino}"))
