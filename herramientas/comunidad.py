@@ -46,7 +46,7 @@ MAXIMO_ARCHIVOS = 40
 REPO = re.compile(r"^[\w.-]+/[\w.-]+$")
 COMMIT = re.compile(r"^[0-9a-f]{40}$")
 #: Lo que se copia del pieza.json al catálogo (lo que necesitan la página, la ficha y el creador).
-CAMPOS = ("id", "version", "estado", "nombre", "icono", "categoria", "descripcion", "recomendar", "requiere", "compatible", "plataformas",
+CAMPOS = ("id", "version", "estado", "nombre", "icono", "licencia", "categoria", "descripcion", "recomendar", "requiere", "compatible", "plataformas",
           "pantallas", "permisos", "red", "red_nota", "tareas_persona", "archivos", "config", "acciones", "textos", "cambios")
 ESTADOS = ("sin-revisar", "revisada", "rechazada")
 ESTADOS_PROYECTO = ("sin-revisar", "revisado", "rechazado")

@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Red segura",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "conexiones",
  "descripcion": "HTTPS sin redirecciones, solo a dominios permitidos, credenciales nunca en errores.",
  "recomendar": {

@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Universos",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "datos",
  "descripcion": "Mundos temáticos que cambian textos, colores y juego de la app; se descargan, se votan y se crean con la IA.",
  "recomendar": {

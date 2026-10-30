@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Bienvenida",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "interfaz",
  "descripcion": "Primer uso por pasos, con el idioma SIEMPRE primero; cada pieza puede sumar su paso.",
  "recomendar": {

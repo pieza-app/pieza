@@ -7,8 +7,9 @@
 
   const EN = {
     saltar: "Skip to content", n_como: "How it works", n_proy: "Projects", n_cat: "Catalog", n_emp: "Get started", n_man: "Manifesto",
-    ante: "Open and free framework", h1: "Build open apps from tested pieces.",
-    bajada2: "Your own AI, languages, safe updates, a community catalog… You pick the pieces and your AI plugs them in. Every app that gets built leaves pieces for the next one.",
+    ante: "Modular, open and free framework", h1: "Build your app in modules, like a puzzle.",
+    bajada2: "Each piece is a tested module: your own AI, languages, safe updates, a community catalog… You pick the modules, your AI plugs them in and your app comes together. Every app that gets built leaves modules for the next one.",
+    construccion: "Under construction: we're still extracting the pieces from the family apps.", construccion_a: "Help extract the missing ones",
     c_apps: "apps made with Pieza", c_piezas: "pieces in the catalog", c_listas: "ready to use",
     b_emp: "Get started", b_cod: "See the code", h_como: "How it works",
     r0: "AI", r1: "Languages", r2: "Up to date", r3: "Welcome", r4: "Your app", r5: "Settings", r6: "Catalog", r7: "Data", r8: "Security",
@@ -38,7 +39,7 @@
     h_cat: "Catalog", nota_cat: "Each piece says which screens it adds, which permissions it asks for on each platform and what it connects to. “On the way” = already proven in an app, waiting to be extracted.",
     nota_com: "Community pieces live in their maker's repo. We review them before marking them as reviewed.",
     filtrar: "Filter pieces", f_todas: "All", f_rev: "Reviewed", f_sin: "Not reviewed",
-    h_proy: "Made with Pieza", nota_proy: "Public repos with the “hecho-con-pieza” topic on GitHub. No telemetry: only the ones that choose to show up.",
+    h_proy: "Made with Pieza", nota_proy: "Public repos with the “hecho-con-pieza” topic on GitHub. No telemetry: only the ones that choose to show up. The family apps are where the pieces came from; they are moving to use them one by one.",
     h_sello: "Built an app with Pieza?", sello_p: "Give its repo the hecho-con-pieza topic and it shows up here.",
     sello_como: "How to do it", sello_p2: "If you like, add the badge to your README or page:",
     prompt: "pieza@your-computer:~$ cat MANIFESTO.md",
@@ -47,7 +48,7 @@
     man_creemos: "What we believe",
     m1: "Your computer is yours.", m1p: "Apps live there, with your data there. No servers watching you, no accounts tying you down, no telemetry.",
     m2: "Your AI is yours.", m2p: "We use the one you already have, with your account. Never ours. Never between you and your data.",
-    m3: "Code is shared.", m3p: "Everything is open (AGPL-3.0): read it, change it, use it. If you improve it and publish it, your improvement belongs to everyone too.",
+    m3: "Code is shared.", m3p: "Everything is open: pieces are MPL-2.0 (if you improve a piece, your improvement belongs to everyone; your app picks its own license) and the tools and family apps are AGPL-3.0. Read it, change it, use it.",
     m4: "Non-profit.", m4p: "No ads, no paid plans, no “pro version”. This exists because it's useful, not to sell you something.",
     m5: "Learn from whoever does it better.", m5p: "Every contribution is reviewed looking for what the other person did better. What we learn is written down and reaches every app.",
     m6: "Credit, always.", m6p: "Whoever contributes is named in what they made.",
@@ -62,26 +63,26 @@
     h_pri: "Non-negotiables", pr1: "Data belongs to the person: on their computer or in their git.",
     pr2: "The AI is the person's own, with their account, and it can't touch anything we don't send it.",
     pr3: "What the person types never goes as a process argument.", pr4: "No dependencies: Python's standard library, web without CDNs.",
-    pr5: "Language is asked first.", pr6: "Open and free, no accounts or tracking.", pie: "Pieza · AGPL-3.0 · no cookies or tracking",
+    pr5: "Language is asked first.", pr6: "Open and free, no accounts or tracking.", pie: "Pieza · pieces MPL-2.0, tools AGPL-3.0 · no cookies or tracking",
     secciones: "Sections",
     h_faq: "Frequently asked questions",
     q1: "Is Pieza a framework?", a1: "Yes, with one difference: pieces are copied into your app and they're yours. You don't depend on a package that can break from the outside, and when a piece improves you get it without losing your changes.",
     q2: "Do I need Claude Code?", a2: "No. The flows work the same in Claude Code, Gemini CLI and Codex, and with any other AI by following AGENTS.md. The pieza.py tool works on its own, with Python.",
     q3: "Does Pieza send data to any server?", a3: "No. There are no servers and no telemetry. The app counter only counts public repos that added the hecho-con-pieza topic on GitHub.",
     q4: "How do I hear about new versions of a piece?", a4: "Every app built with Pieza ships the “Pieza al día” workflow: once a week it opens a PR with the fixes and improvements that can be applied on their own, and an issue with the steps for what has to be done by hand.",
-    q5: "What's the license?", a5: "AGPL-3.0, like the apps in the family. It's free and open.",
+    q5: "What's the license?", a5: "Pieces are MPL-2.0: if you change a piece's file you share that change, but your app can have any license (even closed). Pieza's tools and the family apps are AGPL-3.0. All free and open.",
     comunidad: "Community", aportar: "How to contribute",
   };
   const TXT = {
     es: { lista: "Lista", camino: "En camino", plataformas: "Plataformas", permisos: "Permisos", red: "Sale a", sinRed: "funciona sin internet",
-          ninguno: "ninguno", vacio: "Todavía no hay apps aquí. La tuya puede ser la primera.", familia: "familia",
+          ninguno: "ninguno", vacio: "Todavía no hay apps aquí. La tuya puede ser la primera.", familia: "familia · origen",
           actualizado: "Actualizado: {x}", siempre: "va en toda app", sinDatos: "No pude cargar los datos. Recarga la página.",
           oficial: "Oficial", revisada: "Comunidad · Revisada ✓", sinRevisar: "Comunidad · Sin revisar",
           aviso: "Aún no la revisamos: instálala bajo tu responsabilidad.", deRepo: "En {x}",
           nadaFiltro: "No hay piezas con ese filtro.", aprobadas: "{n} aprobadas por la comunidad",
           aprobada: "Aprobada por la comunidad ✓", sinRevisarApp: "Sin revisar", repo: "Código", pagina: "Página", copiado: "Copiado ✓", seleccionado: "Seleccionado: copia con Ctrl+C o ⌘C" },
     en: { lista: "Ready", camino: "On the way", plataformas: "Platforms", permisos: "Permissions", red: "Connects to", sinRed: "works offline",
-          ninguno: "none", vacio: "No apps here yet. Yours could be the first.", familia: "family",
+          ninguno: "none", vacio: "No apps here yet. Yours could be the first.", familia: "family · origin",
           actualizado: "Updated: {x}", siempre: "in every app", sinDatos: "Couldn't load the data. Reload the page.",
           oficial: "Official", revisada: "Community · Reviewed ✓", sinRevisar: "Community · Not reviewed",
           aviso: "We haven't reviewed it yet: install it at your own risk.", deRepo: "In {x}",
@@ -258,6 +259,25 @@
     });
   }
 
+  /* ---------- Rompecabezas de la portada: se arma cuando la página ya cargó (fuentes incluidas), sin competir con la carga ---------- */
+  function armarRompecabezas() {
+    const escena = document.querySelector(".escena");
+    if (!escena) return;
+    const piezas = escena.querySelectorAll(".pz");
+    let faltan = piezas.length;
+    const listo = () => {
+      escena.classList.remove("armar");
+      escena.classList.add("armada"); // sin will-change: la tarjeta de video suelta las capas
+    };
+    piezas.forEach((p) => p.addEventListener("animationend", () => { if (--faltan === 0) setTimeout(listo, 1200); }, { once: true }));
+    const partir = () => requestAnimationFrame(() => requestAnimationFrame(() => escena.classList.add("armar")));
+    const fuentes = document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve();
+    const cargada = document.readyState === "complete" ? Promise.resolve() : new Promise((r) => window.addEventListener("load", r, { once: true }));
+    // Nunca esperar más de 1,2 s: si algo tarda, se arma igual.
+    Promise.race([Promise.all([fuentes, cargada]), new Promise((r) => setTimeout(r, 1200))]).then(partir);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) listo();
+  }
+
   /* ---------- Estrellas de la portada (canvas, se pausa fuera de pantalla y con la pestaña oculta) ---------- */
   function iniciarEstrellas() {
     const lienzo = document.getElementById("estrellas");
@@ -299,10 +319,14 @@
       ctx.globalAlpha = 1;
     }
 
+    const escena = document.querySelector(".escena");
+    let par = false;
     function bucle(ahora) {
       cuadro = 0;
       if (!visible || document.hidden || quieto.matches) return;
-      dibujar(ahora);
+      // Mientras se arma el rompecabezas, las estrellas van a la mitad de cuadros: todo el tiempo para las piezas.
+      par = !par;
+      if (!(escena && escena.classList.contains("armar") && par)) dibujar(ahora);
       cuadro = requestAnimationFrame(bucle);
     }
     function seguir() { if (!cuadro && visible && !document.hidden && !quieto.matches) cuadro = requestAnimationFrame(bucle); }
@@ -416,6 +440,7 @@
     iniciarSelector();
     iniciarRelato();
     iniciarManifiesto();
+    armarRompecabezas();
     iniciarEstrellas();
     Promise.allSettled([cargar("catalogo.json"), cargar("proyectos.json")]).then(([c, p]) => {
       if (c.status === "fulfilled") catalogo = c.value;

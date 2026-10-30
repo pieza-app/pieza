@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Copia al celular",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "datos",
  "descripcion": "El computador es la fuente; el celular lee una copia cifrada en una carpeta de la nube de la persona.",
  "recomendar": {

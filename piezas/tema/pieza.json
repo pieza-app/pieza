@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Tema claro y oscuro",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "interfaz",
  "descripcion": "Sistema, claro u oscuro, con light-dark() y sin repetir colores.",
  "recomendar": {

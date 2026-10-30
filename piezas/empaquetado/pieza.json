@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Empaquetado",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "repo",
  "descripcion": "build.sh, empaquetar, Python portátil fijado, instaladores de un comando y Info.plist/package.json generados desde app.json.",
  "recomendar": {

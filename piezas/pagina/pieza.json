@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Página pública",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "repo",
  "descripcion": "GitHub Pages bilingüe con descarga según sistema, demo en el navegador, preguntas frecuentes y SEO.",
  "recomendar": {

@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Actualizaciones",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "plataforma",
  "descripcion": "Avisa dentro de la app, descarga solo de los Releases del repo, verifica sha256 y actualiza en un clic sin tocar los datos.",
  "recomendar": {

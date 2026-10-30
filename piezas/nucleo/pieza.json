@@ -5,6 +5,7 @@
  "estado": "lista",
  "nombre": "Núcleo",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "base",
  "descripcion": "Lo que todo script necesita: app.json, carpeta de datos, config validada, escritura atómica y el contrato «el último argumento es la salida».",
  "recomendar": {

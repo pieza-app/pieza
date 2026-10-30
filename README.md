@@ -2,18 +2,20 @@
 
 <h1 align="center">Pieza</h1>
 
-<p align="center"><b>Framework abierto para apps que viven en tu computador.</b><br>
+<p align="center"><b>Framework modular y abierto para apps que viven en tu computador.</b><br>
 <a href="https://pieza-app.github.io/pieza/">Página</a> · <a href="https://pieza-app.github.io/pieza/#empezar">Empezar</a> ·
 <a href="MANIFIESTO.md">Manifiesto</a> · <a href="https://github.com/pieza-app/pieza/discussions">Comunidad</a> · <a href="CONTRIBUTING.md">Cómo aportar</a></p>
 
 <p align="center"><i>Construimos en abierto. Compartimos lo que funciona. Nadie es dueño de tu computador más que tú.</i></p>
 
-Piezas probadas para armar apps abiertas que viven en tu computador. Cada pieza resuelve una cosa (tu IA, el idioma, el
-catálogo, las actualizaciones…) y se enchufa en cualquier app de la familia con un comando, en vez de escribirla de cero.
+Arma tu app por módulos, como un rompecabezas. Cada pieza es un módulo probado que resuelve una cosa (tu IA, el idioma, el
+catálogo, las actualizaciones…) y se enchufa en cualquier app con un comando, en vez de escribirla de cero.
 
-Las usan [Minuta](https://github.com/minuta-app/minuta), [Graba](https://github.com/graba-app/graba),
-[Corta](https://github.com/corta-app/corta), [Alcancía](https://github.com/alcancia-app/alcancia),
-[Repasa](https://github.com/repasa-app/repasa) y [Esquema](https://github.com/esquema-app/esquema).
+> **En construcción.** Las piezas salen de [Minuta](https://github.com/minuta-app/minuta), [Graba](https://github.com/graba-app/graba),
+> [Corta](https://github.com/corta-app/corta), [Alcancía](https://github.com/alcancia-app/alcancia),
+> [Repasa](https://github.com/repasa-app/repasa) y [Esquema](https://github.com/esquema-app/esquema), y esas apps van pasando a
+> usarlas una por una. Mira cuáles ya están listas en el [catálogo](docs/catalogo.md) y
+> [súmate a extraer las que faltan](https://github.com/pieza-app/pieza/issues).
 
 **Instala los flujos** (crear una app y revisar aportes) en tu IA y pídele «creemos una app para…»:
 
@@ -54,7 +56,11 @@ telemetría: [lee el manifiesto](MANIFIESTO.md) y súmate.
 **¿Hiciste una app con Pieza?** Ponle el topic `hecho-con-pieza` a su repo y aparece en la [página](https://pieza-app.github.io/pieza/).
 Y si quieres, el sello: [![Hecho con Pieza](https://pieza-app.github.io/pieza/sello.svg)](https://pieza-app.github.io/pieza/)
 
-Sin dependencias: Python con su biblioteca estándar. Licencia AGPL-3.0.
+Sin dependencias: Python con su biblioteca estándar.
+
+**Licencias.** Las piezas (`piezas/`) son [MPL-2.0](piezas/LICENSE): si cambias un archivo de una pieza, compartes ese
+cambio, pero la app que la usa puede tener la licencia que quiera. Las herramientas (`herramientas/`, las skills, la página) son
+[AGPL-3.0](LICENSE). *Pieces are MPL-2.0; tools are AGPL-3.0.*
 
 ---
 

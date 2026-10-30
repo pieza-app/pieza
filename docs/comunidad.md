@@ -9,6 +9,7 @@ mantiene Pieza la revisa, pasa a **«Revisada ✓»** y desde ahí se instala co
 1. Un repo público con un `pieza.json` en la raíz, su **`icono.svg`** y el código que nombra en `archivos` (formato en
    [enchufe.md](enchufe.md)). El ícono es obligatorio: 24×24, de línea, en `currentColor`, solo formas ([reglas del
    ícono](enchufe.md#el-ícono-toda-pieza-oficial-o-de-la-comunidad)); si no pasa la validación, la pieza no entra.
+   Dice su `licencia` (MPL-2.0, como las oficiales, o MIT, Apache-2.0, BSD, LGPL, GPL o AGPL): la ve quien la instala.
    Mismas reglas que una pieza oficial: `estado: "lista"`, `recomendar`, `pantallas`, `permisos` y `red` honestos, `cambios`
    desde la primera versión y la **regla de oro** (lo que escribe la persona nunca va como argumento de un proceso).
 2. Puede requerir piezas oficiales (por ejemplo `nucleo` o `ia`), no otras de la comunidad, y su `id` no puede ser el de una

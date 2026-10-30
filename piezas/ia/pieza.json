@@ -5,6 +5,7 @@
  "estado": "lista",
  "nombre": "Tu IA",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "ia",
  "descripcion": "La IA de la persona (Claude Code, Codex o Gemini) con su propia cuenta: sin herramientas, sin su memoria, el pedido nunca como argumento, material y revisión a fondo de solo lectura.",
  "recomendar": {

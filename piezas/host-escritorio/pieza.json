@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "App de Windows y Linux",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "plataforma",
  "descripcion": "Host genérico en Electron con la misma API que el de Mac.",
  "recomendar": {

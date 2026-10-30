@@ -43,7 +43,8 @@ Reglas que importan: código, comentarios y textos en español (de Chile neutro)
 con biblioteca estándar y sin dependencias ni CDN en la interfaz; **lo que escribe la persona nunca va como argumento de un
 proceso**; nada personal en el código (ejemplos y pruebas con Ana Pérez, Matías Soto); **nunca subas datos reales**.
 
-Los aportes entran con la licencia del proyecto, [AGPL-3.0](LICENSE).
+Los aportes entran con la licencia de lo que tocan: las piezas (`piezas/`), [MPL-2.0](piezas/LICENSE), con el aviso de la
+MPL al inicio de cada archivo de código; lo demás, [AGPL-3.0](LICENSE).
 
 ## Cómo proponer una pieza nueva
 Una pieza nace en Pieza cuando **dos apps o más** la van a necesitar; si es solo de una app, va en esa app. Antes de escribirla,
@@ -122,5 +123,5 @@ Al participar aceptas el [código de conducta](CODE_OF_CONDUCT.md).
   and a bumped `version` with a `cambios` entry (`arreglo`, `mejora` or `rompe` with `migrar` steps; `seguridad: true` if relevant).
 - **Flows (skills):** edit `skills/<flow>/SKILL.md` here, bump “Versión del flujo” and note it in `CHANGELOG.md`.
 - **Review:** everything goes through a pull request and a maintainer merges it, only with their approval. Contributions are
-  licensed under AGPL-3.0.
+  licensed under MPL-2.0 for pieces (`piezas/`, with the MPL notice at the top of each code file) and AGPL-3.0 for the rest.
 - **Security issues:** don't open a public issue; report them privately as explained in [SECURITY.md](SECURITY.md).

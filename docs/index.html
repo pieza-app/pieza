@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
-<title>Pieza — framework abierto para apps que viven en tu computador</title>
-<meta name="description" content="Piezas probadas para armar apps abiertas que viven en tu computador: tu propia IA, idiomas, actualizaciones, catálogo de la comunidad. Elige piezas, revisa la ficha y enchufa.">
+<title>Pieza — framework modular y abierto para apps que viven en tu computador</title>
+<meta name="description" content="Framework modular: arma apps abiertas que viven en tu computador con módulos probados (piezas): tu propia IA, idiomas, actualizaciones, catálogo de la comunidad. Elige piezas, revisa la ficha y enchufa.">
 <link rel="canonical" href="https://pieza-app.github.io/pieza/">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<meta property="og:title" content="Pieza — framework abierto para apps que viven en tu computador">
-<meta property="og:description" content="Elige piezas probadas, revisa la ficha completa y enchufa. Cada app que se hace deja piezas para la siguiente.">
+<meta property="og:title" content="Pieza — framework modular y abierto para apps que viven en tu computador">
+<meta property="og:description" content="Arma tu app por módulos: elige piezas probadas, revisa la ficha completa y enchufa. Cada app que se hace deja piezas para la siguiente.">
 <meta property="og:url" content="https://pieza-app.github.io/pieza/">
 <meta property="og:type" content="website">
 <meta property="og:image" content="https://pieza-app.github.io/pieza/img/compartir.png">
@@ -25,13 +25,13 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@graph":[
- {"@type":"SoftwareSourceCode","name":"Pieza","description":"Framework abierto para apps que viven en tu computador: piezas probadas (tu propia IA, idiomas, actualizaciones seguras, catálogo de la comunidad) que se enchufan en vez de escribirse de cero.","url":"https://pieza-app.github.io/pieza/","codeRepository":"https://github.com/pieza-app/pieza","license":"https://www.gnu.org/licenses/agpl-3.0.html","programmingLanguage":["Python","JavaScript","Swift"],"isAccessibleForFree":true},
+ {"@type":"SoftwareSourceCode","name":"Pieza","description":"Framework modular y abierto para apps que viven en tu computador: módulos probados (piezas) (tu propia IA, idiomas, actualizaciones seguras, catálogo de la comunidad) que se enchufan en vez de escribirse de cero.","url":"https://pieza-app.github.io/pieza/","codeRepository":"https://github.com/pieza-app/pieza","license":"https://www.mozilla.org/MPL/2.0/","programmingLanguage":["Python","JavaScript","Swift"],"isAccessibleForFree":true},
  {"@type":"FAQPage","mainEntity":[
   {"@type":"Question","name":"¿Pieza es un framework?","acceptedAnswer":{"@type":"Answer","text":"Sí, con una diferencia: las piezas se copian dentro de tu app y son tuyas. No dependes de un paquete que pueda romperse desde afuera, y cuando una pieza mejora la recibes sin perder tus cambios."}},
   {"@type":"Question","name":"¿Necesito Claude Code?","acceptedAnswer":{"@type":"Answer","text":"No. Los flujos funcionan igual en Claude Code, Gemini CLI y Codex, y con cualquier otra IA siguiendo AGENTS.md. La herramienta pieza.py funciona sola, con Python."}},
   {"@type":"Question","name":"¿Pieza manda datos a algún servidor?","acceptedAnswer":{"@type":"Answer","text":"No. No hay servidores ni telemetría. El contador de apps solo cuenta repos públicos que se pusieron el topic hecho-con-pieza en GitHub."}},
   {"@type":"Question","name":"¿Cómo me entero de las versiones nuevas de una pieza?","acceptedAnswer":{"@type":"Answer","text":"Cada app hecha con Pieza trae el workflow Pieza al día: una vez por semana abre un PR con los arreglos y mejoras que se pueden aplicar solos, y un issue con los pasos para lo que hay que hacer a mano."}},
-  {"@type":"Question","name":"¿Qué licencia tiene?","acceptedAnswer":{"@type":"Answer","text":"AGPL-3.0, como las apps de la familia. Es gratis y abierto."}}
+  {"@type":"Question","name":"¿Qué licencia tiene?","acceptedAnswer":{"@type":"Answer","text":"Las piezas, MPL-2.0: si cambias un archivo de una pieza, compartes ese cambio, pero tu app puede tener la licencia que quieras (incluso cerrada). Las herramientas de Pieza y las apps de la familia, AGPL-3.0. Todo gratis y abierto."}}
  ]}
 ]}
 </script>
@@ -60,9 +60,9 @@
   <canvas class="estrellas" id="estrellas" aria-hidden="true"></canvas>
   <div class="envoltura portada-dentro">
     <div class="portada-texto">
-      <p class="antetitulo" data-t="ante">Framework abierto y gratis</p>
-      <h1 data-t="h1">Arma apps abiertas con piezas probadas.</h1>
-      <p class="bajada" data-t="bajada2">Tu propia IA, idiomas, actualizaciones seguras, un catálogo de la comunidad… Eliges las piezas y tu IA las enchufa. Cada app que se hace deja piezas para la siguiente.</p>
+      <p class="antetitulo" data-t="ante">Framework modular, abierto y gratis</p>
+      <h1 data-t="h1">Arma tu app por módulos, como un rompecabezas.</h1>
+      <p class="bajada" data-t="bajada2">Cada pieza es un módulo probado: tu propia IA, idiomas, actualizaciones seguras, un catálogo de la comunidad… Eliges los módulos, tu IA los enchufa y tu app queda armada. Cada app que se hace deja módulos para la siguiente.</p>
       <div class="acciones">
         <a class="boton" href="#empezar" data-t="b_emp">Empezar</a>
         <a class="boton secundario" href="https://github.com/pieza-app/pieza" data-t="b_cod">Ver el código</a>
@@ -72,6 +72,7 @@
         <div><strong id="n-piezas">—</strong><span data-t="c_piezas">piezas en el catálogo</span></div>
         <div><strong id="n-listas">—</strong><span data-t="c_listas">listas para usar</span></div>
       </div>
+      <p class="construccion"><span data-t="construccion">En construcción: recién estamos sacando las piezas de las apps de la familia.</span> <a href="https://github.com/pieza-app/pieza/issues" data-t="construccion_a">Súmate a extraer las que faltan</a></p>
     </div>
     <div class="escena" aria-hidden="true">
       <div class="flota"><div class="armado">
@@ -229,7 +230,7 @@
 <section id="proyectos" class="raya">
   <div class="envoltura">
     <h2 data-t="h_proy">Hechas con Pieza</h2>
-    <p class="nota" data-t="nota_proy">Repos públicos con el topic «hecho-con-pieza» en GitHub. Sin telemetría: solo aparecen los que eligen aparecer.</p>
+    <p class="nota" data-t="nota_proy">Repos públicos con el topic «hecho-con-pieza» en GitHub. Sin telemetría: solo aparecen los que eligen aparecer. Las de la familia son de donde salieron las piezas y van pasando a usarlas una por una.</p>
     <p class="nota cuenta" id="n-aprobadas" aria-live="polite"></p>
     <ul class="proyectos" id="lista-proyectos"></ul>
     <p class="nota" id="actualizado"></p>
@@ -252,7 +253,7 @@
     <ol class="ideas" id="ideas">
       <li><b data-t="m1">Tu computador es tuyo.</b> <span data-t="m1p">Las apps viven ahí, con tus datos ahí. Nada de servidores que te miran, ni cuentas que te amarran, ni telemetría.</span></li>
       <li><b data-t="m2">Tu IA es tuya.</b> <span data-t="m2p">Usamos la que ya tienes, con tu cuenta. Nunca la nuestra. Nunca entre tú y tus datos.</span></li>
-      <li><b data-t="m3">El código se comparte.</b> <span data-t="m3p">Todo es abierto (AGPL-3.0): puedes leerlo, cambiarlo y usarlo. Si lo mejoras y lo publicas, tu mejora también es de todos.</span></li>
+      <li><b data-t="m3">El código se comparte.</b> <span data-t="m3p">Todo es abierto: las piezas son MPL-2.0 (si mejoras una pieza, tu mejora es de todos; tu app elige su licencia) y las herramientas y las apps de la familia, AGPL-3.0. Puedes leerlo, cambiarlo y usarlo.</span></li>
       <li><b data-t="m4">Sin fines de lucro.</b> <span data-t="m4p">Sin publicidad, sin planes pagados, sin «versión pro». Esto existe porque es útil, no para venderte algo.</span></li>
       <li><b data-t="m5">Aprender de quien lo hace mejor.</b> <span data-t="m5p">Cada aporte se revisa buscando qué hizo mejor la otra persona. Lo que se aprende se anota y llega a todas las apps.</span></li>
       <li><b data-t="m6">Crédito siempre.</b> <span data-t="m6p">Quien aporta aparece con su nombre en lo que hizo.</span></li>
@@ -281,7 +282,7 @@
       <details><summary data-t="q2">¿Necesito Claude Code?</summary><p data-t="a2">No. Los flujos funcionan igual en Claude Code, Gemini CLI y Codex, y con cualquier otra IA siguiendo AGENTS.md. La herramienta pieza.py funciona sola, con Python.</p></details>
       <details><summary data-t="q3">¿Pieza manda datos a algún servidor?</summary><p data-t="a3">No. No hay servidores ni telemetría. El contador de apps solo cuenta repos públicos que se pusieron el topic hecho-con-pieza en GitHub.</p></details>
       <details><summary data-t="q4">¿Cómo me entero de las versiones nuevas de una pieza?</summary><p data-t="a4">Cada app hecha con Pieza trae el workflow «Pieza al día»: una vez por semana abre un PR con los arreglos y mejoras que se pueden aplicar solos, y un issue con los pasos para lo que hay que hacer a mano.</p></details>
-      <details><summary data-t="q5">¿Qué licencia tiene?</summary><p data-t="a5">AGPL-3.0, como las apps de la familia. Es gratis y abierto.</p></details>
+      <details><summary data-t="q5">¿Qué licencia tiene?</summary><p data-t="a5">Las piezas, MPL-2.0: si cambias un archivo de una pieza, compartes ese cambio, pero tu app puede tener la licencia que quieras (incluso cerrada). Las herramientas de Pieza y las apps de la familia, AGPL-3.0. Todo gratis y abierto.</p></details>
     </div>
   </div>
 </section>
@@ -303,7 +304,7 @@
 
 <footer class="pie">
   <div class="envoltura">
-    <p><span data-t="pie">Pieza · AGPL-3.0 · sin cookies ni seguimiento</span> · <a href="https://github.com/pieza-app/pieza">GitHub</a> · <a href="https://github.com/pieza-app/pieza/blob/main/MANIFIESTO.md" data-t="n_man">Manifiesto</a> · <a href="https://github.com/pieza-app/pieza/discussions" data-t="comunidad">Comunidad</a> · <a href="https://github.com/pieza-app/pieza/blob/main/CONTRIBUTING.md" data-t="aportar">Cómo aportar</a></p>
+    <p><span data-t="pie">Pieza · piezas MPL-2.0, herramientas AGPL-3.0 · sin cookies ni seguimiento</span> · <a href="https://github.com/pieza-app/pieza">GitHub</a> · <a href="https://github.com/pieza-app/pieza/blob/main/MANIFIESTO.md" data-t="n_man">Manifiesto</a> · <a href="https://github.com/pieza-app/pieza/discussions" data-t="comunidad">Comunidad</a> · <a href="https://github.com/pieza-app/pieza/blob/main/CONTRIBUTING.md" data-t="aportar">Cómo aportar</a></p>
   </div>
 </footer>
 </body>

@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Grabar pantalla",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "medios",
  "descripcion": "Pantalla + cámara + voz, con recorte, pausa y atajos globales.",
  "recomendar": {

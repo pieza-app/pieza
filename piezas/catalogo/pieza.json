@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Catálogo de la comunidad",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "datos",
  "descripcion": "Contenido descargable (plantillas, temas, efectos…) desde un repo de solo datos, validado y con sha256 obligatorio.",
  "recomendar": {

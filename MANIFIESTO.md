@@ -10,7 +10,8 @@ esta familia dejó piezas para la siguiente. Ahora esas piezas son de todos.
 1. **Tu computador es tuyo.** Las apps viven ahí, con tus datos ahí. Nada de servidores que te miran, ni cuentas que te
    amarran, ni telemetría.
 2. **Tu IA es tuya.** Usamos la que ya tienes, con tu cuenta. Nunca la nuestra. Nunca entre tú y tus datos.
-3. **El código se comparte.** Todo es abierto (AGPL-3.0): puedes leerlo, cambiarlo y usarlo. Si lo mejoras y lo publicas, tu
+3. **El código se comparte.** Todo es abierto: las piezas son MPL-2.0 y las herramientas y las apps, AGPL-3.0. Puedes leerlo,
+   cambiarlo y usarlo. Si lo mejoras y lo publicas, tu
    mejora también es de todos.
 4. **Sin fines de lucro.** Sin publicidad, sin planes pagados, sin «versión pro». Esto existe porque es útil, no para venderte
    algo.
@@ -44,7 +45,8 @@ Every app in this family left pieces for the next one. Now those pieces belong t
 1. **Your computer is yours.** Apps live there, with your data there. No servers watching you, no accounts tying you down, no
    telemetry.
 2. **Your AI is yours.** We use the one you already have, with your account. Never ours. Never between you and your data.
-3. **Code is shared.** Everything is open (AGPL-3.0): read it, change it, use it. If you improve it and publish it, your
+3. **Code is shared.** Everything is open: pieces are MPL-2.0, tools and apps AGPL-3.0. Read it, change it, use it. If you
+   improve it and publish it, your
    improvement belongs to everyone too.
 4. **Non-profit.** No ads, no paid plans, no “pro version”. This exists because it's useful, not to sell you something.
 5. **Learn from whoever does it better.** Every contribution is reviewed looking for what the other person did better. What we

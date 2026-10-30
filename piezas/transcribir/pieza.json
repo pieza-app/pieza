@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Transcribir",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "medios",
  "descripcion": "Audio a texto en el computador con whisper: modelos verificados, vocabulario por archivo, filtro de alucinaciones.",
  "recomendar": {

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
 """Pieza «ia»: la IA de la persona (Claude Code, Codex o Gemini) con SU propia cuenta. Solo biblioteca estándar.
 
 La app nunca llama a una IA con una cuenta propia: arma el comando del CLI que la persona ya tiene y le pasa el texto. Reúne lo mejor

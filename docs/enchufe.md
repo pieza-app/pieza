@@ -34,6 +34,7 @@ enruten solos.
  "version": "0.1.0",
  "nombre": "Tu IA",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "descripcion": "Una línea: qué resuelve.",
  "origen": "De qué app salió y qué mejoras sumó de las otras.",
  "requiere": ["nucleo"],
@@ -52,6 +53,7 @@ enruten solos.
 
 | Campo | Para qué |
 |---|---|
+| `licencia` | **Obligatoria.** Las oficiales, `MPL-2.0` (ver «Licencia»). |
 | `icono` | **Obligatorio.** Un `.svg` dentro de la pieza (ver «El ícono»). Es lo que la gente ve en el catálogo, la página y el creador. |
 | `archivos` | Origen en la pieza → destino en la app. `pieza.py agregar` los copia y anota su huella. El destino va dentro de `bin/`, `ui/`, `app/`, `escritorio/`, `movil/`, `docs/`, `pruebas/` o `herramientas/`, nunca en carpetas que empiezan con punto (`.github/`, `.git/`, `.claude/`: ahí un archivo ejecuta código), y sin enlaces. |
 | `requiere` | Otras piezas que se agregan antes, solas. |
@@ -98,6 +100,20 @@ completa antes de crearla. Agregar una pieza (o un campo nuevo a una) la hace ap
 3. **El script tiene que existir en `bin/`** y llamarse `^\w+\.py$`.
 4. **El entorno del script** no hereda nada raro; el de la IA, además, sin las variables `<ID>_*` de la app.
 5. **Todo tiene límite de tiempo.**
+
+## Licencia
+
+Toda pieza dice su `licencia` (MPL-2.0, MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, LGPL-3.0, GPL-3.0 o AGPL-3.0). Las
+**oficiales son MPL-2.0** ([texto](../piezas/LICENSE)): quien cambia un archivo de la pieza comparte ese cambio, y la app que la
+usa elige su propia licencia. Cada archivo de código de una pieza oficial empieza con el aviso (después del shebang si hay):
+
+```
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at https://mozilla.org/MPL/2.0/.
+```
+
+(con `//` o `/* */` en JS, Swift y CSS). El aviso viaja con el archivo cuando se copia a la app. `pieza.py revisar` lo exige.
 
 ## El ícono (toda pieza, oficial o de la comunidad)
 

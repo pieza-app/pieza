@@ -106,6 +106,11 @@ def version_num(v):
     return tuple(int(x) for x in v.split("."))
 
 
+#: Licencias que acepta una pieza (las oficiales, MPL-2.0: quien mejora la pieza la comparte; la app que la usa elige la suya).
+LICENCIAS = {"MPL-2.0", "MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "LGPL-3.0", "GPL-3.0", "AGPL-3.0"}
+AVISO_MPL = "mozilla.org/MPL/2.0"
+CODIGO = (".py", ".js", ".mjs", ".swift", ".kt", ".css", ".sh")
+
 _EXTRA = {}  # piezas de la comunidad ya bajadas y verificadas: id → carpeta
 _FUENTE = {}  # y de dónde salieron: {repo, commit, revision}
 
@@ -215,6 +220,15 @@ def errores_pieza(pid, p, ids, carpeta="local"):
         else:
             import icono
             e += [f"ícono: {x}" for x in icono.errores(open(ruta, encoding="utf-8").read(), solo_current=True)]
+    if p.get("licencia") not in LICENCIAS:
+        e.append(f"«licencia» es obligatoria: una de {', '.join(sorted(LICENCIAS))} (las oficiales, MPL-2.0)")
+    elif carpeta is not None and pid not in _EXTRA:
+        if p["licencia"] != "MPL-2.0":
+            e.append("las piezas oficiales son MPL-2.0")
+        for origen in p.get("archivos", {}):
+            ruta = os.path.join(carpeta_de(pid), origen)
+            if origen.endswith(CODIGO) and os.path.isfile(ruta) and AVISO_MPL not in open(ruta, encoding="utf-8").read(2000):
+                e.append(f"{origen}: falta el aviso de la MPL-2.0 al inicio (ver docs/enchufe.md, «Licencia»)")
     rec = p.get("recomendar")
     if not isinstance(rec, dict) or not isinstance(rec.get("cuando"), str):
         e.append("«recomendar» necesita {\"cuando\": \"…\"} (y opcional \"siempre\": true, \"palabras\": […])")

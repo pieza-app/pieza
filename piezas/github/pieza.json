@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Repo listo para la comunidad",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "repo",
  "descripcion": "Plantillas de issues y PR, dependabot, workflows reutilizables de revisar y publicar, AGENTS.md, CONTRIBUTING.",
  "recomendar": {

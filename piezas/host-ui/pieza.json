@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Puente de la interfaz",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "interfaz",
  "descripcion": "host.enviar(accion, datos) y las respuestas window.<App>.*, igual en Mac, Electron, móvil y navegador (modo demo).",
  "recomendar": {

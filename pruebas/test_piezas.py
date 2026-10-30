@@ -317,7 +317,7 @@ class Comunidad(unittest.TestCase):
     ICONO = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/></svg>'
 
     def publicar(self, repo, commit, codigo="print('hola')\n", icono=None, **cambios):
-        pj = {"formato": 1, "id": "saludo", "version": "1.0.0", "estado": "lista", "nombre": "Saludo", "icono": "icono.svg",
+        pj = {"formato": 1, "id": "saludo", "version": "1.0.0", "estado": "lista", "nombre": "Saludo", "icono": "icono.svg", "licencia": "MIT",
               "categoria": "interfaz",
               "descripcion": "Saluda.", "recomendar": {"cuando": "Para saludar."}, "requiere": ["nucleo"],
               "archivos": {"python/saludo.py": "bin/saludo.py"},

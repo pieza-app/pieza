@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Conectores de servicios",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "conexiones",
  "descripcion": "Contrato para conectar servicios externos (bancos, billeteras, APIs) con credencial en el llavero y por la entrada estándar.",
  "recomendar": {

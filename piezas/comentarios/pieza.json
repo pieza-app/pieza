@@ -5,6 +5,7 @@
  "estado": "planeada",
  "nombre": "Enviar comentarios",
  "icono": "icono.svg",
+ "licencia": "MPL-2.0",
  "categoria": "interfaz",
  "descripcion": "Formulario que abre un issue en GitHub prellenado con versión, sistema e IA. Nunca obligatorio.",
  "recomendar": {
