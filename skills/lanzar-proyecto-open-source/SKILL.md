@@ -5,7 +5,7 @@ description: "Lanzar un proyecto open source completo desde una idea: entrevista
 
 # Lanzar un proyecto open source con Pieza
 
-Versión del flujo: 8
+Versión del flujo: 9
 
 Quien mantiene el proyecto dice "creemos una aplicación para…" y espera el paquete completo, no preguntas una por una. Este flujo
 sale de lanzar Minuta, Graba, Corta, Alcancía, Repasa y Esquema. Trabaja por fases, con lista de tareas visible, y entrega algo usable al final de cada fase.
@@ -84,10 +84,10 @@ Nunca ingreses contraseñas ni códigos de verificación: eso lo hace ella.
 - Autor de commits: el usuario de GitHub de la persona con su correo `@users.noreply.github.com` (nunca su correo personal) + las
   líneas de atribución que pida la sesión. Nunca reescribas historia publicada.
 - **Publicar es visible para todos**: subir ramas, abrir PRs o cambiar la org se confirma con la persona antes.
-- Lo que `gh` no puede (avatar y nombre visible de la org, social preview, renombrar/fijar Discussions, fijar repos): en el navegador
-  con la sesión de GitHub de la persona. Para subir imágenes: `fetch` desde `raw.githubusercontent.com` (permitido por la CSP de
-  github.com; github.io no) → `new File` → `DataTransfer` → `input.files` + evento `change`. Formularios: leer el form con DOMParser y
-  enviarlo con `fetch` + `FormData`.
+- Lo que `gh` no puede (avatar y nombre visible de la org, social preview, renombrar/fijar Discussions, fijar repos) lo hace **la
+  persona** en github.com: dale la lista con el enlace exacto de cada ajuste y los archivos listos (PNG del avatar, imagen para
+  compartir). No automatices github.com con su sesión: es frágil y una IA no debería actuar así en su cuenta. Si la persona te
+  lo pide explícitamente y tu IA tiene un navegador, hazlo paso a paso a la vista, nunca con trucos de formularios.
 - Topic **`hecho-con-pieza`** en el repo de la app (con permiso de la persona): así aparece en la página de Pieza, con su ícono
   (el de `"icono"` en `app.json` o `docs/favicon.svg`) y «Sin revisar» hasta que quien mantiene Pieza lo apruebe. Dile a la
   persona que, si quiere el sello «Aprobada por la comunidad ✓», lo pida en Discussions de Pieza.
@@ -108,13 +108,13 @@ Nunca ingreses contraseñas ni códigos de verificación: eso lo hace ella.
    abra el repo en Claude Code reciba el plugin de Pieza) y `pieza.py agregar <pieza> <app>` por cada pieza. Revisa
    `pieza.py estado <app>`. En Settings → Actions, activa «Allow GitHub Actions to create and approve pull requests» (lo pide
    «Pieza al día» para abrir sus PRs).
-3. Lo propio de la app: si es de escritorio (o web + escritorio), sigue la skill **app-escritorio-multiplataforma** (una sola
+3. Lo propio de la app: si es de escritorio (o web + escritorio), sigue la skill **app-escritorio-multiplataforma** (viene con Pieza; una sola
    interfaz web, app nativa en Mac y Electron en Windows/Linux, ventanas y temas, empaquetado e instaladores). Para web o móvil,
    las mismas ideas: interfaz única, datos del usuario en formato abierto, temas como datos y contrato probado.
 4. Acciones de la app: si son «correr un script y devolver JSON», se declaran en el enchufe (`docs/enchufe.md` de Pieza), no se
    escriben tres veces.
 Construye primero lo mínimo que funcione de punta a punta en una plataforma, muéstraselo a la persona y después amplía.
-En todo el diseño y la construcción aplica la skill **diseno-y-calidad-de-producto** (criterios UX/UI y buenas prácticas).
+En todo el diseño y la construcción aplica la skill **diseno-y-calidad-de-producto** (viene con Pieza: criterios UX/UI y buenas prácticas).
 
 ## 7. Calidad automática desde el día uno
 - `pruebas/correr.sh` + workflow `revisar.yml` en `push` a main **y** `pull_request`: sintaxis, privacidad, pruebas de lógica, contrato

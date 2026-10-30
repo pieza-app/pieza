@@ -1,6 +1,6 @@
 # Pieza con Claude Code, Gemini CLI, Codex u otra IA
 
-Los flujos de Pieza (crear una app y revisar aportes) son **skills**: un `SKILL.md` con `name` y `description`, el mismo
+Los flujos de Pieza (crear una app, revisar aportes, app de escritorio multiplataforma y diseño y calidad) son **skills**: un `SKILL.md` con `name` y `description`, el mismo
 formato en Claude Code, Gemini CLI y Codex. Viven una sola vez en [`skills/`](../skills) y cada herramienta los toma de ahí.
 
 ## Instalar
@@ -9,7 +9,7 @@ formato en Claude Code, Gemini CLI y Codex. Viven una sola vez en [`skills/`](..
 |---|---|---|
 | **Claude Code** | `/plugin marketplace add pieza-app/pieza` y `/plugin install pieza@pieza`. En las apps hechas con Pieza, abrir el repo ya lo sugiere (`.claude/settings.json`). | `/plugin marketplace update pieza` |
 | **claude.ai** | Descarga los `.zip` desde la [página](https://pieza-app.github.io/pieza/#empezar) y súbelos en las capacidades de tu cuenta. | La skill avisa cuando quedó atrás |
-| **Gemini CLI** | `gemini extensions install https://github.com/pieza-app/pieza --auto-update`. Trae las dos skills y los comandos `/pieza:crear <idea>` y `/pieza:revisar <repo o PR>`. | Solo (con `--auto-update`) o `gemini extensions update pieza` |
+| **Gemini CLI** | `gemini extensions install https://github.com/pieza-app/pieza --auto-update`. Trae las skills (Gemini CLI descubre solo las de `skills/<nombre>/SKILL.md` de una extensión, [ver su guía](https://geminicli.com/docs/extensions/writing-extensions/)) y los comandos `/pieza:crear <idea>` y `/pieza:revisar <repo o PR>`. | Solo (con `--auto-update`) o `gemini extensions update pieza` |
 | **Codex** | Dentro del repo de Pieza ya las ve (`.agents/skills`). Para tenerlas en todos lados: clona Pieza y corre `python3 herramientas/pieza.py skills instalar codex` (las deja en `~/.agents/skills`). | `git pull` y el mismo comando (`pieza.py skills estado codex` dice si quedó atrás) |
 | **Otra IA** | Clona Pieza y pídele que siga [`AGENTS.md`](../AGENTS.md) y el `SKILL.md` del flujo que quieras. | `git pull` |
 

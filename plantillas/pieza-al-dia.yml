@@ -21,7 +21,7 @@ permissions: {}
 concurrency: pieza-al-dia
 env:
   # Versión de pieza.py que se ejecuta. Para subirla, cambia este valor (lo dice el issue de Pieza al día cuando hay una nueva).
-  PIEZA_HERRAMIENTA: v0.6.1
+  PIEZA_HERRAMIENTA: v0.7.0
 jobs:
   calcular:
     runs-on: ubuntu-latest
