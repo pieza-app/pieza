@@ -84,7 +84,8 @@ public enum Actualizaciones {
         return FileManager.default.fileExists(atPath: u.appendingPathComponent(".git").path) ? u : nil
     }
 
-    private static var version: String { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0" }
+    /// La versión de esta copia (CFBundleShortVersionString): para el estado de la app o un User-Agent.
+    public static var version: String { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0" }
 
     private static func git(_ args: [String], en: URL, _ fin: @escaping @MainActor (Bool, String) -> Void) {
         let p = Process(), salida = Pipe()
@@ -104,9 +105,12 @@ public enum Actualizaciones {
     /// Revisa si hay versión nueva: ["hay", "version", "notas", "sinConexion", "texto", "valores"].
     public static func revisar(_ fin: @escaping @MainActor ([String: Any]) -> Void) {
         let terminar: @MainActor (Bool, Bool, String, String) -> Void = { hay, sinConexion, v, notas in
-            disponible = ["hay": hay, "version": hay ? v : "", "notas": hay ? notas : ""]
-            fin(["hay": hay, "version": hay ? v : "", "notas": hay ? notas : "", "sinConexion": sinConexion,
-                 "texto": hay && !v.isEmpty ? textos["version"]! : "", "valores": ["v": v]])
+            // `disponible` (lo que la app manda en su estado) tiene la misma forma que la respuesta, sin «sinConexion».
+            disponible = ["hay": hay, "version": hay ? v : "", "notas": hay ? notas : "",
+                          "texto": hay && !v.isEmpty ? textos["version"]! : "", "valores": ["v": hay ? v : ""]]
+            var r = disponible
+            r["sinConexion"] = sinConexion
+            fin(r)
         }
         guard let c = config else { terminar(false, false, "", ""); return }
         if let raiz = checkout {

@@ -5,6 +5,9 @@
   sin copiar la tabla, un CLI sin las protecciones obligatorias pide actualizarse en vez de fallar raro, `--help` sin las variables
   de la app y Claude con `--tools` si lo conoce. `nucleo` 0.4.0: textos de config con su propio máximo y `guardar_config` conserva
   lo que no conoce. `pieza.py` respeta la sangría de los JSON de la app.
+- `actualizaciones` 0.2.0: una sola forma para la interfaz. Lo que la app manda en su estado (`disponible`) trae `texto` y
+  `valores` igual que la respuesta de «buscar»; Electron suma `aviso(paso, codigo)` como Mac y Mac deja ver
+  `Actualizaciones.version`. Esquema ya usa `bienvenida` y `actualizaciones`.
 
 ## 0.7.0 — 2026-10-30
 - **Portada en 3D:** piezas con volumen dibujadas con WebGL propio (sin librerías) y una terminal que las enchufa una a una;
