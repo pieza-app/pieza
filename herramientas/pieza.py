@@ -16,7 +16,7 @@
   pieza.py catalogo [--json]              Todas las piezas, listas y planeadas, con todo lo que declaran (lo lee la skill).
   pieza.py ficha <pieza>… [--plataformas mac,windows,linux,ios,android] [--json]
                                           La ficha de una app con esas piezas: requisitos, pantallas, config, permisos por
-                                          plataforma, red, acciones y tareas de David. Es lo que se le muestra antes de crear.
+                                          plataforma, red, acciones y lo que solo puede hacer la persona. Se muestra antes de crear.
 
 Modelo «copiar y adueñarse» (como shadcn/ui): la pieza se copia dentro de la app y desde ahí es de la app. piezas.json guarda la
 versión y la huella de cada archivo copiado, así se sabe qué cambió la app y qué trae la base de nuevo.

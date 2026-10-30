@@ -8,7 +8,7 @@
 
 ## 0.2.0 — 2026-10-30
 - Todo el catálogo en `pieza.json`: 2 piezas listas y 26 planeadas, cada una con cuándo recomendarla, pantallas, permisos por
-  plataforma, red y lo que solo puede hacer David.
+  plataforma, red y lo que solo puede hacer la persona.
 - `pieza.py catalogo` y `pieza.py ficha`: la app completa antes de crearla.
 - El flujo para crear una app nueva vive aquí (`skills/lanzar-proyecto-open-source`, versión 2) y se actualiza solo.
 
