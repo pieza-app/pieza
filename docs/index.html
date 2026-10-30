@@ -36,6 +36,7 @@
 ]}
 </script>
 <link rel="stylesheet" href="pagina.css">
+<script src="portada3d.js" defer></script>
 <script src="pagina.js" defer></script>
 </head>
 <body>
@@ -88,6 +89,22 @@
 
         <div class="destello"></div>
       </div></div>
+    <canvas class="pz3d" id="pz3d" aria-hidden="true"></canvas>
+    <div class="consola" aria-hidden="true">
+      <p class="consola-barra"><i></i><i></i><i></i><span>~/<span data-t="k_app">tu-app</span></span></p>
+      <ol>
+      <li data-pieza="4"><b>$</b> <span class="cmd">pieza iniciar <span data-t="k_app">tu-app</span></span><i class="cur"></i> <em data-t="k_lista">✓ lista</em></li>
+      <li data-pieza="0"><b>$</b> <span class="cmd">pieza agregar ia</span><i class="cur"></i> <em data-t="k_ok">✓ enchufada</em></li>
+      <li data-pieza="1"><b>$</b> <span class="cmd">pieza agregar i18n</span><i class="cur"></i> <em data-t="k_ok">✓ enchufada</em></li>
+      <li data-pieza="2"><b>$</b> <span class="cmd">pieza agregar actualizaciones</span><i class="cur"></i> <em data-t="k_ok">✓ enchufada</em></li>
+      <li data-pieza="3"><b>$</b> <span class="cmd">pieza agregar bienvenida</span><i class="cur"></i> <em data-t="k_ok">✓ enchufada</em></li>
+      <li data-pieza="5"><b>$</b> <span class="cmd">pieza agregar tema</span><i class="cur"></i> <em data-t="k_ok">✓ enchufada</em></li>
+      <li data-pieza="6"><b>$</b> <span class="cmd">pieza agregar catalogo</span><i class="cur"></i> <em data-t="k_ok">✓ enchufada</em></li>
+      <li data-pieza="7"><b>$</b> <span class="cmd">pieza agregar notas-git</span><i class="cur"></i> <em data-t="k_ok">✓ enchufada</em></li>
+      <li data-pieza="8"><b>$</b> <span class="cmd">pieza agregar cifrado</span><i class="cur"></i> <em data-t="k_ok">✓ enchufada</em></li>
+      <li class="fin"><b>&gt;</b> <span data-t="k_fin">9 piezas enchufadas · tu app está armada</span><i class="cur"></i></li>
+      </ol>
+    </div>
     </div>
   </div>
 </section>

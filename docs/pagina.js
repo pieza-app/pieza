@@ -1,4 +1,4 @@
-// Página de Pieza: idioma (es/en), datos (catálogo y proyectos), estrellas, el relato al bajar, «¿Qué IA usas?» y el manifiesto.
+// Página de Pieza: idioma (es/en), datos (catálogo y proyectos), estrellas, el rompecabezas CSS (si no hay 3D), el relato al bajar, «¿Qué IA usas?» y el manifiesto.
 // Todo lo que viene de datos/*.json se pone con textContent. Sin dependencias.
 (function () {
   "use strict";
@@ -72,6 +72,7 @@
     q4: "How do I hear about new versions of a piece?", a4: "Every app built with Pieza ships the “Pieza al día” workflow: once a week it opens a PR with the fixes and improvements that can be applied on their own, and an issue with the steps for what has to be done by hand.",
     q5: "What's the license?", a5: "Pieces are MPL-2.0: if you change a piece's file you share that change, but your app can have any license (even closed). Pieza's tools and the family apps are AGPL-3.0. All free and open.",
     comunidad: "Community", aportar: "How to contribute",
+    k_app: "your-app", k_ok: "✓ plugged in", k_lista: "✓ ready", k_fin: "9 pieces plugged in · your app is built",
   };
   const TXT = {
     es: { lista: "Lista", camino: "En camino", plataformas: "Plataformas", permisos: "Permisos", red: "Sale a", sinRed: "funciona sin internet",
@@ -263,6 +264,8 @@
   function armarRompecabezas() {
     const escena = document.querySelector(".escena");
     if (!escena) return;
+    // Con WebGL la portada la dibuja portada3d.js; si allí algo falla, avisa con «sin-gl» y se arma este, el CSS.
+    if (escena.classList.contains("gl")) { escena.addEventListener("sin-gl", armarRompecabezas, { once: true }); return; }
     const piezas = escena.querySelectorAll(".pz");
     let faltan = piezas.length;
     const listo = () => {
