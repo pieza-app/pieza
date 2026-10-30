@@ -21,7 +21,9 @@ menos tokens: elegir piezas, no reescribirlas.
    `origen`.
 3. **Nada de la app adentro**: ni nombres, ni rutas, ni prefijos. Lo que cambia por app sale de `app.json` (`nucleo.app()`).
 4. Correr `bash pruebas/correr.sh` (valida todos los `pieza.json` y corre las pruebas).
-5. Subir `version` (X.Y.Z) si cambia lo que la app recibe, y anotarlo en `CHANGELOG.md`.
+5. Subir `version` (X.Y.Z) si cambia lo que la app recibe y anotarlo **en `cambios` del `pieza.json`** (tipo `arreglo`, `mejora` o
+   `rompe` con sus pasos en `migrar`; `seguridad: true` si corresponde) y en `CHANGELOG.md`. Si cambia lo que otra pieza
+   necesita, ajusta su `compatible`. Esto es lo que «Pieza al día» le avisa a cada app: escríbelo para quien lo va a leer.
 6. Actualizar `docs/catalogo.md` (mover la fila de «por extraer» a «listas»).
 
 ## Las reglas que no se negocian (heredadas de las apps)
@@ -58,6 +60,9 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 | `herramientas/pieza.py` | `listar`, `catalogo`, `ficha`, `iniciar`, `agregar`, `estado`, `actualizar`, `diferencias`, `revisar` |
 | `docs/enchufe.md` | El contrato: `pieza.json`, `app.json`, `piezas.json`, reglas de seguridad, host genérico |
 | `docs/catalogo.md` | Qué piezas hay, cuáles faltan y en qué orden, y brechas encontradas en las apps |
+| `plantillas/pieza-al-dia.yml` | El workflow que `iniciar` agrega a cada app para que se entere de las versiones nuevas |
+| `docs/` | La página pública (`index.html`, `pagina.js`, `pagina.css`, `sello.svg`) y los datos que arma `herramientas/pagina.py` |
+| `.claude-plugin/` | El plugin de Claude Code (las skills de `skills/`) y su marketplace |
 | `skills/` | Los flujos oficiales (las skills), cada uno con su «Versión del flujo»: `lanzar-proyecto-open-source` (crear una app) y `revisar-aportes-open-source` (revisar PRs, con sus aprendizajes) |
 | `pruebas/` | `correr.sh` y `test_piezas.py` (una app ficticia con CLIs de IA falsos) |
 

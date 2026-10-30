@@ -4,9 +4,13 @@
   pieza.py listar                         Las piezas disponibles.
   pieza.py iniciar <app> <id> <Nombre>    Crea app.json en una app que aún no lo tiene.
   pieza.py agregar <pieza> <app>          Copia la pieza (y lo que requiere) a la app y la anota en piezas.json.
-  pieza.py estado <app>                   Qué piezas tiene la app, si hay versión nueva y qué archivos cambió la app.
-  pieza.py actualizar <app> [pieza] [--forzar]
+  pieza.py estado <app> [--json]          Qué piezas tiene la app, qué versiones nuevas hay, de qué tipo (arreglo, mejora,
+                                          rompe, seguridad), qué archivos cambió la app y qué se puede actualizar solo.
+  pieza.py actualizar <app> [pieza] [--automatico] [--forzar]
                                           Trae la versión nueva. Nunca pisa un archivo que la app cambió, salvo --forzar.
+                                          --automatico: solo arreglos y mejoras compatibles sobre archivos que la app no tocó.
+  pieza.py aviso <app>                    En Markdown, lo que hay que actualizar a mano (cambios que rompen o archivos de la
+                                          app) con los pasos para migrar. Es el cuerpo del issue que abre «Pieza al día».
   pieza.py diferencias <app> <pieza>      Lo que la app cambió de una pieza (para devolverlo a la base si es mejor).
   pieza.py revisar                        Valida todos los pieza.json de la base (formato y reglas de seguridad).
   pieza.py catalogo [--json]              Todas las piezas, listas y planeadas, con todo lo que declaran (lo lee la skill).
@@ -34,6 +38,42 @@ TIPOS = {"texto", "enum", "bool", "entero", "rutaRelativa", "base64", "lista"}
 ESTADOS = {"lista", "planeada"}
 PLATAFORMAS = ("mac", "windows", "linux", "ios", "android")
 CATEGORIAS = {"base", "ia", "interfaz", "datos", "medios", "conexiones", "plataforma", "repo"}
+TIPOS_CAMBIO = {"inicial": 0, "arreglo": 1, "mejora": 2, "rompe": 3}
+RANGO = re.compile(r"^(>=|<=|>|<|==)(\d+\.\d+\.\d+)$")
+
+
+# ── Versiones ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+# X.Y.Z. Arreglo: sube Z. Mejora compatible: sube Y. Cambio que rompe: sube X (o Y mientras X sea 0, como en semver).
+# Arreglos y mejoras se pueden actualizar solos; lo que rompe nunca, y trae pasos para migrar.
+
+def semver(v):
+    return tuple(int(x) for x in str(v).split("."))
+
+
+def satisface(version, rango):
+    """«>=0.1.0 <1.0.0»: todas las condiciones, separadas por espacio."""
+    ops = {">=": lambda a, b: a >= b, "<=": lambda a, b: a <= b, ">": lambda a, b: a > b, "<": lambda a, b: a < b, "==": lambda a, b: a == b}
+    for parte in rango.split():
+        m = RANGO.match(parte)
+        if not m or not ops[m.group(1)](semver(version), semver(m.group(2))):
+            return False
+    return True
+
+
+def cambios_entre(p, desde, hasta):
+    """Las entradas de «cambios» con desde < versión <= hasta, de la más nueva a la más vieja."""
+    return [c for c in p.get("cambios", []) if semver(desde) < semver(c["version"]) <= semver(hasta)]
+
+
+def incompatibles(versiones):
+    """Con estas versiones instaladas ({pieza: versión}), qué requisitos no se cumplen: [(pieza, requiere, rango, tiene)]."""
+    malas = []
+    for pid, v in versiones.items():
+        p = todas().get(pid) or {}
+        for req, rango in p.get("compatible", {}).items():
+            if req in versiones and not satisface(versiones[req], rango):
+                malas.append((pid, req, rango, versiones[req]))
+    return malas
 
 
 def leer(ruta, defecto=None):
@@ -124,6 +164,32 @@ def errores_pieza(pid, p, ids):
     for plat in p.get("plataformas", PLATAFORMAS):
         if plat not in PLATAFORMAS:
             e.append(f"plataformas: «{plat}» desconocida")
+    cambios = p.get("cambios", [])
+    if p.get("estado", "lista") == "lista":
+        if not cambios or cambios[0].get("version") != p.get("version"):
+            e.append("«cambios» debe empezar con la versión actual (lo que cambió, para avisar a las apps)")
+        previa = None
+        for c in cambios:
+            if c.get("tipo") not in TIPOS_CAMBIO or not isinstance(c.get("resumen"), str) or not VERSION.match(str(c.get("version", ""))):
+                e.append("cada cambio es {version, tipo: inicial|arreglo|mejora|rompe, resumen, seguridad?, migrar?}")
+                continue
+            if c["tipo"] == "rompe" and not c.get("migrar"):
+                e.append(f"cambio {c['version']}: lo que rompe necesita «migrar» (los pasos)")
+            if previa and semver(c["version"]) >= semver(previa["version"]):
+                e.append("«cambios» va de la versión más nueva a la más vieja, sin repetir")
+            if previa:
+                a, b = semver(c["version"]), semver(previa["version"])
+                rompe_ok = (b[0] > a[0]) or (a[0] == 0 and b[0] == 0 and b[1] > a[1])
+                if previa["tipo"] == "rompe" and not rompe_ok:
+                    e.append(f"{previa['version']} rompe: sube X (o Y si X es 0)")
+            previa = c
+    for req, rango in p.get("compatible", {}).items():
+        if req not in p.get("requiere", []):
+            e.append(f"compatible: «{req}» no está en requiere")
+        elif any(not RANGO.match(x) for x in rango.split()):
+            e.append(f"compatible: rango raro «{rango}» (ej. \">=0.1.0 <1.0.0\")")
+        elif req in ids and (ids[req] or {}).get("estado", "lista") == "lista" and not satisface(ids[req]["version"], rango):
+            e.append(f"compatible: «{req}» {ids[req]['version']} no cumple {rango}: actualiza esta pieza o el rango")
     for r in p.get("requiere", []):
         if r not in ids:
             e.append(f"requiere «{r}», que no existe")
@@ -187,7 +253,22 @@ def iniciar(app, aid, nombre):
         sys.exit("El id va en minúsculas, solo letras y números (ej. esquema).")
     escribir(ruta, {"nombre": nombre, "id": aid, "datos": "sistema",
                     "config": {"idioma_ui": ["es", "en"], "tema": ["sistema", "claro", "oscuro"], "bienvenida": "bool"}})
-    print(f"Listo: {ruta}")
+    print(f"+ {ruta}")
+    # «Pieza al día»: avisa cada semana si hay versiones nuevas de las piezas (PR solo o issue con los pasos).
+    flujo = os.path.join(app, ".github", "workflows", "pieza-al-dia.yml")
+    if not os.path.exists(flujo):
+        os.makedirs(os.path.dirname(flujo), exist_ok=True)
+        shutil.copy2(os.path.join(BASE, "plantillas", "pieza-al-dia.yml"), flujo)
+        print(f"+ {flujo}")
+    # Quien abra el repo en Claude Code recibe la sugerencia de instalar el plugin de Pieza (mismos flujos para aportar).
+    ajustes_ruta = os.path.join(app, ".claude", "settings.json")
+    ajustes = leer(ajustes_ruta, {}) or {}
+    ajustes.setdefault("extraKnownMarketplaces", {}).setdefault("pieza", {"source": {"source": "github", "repo": "pieza-app/pieza"}})
+    ajustes.setdefault("enabledPlugins", {}).setdefault("pieza@pieza", True)
+    os.makedirs(os.path.dirname(ajustes_ruta), exist_ok=True)
+    escribir(ajustes_ruta, ajustes)
+    print(f"+ {ajustes_ruta}")
+    print("Falta (con permiso de quien mantiene): el topic «hecho-con-pieza» en el repo y el sello en el README y la página.")
 
 
 def _textos_en(app):
@@ -230,7 +311,9 @@ def copiar(pid, app, forzar=False, lock=None):
         if nuevas:
             textos.update(nuevas)
             escribir(en, d)
-    lock["piezas"][pid] = {"version": p["version"], "archivos": copiados}
+    # Si algún archivo quedó sin actualizar (la app lo cambió), la versión anotada no avanza: estado sigue avisando.
+    version = p["version"] if not saltados else antes.get("version", "0.0.0")
+    lock["piezas"][pid] = {"version": version, "archivos": copiados}
     escribir(os.path.join(app, "piezas.json"), lock)
     return saltados
 
@@ -251,35 +334,96 @@ def agregar(pid, app):
             print(f"    ! {s} ya existía en la app y no lo pisé. Compara con: pieza.py diferencias {app} {p}")
 
 
-def estado(app):
+def estado_app(app):
+    """Por pieza instalada: versión actual y nueva, cambios pendientes, el tipo más fuerte, si es de seguridad, qué archivos
+    cambió la app y si se puede actualizar sola."""
     lock = candado(app)
-    if not lock["piezas"]:
-        print("Esta app aún no tiene piezas.")
-        return
+    nuevas = {pid: (todas().get(pid) or {}).get("version", info["version"]) for pid, info in lock["piezas"].items()}
+    salida = []
     for pid, info in sorted(lock["piezas"].items()):
-        nueva = (todas().get(pid) or {}).get("version", "?")
-        marca = "al día" if nueva == info["version"] else f"hay {nueva}"
-        print(f"{pid} {info['version']} ({marca})")
+        p = todas().get(pid) or {}
+        nueva = nuevas[pid]
+        pendientes = cambios_entre(p, info["version"], nueva) if p else []
+        tipo = max((c["tipo"] for c in pendientes), key=lambda t: TIPOS_CAMBIO[t], default=None)
+        cambiados, faltan = [], []
         for destino, h in info["archivos"].items():
             ruta = os.path.join(app, destino)
             if not os.path.exists(ruta):
-                print(f"    ✗ falta {destino}")
+                faltan.append(destino)
             elif huella(ruta) != h:
-                print(f"    ~ la app cambió {destino}")
+                cambiados.append(destino)
+        con_esta = {**{k: v["version"] for k, v in lock["piezas"].items()}, pid: nueva}
+        choques = [x for x in incompatibles(con_esta) if pid in (x[0], x[1])]
+        salida.append({"pieza": pid, "actual": info["version"], "nueva": nueva, "al_dia": semver(info["version"]) >= semver(nueva),
+                       "tipo": tipo, "seguridad": any(c.get("seguridad") for c in pendientes), "cambios": pendientes,
+                       "cambiados_por_la_app": cambiados, "faltan": faltan, "choques": choques,
+                       "automatico": bool(pendientes) and tipo != "rompe" and not cambiados and not choques})
+    return salida
 
 
-def actualizar(app, solo=None, forzar=False):
+def estado(app, como_json=False):
+    e = estado_app(app)
+    if como_json:
+        print(json.dumps(e, ensure_ascii=False, indent=1))
+        return
+    if not e:
+        print("Esta app aún no tiene piezas.")
+    for x in e:
+        if x["al_dia"]:
+            marca = "al día"
+        else:
+            marca = f"hay {x['nueva']}: {x['tipo']}" + (" · SEGURIDAD" if x["seguridad"] else "") + \
+                    (" · se actualiza sola" if x["automatico"] else " · a mano")
+        print(f"{x['pieza']} {x['actual']} ({marca})")
+        for d in x["cambiados_por_la_app"]:
+            print(f"    ~ la app cambió {d}")
+        for d in x["faltan"]:
+            print(f"    ✗ falta {d}")
+        for pid, req, rango, tiene in x["choques"]:
+            print(f"    ! {pid} necesita {req} {rango} (hay {tiene})")
+
+
+def actualizar(app, solo=None, forzar=False, automatico=False):
     lock = candado(app)
+    e = {x["pieza"]: x for x in estado_app(app)}
     for pid in [solo] if solo else sorted(lock["piezas"]):
         if pid not in lock["piezas"]:
             sys.exit(f"La app no tiene la pieza «{pid}».")
-        antes, nueva = lock["piezas"][pid]["version"], pieza(pid)["version"]
-        if antes == nueva and not forzar:
+        x = e[pid]
+        if x["al_dia"] and not forzar:
+            continue
+        if automatico and not x["automatico"]:
+            continue
+        if x["choques"] and not forzar:
+            print(f"! no actualicé {pid}: " + "; ".join(f"{a} necesita {b} {c} (hay {d})" for a, b, c, d in x["choques"]))
             continue
         saltados = copiar(pid, app, forzar=forzar, lock=lock)
-        print(f"↑ {pid} {antes} → {nueva}")
+        print(f"↑ {pid} {x['actual']} → {pieza(pid)['version']}" + (" (seguridad)" if x["seguridad"] else ""))
         for s in saltados:
             print(f"    ! no actualicé {s}: la app lo cambió. Revisa: pieza.py diferencias {app} {pid}")
+
+
+def aviso(app):
+    """Markdown con lo que no se puede actualizar solo, para un issue."""
+    manual = [x for x in estado_app(app) if not x["al_dia"] and not x["automatico"]]
+    if not manual:
+        return ""
+    l = ["Hay versiones nuevas de piezas que **no se pueden actualizar solas**. Esto es lo que cambió y qué hacer.", ""]
+    for x in manual:
+        l.append(f"### {x['pieza']} {x['actual']} → {x['nueva']}" + (" · seguridad" if x["seguridad"] else ""))
+        for c in x["cambios"]:
+            l.append(f"- **{c['version']}** ({c['tipo']}{', seguridad' if c.get('seguridad') else ''}): {c['resumen']}")
+            for paso in c.get("migrar", []):
+                l.append(f"  - {paso}")
+        if x["cambiados_por_la_app"]:
+            l.append(f"- Esta app cambió {', '.join(f'`{d}`' for d in x['cambiados_por_la_app'])}: compara con "
+                     f"`pieza.py diferencias . {x['pieza']}`, pasa tus cambios y luego `pieza.py actualizar . {x['pieza']} --forzar`. "
+                     "Si tu cambio sirve para todas las apps, propónlo en pieza-app/pieza.")
+        for pid, req, rango, tiene in x["choques"]:
+            l.append(f"- `{pid}` necesita `{req}` {rango} (hay {tiene}): actualiza las dos juntas.")
+        l.append("")
+    l.append("Lo abrió «Pieza al día» (`.github/workflows/pieza-al-dia.yml`). Se cierra solo cuando todo queda al día.")
+    return "\n".join(l)
 
 
 def diferencias(app, pid):
@@ -318,6 +462,8 @@ def ficha(ids, plataformas=PLATAFORMAS):
                 if x["clave"] not in [y["clave"] for y in f["permisos"][plat]]:
                     f["permisos"][plat].append({**x, "pieza": pid})
         f["red"] += [d for d in p.get("red", []) if d not in f["red"]]
+        if p.get("red_nota"):
+            f.setdefault("red_notas", []).append({"pieza": pid, "nota": p["red_nota"]})
         f["acciones"] += [{"accion": k, "responde": v.get("responde"), "pieza": pid} for k, v in p.get("acciones", {}).items()]
         f["tareas_david"] += [t for t in p.get("tareas_david", []) if t not in f["tareas_david"]]
         if not pid.startswith("host-"):
@@ -342,7 +488,8 @@ def ficha_texto(f):
     l += ["PERMISOS"]
     for plat, lista in ((k, v) for k, v in f["permisos"].items() if k in f["plataformas"]):
         l += [f"  {plat}: " + ("ninguno" if not lista else "; ".join(f"{x['clave']} ({x['por']})" for x in lista))]
-    l += ["RED (dominios a los que sale)", "  " + (", ".join(f["red"]) or "ninguno: funciona sin internet")]
+    l += ["RED (dominios a los que sale)", "  " + (", ".join(f["red"]) or "ninguno")]
+    l += [f"  {x['pieza']}: {x['nota']}" for x in f.get("red_notas", [])]
     l += ["ACCIONES"] + [f"  {x['accion']} → {x['responde']}" for x in f["acciones"]]
     if f["tareas_david"]:
         l += ["SOLO DAVID"] + [f"  {t}" for t in f["tareas_david"]]
@@ -390,9 +537,13 @@ def main(a):
     elif orden == "agregar" and len(resto) == 2:
         agregar(resto[0], os.path.abspath(resto[1]))
     elif orden == "estado" and len(resto) == 1:
-        estado(os.path.abspath(resto[0]))
+        estado(os.path.abspath(resto[0]), como_json)
+    elif orden == "aviso" and len(resto) == 1:
+        print(aviso(os.path.abspath(resto[0])))
     elif orden == "actualizar" and len(resto) in (1, 2):
-        actualizar(os.path.abspath(resto[0]), resto[1] if len(resto) == 2 else None, forzar)
+        automatico = "--automatico" in resto
+        resto = [x for x in resto if x != "--automatico"]
+        actualizar(os.path.abspath(resto[0]), resto[1] if len(resto) == 2 else None, forzar, automatico)
     elif orden == "diferencias" and len(resto) == 2:
         diferencias(os.path.abspath(resto[0]), resto[1])
     else:

@@ -1,0 +1,15 @@
+{
+  "name": "pieza",
+  "description": "Pieza: framework abierto para apps que viven en tu computador. Flujos para crear apps con piezas probadas y revisar aportes.",
+  "owner": {
+    "name": "Pieza",
+    "url": "https://github.com/pieza-app"
+  },
+  "plugins": [
+    {
+      "name": "pieza",
+      "source": "./",
+      "description": "Crear apps abiertas con piezas probadas (lanzar-proyecto-open-source) y revisar aportes de la comunidad (revisar-aportes-open-source)."
+    }
+  ]
+}

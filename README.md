@@ -7,7 +7,18 @@ Las usan [Minuta](https://github.com/minuta-app/minuta), [Graba](https://github.
 [Corta](https://github.com/corta-app/corta), [Alcancía](https://github.com/alcancia-app/alcancia),
 [Repasa](https://github.com/repasa-app/repasa) y [Esquema](https://github.com/esquema-app/esquema).
 
+**Con Claude Code**, instala los flujos (crear una app y revisar aportes):
+
+```
+/plugin marketplace add pieza-app/pieza
+/plugin install pieza@pieza
+```
+
+y pídele «creemos una app para…». **Sin Claude Code**, la herramienta funciona sola:
+
 ```bash
+python3 herramientas/pieza.py catalogo                    # todas las piezas, listas y en camino
+python3 herramientas/pieza.py ficha ia transcribir --plataformas mac,windows,linux   # la app completa antes de crearla
 python3 herramientas/pieza.py listar                      # qué hay
 python3 herramientas/pieza.py iniciar ~/MiApp miapp MiApp  # una vez por app: crea app.json
 python3 herramientas/pieza.py agregar ia ~/MiApp           # copia la pieza (y lo que necesita)
@@ -24,5 +35,11 @@ devolverlo a la base.
 - [Crear una app nueva](skills/lanzar-proyecto-open-source/SKILL.md): el flujo completo, con entrevista y ficha
   (`pieza.py ficha ia transcribir --plataformas mac,windows,linux` muestra pantallas, configuración, permisos y red).
 - [Guía para contribuir](AGENTS.md).
+
+**Al día solo.** Cada pieza dice qué tipo de cambio trae (arreglo, mejora, rompe, seguridad). Las apps reciben un PR semanal con
+lo que se puede actualizar solo y un issue con los pasos para lo demás ([cómo](docs/enchufe.md#versiones-y-actualizaciones)).
+
+**¿Hiciste una app con Pieza?** Ponle el topic `hecho-con-pieza` a su repo y aparece en la [página](https://pieza-app.github.io/pieza/).
+Y si quieres, el sello: [![Hecho con Pieza](https://pieza-app.github.io/pieza/sello.svg)](https://pieza-app.github.io/pieza/)
 
 Sin dependencias: Python con su biblioteca estándar. Licencia AGPL-3.0.

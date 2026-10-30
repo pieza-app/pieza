@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Pieza — framework abierto para apps que viven en tu computador</title>
+<meta name="description" content="Piezas probadas para armar apps abiertas que viven en tu computador: tu propia IA, idiomas, actualizaciones, catálogo de la comunidad. Elige piezas, revisa la ficha y enchufa.">
+<link rel="canonical" href="https://pieza-app.github.io/pieza/">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta property="og:title" content="Pieza — framework abierto para apps que viven en tu computador">
+<meta property="og:description" content="Elige piezas probadas, revisa la ficha completa y enchufa. Cada app que se hace deja piezas para la siguiente.">
+<meta property="og:url" content="https://pieza-app.github.io/pieza/">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="pagina.css">
+<script src="pagina.js" defer></script>
+</head>
+<body>
+<a class="saltar" href="#contenido" data-t="saltar">Ir al contenido</a>
+<header class="barra">
+  <div class="envoltura barra-dentro">
+    <a class="marca" href="#arriba"><img src="favicon.svg" alt="" width="28" height="28"><span>Pieza</span></a>
+    <nav aria-label="Secciones" data-t-aria="secciones">
+      <a href="#como" data-t="n_como">Cómo funciona</a>
+      <a href="#proyectos" data-t="n_proy">Proyectos</a>
+      <a href="#catalogo" data-t="n_cat">Catálogo</a>
+      <a href="#empezar" data-t="n_emp">Empezar</a>
+    </nav>
+    <button class="chico" id="idioma" type="button" lang="en" aria-label="Read in English">EN</button>
+  </div>
+</header>
+
+<main id="contenido">
+<section class="portada" id="arriba">
+  <div class="envoltura">
+    <p class="antetitulo" data-t="ante">Framework abierto · AGPL-3.0</p>
+    <h1 data-t="h1">Arma apps abiertas con piezas probadas.</h1>
+    <p class="bajada" data-t="bajada">Tu propia IA, idiomas, actualizaciones seguras, un catálogo de la comunidad… Elige las piezas, revisa la ficha completa de tu app y enchúfalas. Cada app que se hace deja piezas para la siguiente.</p>
+    <div class="cifras" aria-live="polite">
+      <div><strong id="n-apps">—</strong><span data-t="c_apps">apps hechas con Pieza</span></div>
+      <div><strong id="n-piezas">—</strong><span data-t="c_piezas">piezas en el catálogo</span></div>
+      <div><strong id="n-listas">—</strong><span data-t="c_listas">listas para usar</span></div>
+    </div>
+    <div class="acciones">
+      <a class="boton" href="#empezar" data-t="b_emp">Empezar</a>
+      <a class="boton secundario" href="https://github.com/pieza-app/pieza" data-t="b_cod">Ver el código</a>
+    </div>
+  </div>
+</section>
+
+<section id="como" class="raya">
+  <div class="envoltura">
+    <h2 data-t="h_como">Cómo funciona</h2>
+    <ol class="pasos">
+      <li><h3 data-t="p1">Cuentas tu idea</h3><p data-t="p1p">Una sola ronda de preguntas. Tu IA te recomienda las piezas que calzan, y las que toda app necesita van solas.</p></li>
+      <li><h3 data-t="p2">Revisas la ficha</h3><p data-t="p2p">Antes de crear nada ves todo: pantallas, configuración, permisos por plataforma, a qué sale a internet y lo que solo puedes hacer tú.</p></li>
+      <li><h3 data-t="p3">Enchufas y creces</h3><p data-t="p3p">Las piezas se copian a tu app y son tuyas. Cuando una mejora, la recibes sin perder tus cambios; cuando tú la mejoras, vuelve a todas.</p></li>
+    </ol>
+  </div>
+</section>
+
+<section id="proyectos" class="raya">
+  <div class="envoltura">
+    <h2 data-t="h_proy">Hechas con Pieza</h2>
+    <p class="nota" data-t="nota_proy">Repos públicos con el topic «hecho-con-pieza» en GitHub. Sin telemetría: solo aparecen los que eligen aparecer.</p>
+    <ul class="proyectos" id="lista-proyectos"></ul>
+    <p class="nota" id="actualizado"></p>
+  </div>
+</section>
+
+<section id="catalogo" class="raya">
+  <div class="envoltura">
+    <h2 data-t="h_cat">Catálogo</h2>
+    <p class="nota" data-t="nota_cat">Cada pieza dice qué pantallas suma, qué permisos pide en cada plataforma y a qué sale a internet. «En camino» = ya probada en una app, falta extraerla.</p>
+    <div id="lista-catalogo"></div>
+  </div>
+</section>
+
+<section id="empezar" class="raya">
+  <div class="envoltura">
+    <h2 data-t="h_emp">Empezar</h2>
+    <div class="caminos">
+      <article>
+        <h3>Claude Code</h3>
+        <p data-t="e_cc">Instala el plugin: trae el flujo para crear apps y el de revisar aportes.</p>
+        <pre><code>/plugin marketplace add pieza-app/pieza
+/plugin install pieza@pieza</code></pre>
+        <p data-t="e_cc2">Después: «creemos una app para…».</p>
+      </article>
+      <article>
+        <h3>claude.ai</h3>
+        <p data-t="e_ai">Descarga las skills y súbelas en las capacidades de tu cuenta.</p>
+        <p class="enlaces"><a href="skills/lanzar-proyecto-open-source.zip" download>lanzar-proyecto-open-source.zip</a><a href="skills/revisar-aportes-open-source.zip" download>revisar-aportes-open-source.zip</a></p>
+      </article>
+      <article>
+        <h3 data-t="e_otra_h">Otra IA</h3>
+        <p data-t="e_otra">Codex, Gemini o la que uses: clona el repo y pídele que siga <code>AGENTS.md</code>. Los flujos están en <code>skills/</code>.</p>
+        <pre><code>git clone https://github.com/pieza-app/pieza
+python3 pieza/herramientas/pieza.py catalogo</code></pre>
+      </article>
+    </div>
+    <h3 class="sello-h" data-t="h_sello">¿Hiciste una app con Pieza?</h3>
+    <p data-t="sello_p">Ponle el topic <code>hecho-con-pieza</code> a su repo y aparece aquí. Si quieres, suma el sello a tu README o tu página:</p>
+    <p><img src="sello.svg" alt="Hecho con Pieza" width="152" height="28"></p>
+    <pre><code>[![Hecho con Pieza](https://pieza-app.github.io/pieza/sello.svg)](https://pieza-app.github.io/pieza/)</code></pre>
+  </div>
+</section>
+
+<section id="principios" class="raya">
+  <div class="envoltura">
+    <h2 data-t="h_pri">Lo que no se negocia</h2>
+    <ul class="principios">
+      <li data-t="pr1">Los datos son de la persona: en su computador o en su git.</li>
+      <li data-t="pr2">La IA es la de la persona, con su cuenta, y sin poder tocar nada que no le mandemos.</li>
+      <li data-t="pr3">Lo que escribe la persona nunca va como argumento de un proceso.</li>
+      <li data-t="pr4">Sin dependencias: Python con su biblioteca estándar, web sin CDN.</li>
+      <li data-t="pr5">El idioma se pregunta primero.</li>
+      <li data-t="pr6">Abierto y gratis, sin cuentas ni seguimiento.</li>
+    </ul>
+  </div>
+</section>
+</main>
+
+<footer class="pie">
+  <div class="envoltura">
+    <p><span data-t="pie">Pieza · AGPL-3.0 · sin cookies ni seguimiento</span> · <a href="https://github.com/pieza-app/pieza">GitHub</a></p>
+  </div>
+</footer>
+</body>
+</html>

@@ -182,6 +182,52 @@ class Herramienta(AppDePrueba):
         self.assertTrue(any(x["pieza"] == "nucleo" and x["plataformas"] == ["android"] for x in f["faltan_en"]))
         self.assertEqual(f["pantallas"][0]["nombre"], "Idioma")
 
+    def test_iniciar_deja_al_dia_y_plugin(self):
+        self.assertTrue(os.path.isfile(os.path.join(self.app, ".github", "workflows", "pieza-al-dia.yml")))
+        with open(os.path.join(self.app, ".claude", "settings.json")) as f:
+            self.assertTrue(json.load(f)["enabledPlugins"]["pieza@pieza"])
+
+    def _base_con_version(self, tipo, version="0.1.1", seguridad=False):
+        """Copia la base a un temporal y le sube la versión a «ia» con un cambio de este tipo."""
+        import shutil
+        base = os.path.join(self.tmp.name, "base")
+        shutil.copytree(BASE, base, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+        ruta = os.path.join(base, "piezas", "ia", "pieza.json")
+        with open(ruta) as f:
+            p = json.load(f)
+        p["version"] = version
+        c = {"version": version, "tipo": tipo, "resumen": "prueba", "seguridad": seguridad}
+        if tipo == "rompe":
+            c["migrar"] = ["Cambia ejecutar_ia por ejecutar."]
+        p["cambios"].insert(0, c)
+        with open(ruta, "w") as f:
+            json.dump(p, f)
+        with open(os.path.join(base, "piezas", "ia", "python", "ia.py"), "a") as f:
+            f.write("\n# versión nueva\n")
+        return os.path.join(base, "herramientas", "pieza.py")
+
+    def test_arreglo_se_actualiza_solo(self):
+        nueva = self._base_con_version("arreglo", seguridad=True)
+        e = json.loads(correr(nueva, "estado", self.app, "--json").stdout)
+        ia = next(x for x in e if x["pieza"] == "ia")
+        self.assertEqual((ia["tipo"], ia["seguridad"], ia["automatico"]), ("arreglo", True, True))
+        self.assertIn("(seguridad)", correr(nueva, "actualizar", self.app, "--automatico").stdout)
+        self.assertIn("# versión nueva", open(os.path.join(self.app, "bin", "ia.py")).read())
+        self.assertEqual(correr(nueva, "aviso", self.app).stdout.strip(), "")
+
+    def test_lo_que_rompe_va_a_mano_con_pasos(self):
+        nueva = self._base_con_version("rompe", version="0.2.0")
+        self.assertIn("a mano", correr(nueva, "estado", self.app).stdout)
+        self.assertEqual(correr(nueva, "actualizar", self.app, "--automatico").stdout.strip(), "")
+        self.assertIn("Cambia ejecutar_ia por ejecutar.", correr(nueva, "aviso", self.app).stdout)
+
+    def test_archivo_cambiado_por_la_app_va_a_mano(self):
+        with open(os.path.join(self.app, "bin", "ia.py"), "a") as f:
+            f.write("\n# propio\n")
+        nueva = self._base_con_version("arreglo")
+        self.assertEqual(correr(nueva, "actualizar", self.app, "--automatico").stdout.strip(), "")
+        self.assertIn("pieza.py diferencias", correr(nueva, "aviso", self.app).stdout)
+
     def test_regla_de_oro_texto_nunca_en_args(self):
         sys.path.insert(0, os.path.join(BASE, "herramientas"))
         import pieza

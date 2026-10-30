@@ -22,5 +22,12 @@
  },
  "config": {},
  "acciones": {},
- "textos": {}
+ "textos": {},
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "resumen": "Primera versión: app.json, carpeta de datos, config validada, escritura atómica y contrato de scripts."
+  }
+ ]
 }

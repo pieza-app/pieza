@@ -86,5 +86,17 @@
   "{ia} se demoró demasiado en responder. Inténtalo de nuevo.": "{ia} took too long to answer. Please try again.",
   "{ia} no respondió. {detalle}": "{ia} didn't answer. {detalle}",
   "No conozco esa IA.": "I don't know that AI."
- }
+ },
+ "compatible": {
+  "nucleo": ">=0.1.0 <1.0.0"
+ },
+ "red_nota": "La app no sale a internet: la IA de la persona se conecta a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "seguridad": true,
+   "resumen": "Primera versión: une lo mejor de las cinco apps y nunca corre la IA sin protecciones."
+  }
+ ]
 }

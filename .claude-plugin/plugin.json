@@ -1,0 +1,20 @@
+{
+  "name": "pieza",
+  "version": "0.3.0",
+  "description": "Crear apps abiertas que viven en tu computador con piezas probadas, y revisar aportes de la comunidad con el mismo flujo.",
+  "author": {
+    "name": "Pieza",
+    "url": "https://github.com/pieza-app"
+  },
+  "homepage": "https://pieza-app.github.io/pieza/",
+  "repository": "https://github.com/pieza-app/pieza",
+  "license": "AGPL-3.0-only",
+  "keywords": [
+    "open-source",
+    "desktop",
+    "local-first",
+    "framework",
+    "skills"
+  ],
+  "icon": ".claude-plugin/icon.png"
+}

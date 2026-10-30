@@ -3,71 +3,72 @@ name: "lanzar-proyecto-open-source"
 description: "Lanzar un proyecto open source completo desde una idea: entrevista con piezas recomendadas de Pieza, ficha con pantallas, configuración, permisos y red, repos, app, página con SEO, CI, comunidad y anuncio."
 ---
 
-# Lanzar un proyecto open source (playbook de David)
+# Lanzar un proyecto open source con Pieza
 
-Versión del flujo: 2
+Versión del flujo: 4
 
-David dice "creemos una aplicación para…" y espera el paquete completo, no preguntas una por una. Este playbook sale de lanzar
-Minuta (minuta-app) y las apps hermanas. Trabaja por fases, con lista de tareas visible, y entrega algo usable al final de cada fase.
+Quien mantiene el proyecto dice "creemos una aplicación para…" y espera el paquete completo, no preguntas una por una. Este flujo
+sale de lanzar Minuta, Graba, Corta, Alcancía, Repasa y Esquema. Trabaja por fases, con lista de tareas visible, y entrega algo usable al final de cada fase.
 **Nada se escribe de cero si ya existe como pieza en Pieza** (pieza-app/pieza): se elige, se enchufa y se mejora ahí.
+
+**Configuración local.** Si al final de esta skill hay una sección «Configuración local», o existe `~/.pieza/local.md`, léela
+primero: trae lo propio de quien la usa (su computador, su cuenta, sus páginas) y manda sobre lo genérico. Nunca se sube al repo.
 
 ## 0. Traer lo último (siempre, antes de preguntar nada)
 Este flujo y el catálogo de piezas viven en el repo **pieza-app/pieza**; esta skill instalada es solo una copia.
-1. Consigue Pieza al día: `add_repo` pieza-app/pieza (lectura basta) y clónalo; si no se puede, `~/Pieza` en el Mac de David
-   (`git pull`).
+1. Consigue Pieza al día: clónalo (`https://github.com/pieza-app/pieza`) o, si ya lo tienes, `git pull`.
 2. Lee `skills/lanzar-proyecto-open-source/SKILL.md` del repo. Si su «Versión del flujo» es mayor que la de esta copia, **sigue la
-   del repo** desde aquí, y al cerrar ofrécele a David actualizar la skill instalada con `propose_skills` (kind `improvement`,
-   target `lanzar-proyecto-open-source`, el SKILL.md completo del repo).
+   del repo** desde aquí, y al cerrar ofrece actualizar la copia instalada (en Claude Code: `/plugin marketplace update pieza`; en
+   claude.ai: `propose_skills` improvement con el SKILL.md completo del repo **más la sección «Configuración local» de esta copia**).
 3. `python3 herramientas/pieza.py catalogo --json`: todas las piezas, listas y planeadas, con cuándo recomendarlas, pantallas,
    permisos, red y tareas. **Nunca uses una lista de piezas de memoria**: el catálogo cambia.
 
 ## 1. Entrevista (una sola ronda, con recomendaciones)
 Con AskUserQuestion, todo junto (si no responde, usa los valores por defecto y dilo):
-- Nombre (termina en «a», org `<nombre>-app`) y una frase de qué hace y para quién.
+- Nombre y una frase de qué hace y para quién. Org de GitHub `<nombre>-app` por defecto (la familia usa nombres terminados en «a»).
 - Plataformas: Mac, Windows, Linux, iPhone, Android (por defecto las tres de escritorio; móvil después).
 - Idiomas (por defecto español de Chile neutro + inglés). Licencia (por defecto **AGPL-3.0**, como las apps hermanas).
 - Qué NO se negocia (privacidad, gratis, datos del usuario, etc.).
-- **Qué piezas sumar.** Con la frase de David, elige del catálogo las que calzan (`recomendar.cuando` y `recomendar.palabras`) y
+- **Qué piezas sumar.** Con la frase de la persona, elige del catálogo las que calzan (`recomendar.cuando` y `recomendar.palabras`) y
   pregúntalas en una o dos preguntas `multiSelect` agrupadas por categoría, la recomendada primero con «(Recomendada)» y en la
   descripción una línea de por qué. Las de `siempre` no se preguntan: se avisa que van. Las `planeadas` se pueden elegir: se dice
   que hay que extraerlas primero (de dónde, `tomar_de`) y que el proyecto lo hará.
 
 ## 2. Ficha del proyecto (mostrarla y confirmar antes de crear nada)
 `python3 herramientas/pieza.py ficha <piezas elegidas> --plataformas <elegidas>` y arma con eso la ficha completa, en un doc que
-David guarde (y después en `docs/ficha.md` del repo):
+la persona guarde (y después en `docs/ficha.md` del repo):
 - **Qué es**: nombre, frase, para quién, plataformas, idiomas, licencia, lo que no se negocia.
 - **Piezas**: listas, por extraer (y de dónde), y las que van siempre. Lo que no exista y vayan a necesitar dos apps o más, se
   propone como pieza nueva.
 - **Pantallas**: las de las piezas (la ficha las ordena: Bienvenida con el idioma primero, la app, Ajustes, web) **más las propias
-  de la app** que salen de la idea de David (propónlas tú: pantalla principal, flujo central, vacíos). Para cada una, qué hace.
+  de la app** que salen de su idea (propónlas tú: pantalla principal, flujo central, vacíos). Para cada una, qué hace.
 - **Páginas y repos**: `<org>/<app>` (app), `<org>/<app>-catalogo` si hay catálogo, `<org>/.github` (portada de la org),
   `<org>/<org>.github.io` (raíz y `robots.txt`), página pública bilingüe con demo, Discussions.
 - **Configuración** (`app.json`): cada clave y sus valores.
 - **Permisos por plataforma**: la clave exacta (Info.plist, Android) o el aviso del sistema, y la frase de para qué que verá la persona.
 - **Red**: a qué dominios sale y por qué; si no sale a ninguno, decirlo: «funciona sin internet».
 - **Acciones** que trae el enchufe y las que hay que escribir para la app.
-- **Lo que solo hace David** (de la ficha + lo de la fase 3).
+- **Lo que solo puede hacer la persona** (de la ficha + lo de la fase 3).
 - **Plataformas donde una pieza no está** (`faltan_en`) y qué se hace ahí.
-David confirma o ajusta; recién ahí crea la lista de tareas con las fases de abajo.
+La persona confirma o ajusta; recién ahí crea la lista de tareas con las fases de abajo.
 
-## 3. Lo que solo puede hacer David (pídeselo al inicio, en un solo mensaje)
+## 3. Lo que solo puede hacer la persona (pídeselo al inicio, en un solo mensaje)
 - Crear la organización en GitHub (no hay API para eso): github.com/account/organizations/new, plan Free.
 - Lo de `tareas_david` de la ficha (repo de catálogo, cuentas de desarrollador, proyecto de Google Cloud…).
 - Más adelante: verificar Google Search Console (fase 9) y pagar firmas de código si las quiere (Apple Developer USD 99/año).
-Nunca ingreses contraseñas ni códigos de verificación: eso lo hace él.
+Nunca ingreses contraseñas ni códigos de verificación: eso lo hace ella.
 
-## 4. Cómo trabajar con GitHub desde esta sesión
-- Primero intenta `add_repo` con `access: "push"` para cada repo.
-- Si la sesión no puede empujar, usa el Mac de David (bridge `mcp__remote-devices__*`): `gh` está en `/opt/homebrew/bin` con sesión
-  `soydavidcornejo` (scopes repo, workflow, read:org — **sin admin:org**). Flujo: commit local → `git bundle create X.bundle origin/main..main`
-  → `device_commit_files` a una carpeta conectada → en el Mac `git fetch X.bundle main:refs/tmp && git push origin refs/tmp:refs/heads/main`,
-  borrar ref y bundle. Comandos osascript de ≤25 s; lo largo con `nohup` y un log que se consulta por tramos.
-- Autor de commits: `soydavidcornejo <soydavidcornejo@users.noreply.github.com>` (nunca su correo personal) + las líneas de atribución
-  que pida la sesión. Si un hook pide cambiar el autor de commits ya publicados, no reescribas historia pública: explícalo.
-- Lo que `gh` no puede (avatar y nombre visible de la org, social preview, renombrar/fijar Discussions, fijar repos): navegador
-  integrado, que tiene la sesión de GitHub. Para subir imágenes: `fetch` desde `raw.githubusercontent.com` (permitido por la CSP de
+## 4. Cómo trabajar con GitHub
+- Si la sesión puede, conecta cada repo con permiso de escritura (`add_repo` con `access: "push"`); si no, usa `gh` donde la persona
+  tenga sesión (ver «Configuración local»).
+- Autor de commits: el usuario de GitHub de la persona con su correo `@users.noreply.github.com` (nunca su correo personal) + las
+  líneas de atribución que pida la sesión. Nunca reescribas historia publicada.
+- **Publicar es visible para todos**: subir ramas, abrir PRs o cambiar la org se confirma con la persona antes.
+- Lo que `gh` no puede (avatar y nombre visible de la org, social preview, renombrar/fijar Discussions, fijar repos): en el navegador
+  con la sesión de GitHub de la persona. Para subir imágenes: `fetch` desde `raw.githubusercontent.com` (permitido por la CSP de
   github.com; github.io no) → `new File` → `DataTransfer` → `input.files` + evento `change`. Formularios: leer el form con DOMParser y
   enviarlo con `fetch` + `FormData`.
+- Topic **`hecho-con-pieza`** en el repo de la app (con permiso de la persona): así aparece en la página de Pieza.
 
 ## 5. Repos y estructura
 - Los repos de la ficha (fase 2).
@@ -79,15 +80,18 @@ Nunca ingreses contraseñas ni códigos de verificación: eso lo hace él.
 - Código, comentarios, commits y textos en español; inglés con archivo de traducciones y prueba que exija traducir todo texto nuevo.
 
 ## 6. Construir la app (con piezas)
-1. **Piezas planeadas que eligió David: extráelas primero en Pieza** (su `AGENTS.md`: partir de la mejor versión, `tomar_de`,
+1. **Piezas planeadas que se eligieron: extráelas primero en Pieza** (su `AGENTS.md`: partir de la mejor versión, `tomar_de`,
    pruebas, `estado: lista`, subir versión), y publícalas en pieza-app/pieza. Una vez, para todas las apps.
-2. `pieza.py iniciar <app> <id> <Nombre>` y `pieza.py agregar <pieza> <app>` por cada pieza. Revisa `pieza.py estado <app>`.
+2. `pieza.py iniciar <app> <id> <Nombre>` (crea `app.json`, el workflow «Pieza al día» y `.claude/settings.json` para que quien
+   abra el repo en Claude Code reciba el plugin de Pieza) y `pieza.py agregar <pieza> <app>` por cada pieza. Revisa
+   `pieza.py estado <app>`. En Settings → Actions, activa «Allow GitHub Actions to create and approve pull requests» (lo pide
+   «Pieza al día» para abrir sus PRs).
 3. Lo propio de la app: si es de escritorio (o web + escritorio), sigue la skill **app-escritorio-multiplataforma** (una sola
    interfaz web, app nativa en Mac y Electron en Windows/Linux, ventanas y temas, empaquetado e instaladores). Para web o móvil,
    las mismas ideas: interfaz única, datos del usuario en formato abierto, temas como datos y contrato probado.
 4. Acciones de la app: si son «correr un script y devolver JSON», se declaran en el enchufe (`docs/enchufe.md` de Pieza), no se
    escriben tres veces.
-Construye primero lo mínimo que funcione de punta a punta en una plataforma, muéstraselo a David y después amplía.
+Construye primero lo mínimo que funcione de punta a punta en una plataforma, muéstraselo a la persona y después amplía.
 En todo el diseño y la construcción aplica la skill **diseno-y-calidad-de-producto** (criterios UX/UI y buenas prácticas).
 
 ## 7. Calidad automática desde el día uno
@@ -120,10 +124,13 @@ En todo el diseño y la construcción aplica la skill **diseno-y-calidad-de-prod
 - Lista honesta de **qué permisos pide y por qué** y **a qué sale a internet**, sacada de la ficha.
 - SEO: `<title>` con palabras que la gente busca, description, canonical, Open Graph/Twitter con la imagen, JSON-LD
   (SoftwareApplication + FAQPage), `sitemap.xml`, `robots.txt` en la raíz del dominio (repo `<org>.github.io`), topics del repo.
-- Search Console: propiedad "Prefijo de la URL"; David descarga el archivo `google….html` y tú lo subes a `docs/`. Sitemap: "No se ha
+- Search Console: propiedad "Prefijo de la URL"; la persona descarga el archivo `google….html` y tú lo subes a `docs/`. Sitemap: "No se ha
   podido obtener" recién enviado es normal; sugiere "Inspeccionar URL → Solicitar indexación".
 - Nada inventado: sin testimonios, cifras de usuarios ni estrellas falsas.
-- Cuando la app esté operativa (prototipo o MVP OK), súmala a la página personal de David (soydavidcornejo.github.io).
+- **«Hecho con Pieza»** en el pie de la página (el sello `https://pieza-app.github.io/pieza/sello.svg`, o `sello-en.svg` en inglés,
+  enlazado a Pieza), en el README y, en el `CONTRIBUTING.md`, una línea: «Aportamos con los flujos de Pieza: en Claude Code se
+  instalan solos al abrir el repo; con otra IA, sigue `AGENTS.md`».
+- Cuando la app esté operativa (prototipo o MVP OK), súmala donde la persona muestre sus proyectos (ver «Configuración local»).
 
 ## 10. Comunidad
 - Discussions activado, categorías en español (Novedades, General, Ideas, Encuestas, Preguntas y ayuda, Muestra lo que armaste);
@@ -137,21 +144,23 @@ En todo el diseño y la construcción aplica la skill **diseno-y-calidad-de-prod
 - Formato de datos abierto y documentado + carpeta `ejemplos/` con scripts para que la gente construya encima.
 
 ## 11. Seguridad del repo
-- Nadie de afuera puede juntar: todo entra por PR y lo junta quien mantiene, **solo con aprobación de David**.
+- Nadie de afuera puede juntar: todo entra por PR y lo junta quien mantiene, **solo con su aprobación**.
 - `PUT repos/<org>/<repo>/actions/permissions/fork-pr-contributor-approval` con `approval_policy=all_external_contributors`.
-- Ruleset en la rama por defecto: `deletion` + `non_fast_forward` (sin exigir PR, para que David pueda empujar directo).
+- Ruleset en la rama por defecto: `deletion` + `non_fast_forward` (sin exigir PR, para que quien mantiene pueda empujar directo).
 
 ## 12. Anuncio
 Redacta textos para pegar (LinkedIn en español, Reddit y Show HN en inglés), con licencia real y sin cifras inventadas. Recomienda
 que alguien pruebe cada plataforma en uso real antes de anunciar.
 
 ## Cierre de cada fase
-Verifica (pruebas en verde, página en vivo con `curl` desde el Mac, capturas a ojo), comprueba que el Mac esté libre antes de
-instalar algo que cierre una app, borra temporales y capturas, y cuenta en pocas líneas qué quedó y qué falta que haga David.
+Verifica (pruebas en verde, página en vivo con `curl` desde el Mac, capturas a ojo), comprueba que el computador no esté en uso antes de
+instalar algo que cierre una app, borra temporales y capturas, y cuenta en pocas líneas qué quedó y qué falta que haga la persona.
 
 ## Al terminar: que el flujo aprenda (así esta skill escala sola)
 - Código que sirvió y lo usarán dos apps o más → **pieza nueva en Pieza** (o mejora de una, con `pieza.py diferencias`).
 - Un paso nuevo, un error que costó o una mejor forma de hacer algo → edita **este archivo en pieza-app/pieza**
   (`skills/lanzar-proyecto-open-source/SKILL.md`), sube «Versión del flujo» y anótalo en el `CHANGELOG.md` de Pieza.
-- Ofrécele a David actualizar la skill instalada con `propose_skills` (improvement, SKILL.md completo). La próxima vez, la fase 0
-  detecta igual si la copia instalada quedó atrás.
+- Si tienes permiso de escritura en pieza-app/pieza, abre un PR; si no, un PR desde tu fork: así aporta todo el que use el flujo.
+- Si cambiaste una pieza: sube su versión y anota el cambio (tipo, seguridad, pasos para migrar). Es lo que «Pieza al día» les
+  avisa a todas las apps.
+- La próxima vez, la fase 0 detecta si la copia instalada quedó atrás.

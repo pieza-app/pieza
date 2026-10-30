@@ -1,0 +1,63 @@
+# Pieza al día: una vez por semana revisa si las piezas de esta app tienen versión nueva.
+# - Arreglos y mejoras compatibles sobre archivos que la app no cambió → abre un PR con la actualización (las pruebas corren ahí).
+# - Lo que rompe, o archivos que la app cambió → abre (o pone al día) un issue con qué cambió y los pasos para migrar.
+# Lo agregó `pieza.py iniciar`. Necesita «Allow GitHub Actions to create and approve pull requests» en Settings → Actions.
+name: Pieza al día
+on:
+  schedule:
+    - cron: "17 13 * * 1"
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+concurrency: pieza-al-dia
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: pieza-app/pieza
+          path: .pieza-base
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Actualizar lo que se puede solo
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          P=".pieza-base/herramientas/pieza.py"
+          python3 "$P" estado .
+          python3 "$P" actualizar . --automatico | tee "$RUNNER_TEMP/cambios.txt"
+          rm -rf .pieza-base/.git
+          if [ -n "$(git status --porcelain -- . ':!.pieza-base')" ]; then
+            RAMA="pieza/al-dia"
+            TITULO="Pieza al día: arreglos y mejoras de piezas"
+            grep -q "(seguridad)" "$RUNNER_TEMP/cambios.txt" && TITULO="Pieza al día (seguridad): arreglos y mejoras de piezas"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git switch -C "$RAMA"
+            git add -A -- . ':!.pieza-base'
+            git commit -m "$TITULO" -m "$(cat "$RUNNER_TEMP/cambios.txt")"
+            git push -f origin "$RAMA"
+            if ! gh pr view "$RAMA" --json state -q .state 2>/dev/null | grep -q OPEN; then
+              gh pr create --head "$RAMA" --title "$TITULO" --body "$(printf 'Actualizaciones que se pueden aplicar solas (los archivos no los cambió esta app):\n\n```\n%s\n```\n\nRevisa que las pruebas pasen y júntalo.' "$(cat "$RUNNER_TEMP/cambios.txt")")"
+            fi
+          fi
+      - name: Avisar lo que hay que hacer a mano
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          git switch -q "${{ github.event.repository.default_branch }}" 2>/dev/null || true
+          python3 .pieza-base/herramientas/pieza.py aviso . > "$RUNNER_TEMP/aviso.md" || true
+          TITULO="Pieza al día: actualizaciones que se hacen a mano"
+          NUM=$(gh issue list --state open --search "in:title \"$TITULO\"" --json number -q '.[0].number' || true)
+          if [ -n "$(tr -d "[:space:]" < "$RUNNER_TEMP/aviso.md")" ]; then
+            if [ -n "$NUM" ]; then gh issue edit "$NUM" --body-file "$RUNNER_TEMP/aviso.md"; else gh issue create --title "$TITULO" --body-file "$RUNNER_TEMP/aviso.md"; fi
+          elif [ -n "$NUM" ]; then
+            gh issue close "$NUM" --comment "Todo al día."
+          fi

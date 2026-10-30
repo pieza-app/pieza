@@ -65,6 +65,10 @@ enruten solos.
 | `red` | Dominios a los que sale. Vacío = funciona sin internet. |
 | `tareas_david` | Lo que solo puede hacer una persona (crear una org, una cuenta de desarrollador, verificar un sitio). |
 
+| `compatible` | `{"nucleo": ">=0.1.0 <1.0.0"}`: con qué versiones de lo que requiere funciona. `pieza.py` no deja combinar versiones que no se llevan. |
+| `cambios` | De la más nueva a la más vieja: `{version, tipo, resumen, seguridad?, migrar?}`. Es lo que se le avisa a cada app. |
+| `red_nota` | Cuando la app no sale a internet pero algo de la persona sí (su IA, su proveedor): dicho en una frase. |
+
 Estos campos son los que lee el creador de proyectos: `pieza.py ficha <piezas> --plataformas …` los suma y muestra la app
 completa antes de crearla. Agregar una pieza (o un campo nuevo a una) la hace aparecer sola en el creador.
 
@@ -137,3 +141,22 @@ los scripts y los tres hosts digan lo mismo.
 
 La referencia para cada una es la versión de Esquema (Swift `app/Sources/Esquema/` y Electron `escritorio/src/`), la más
 completa y la única con todas las guardas.
+
+## Versiones y actualizaciones
+
+Cada pieza usa X.Y.Z y anota en `cambios` qué cambió y de qué **tipo**:
+
+| Tipo | Versión | ¿Se actualiza sola? |
+|---|---|---|
+| `arreglo` | sube Z | Sí, si la app no cambió esos archivos |
+| `mejora` (compatible) | sube Y | Sí, igual |
+| `rompe` | sube X (o Y mientras X sea 0) | **Nunca**: trae `migrar`, los pasos |
+| `seguridad: true` | cualquiera | Se marca en el título del PR o del issue |
+
+**Cómo se entera cada app, sin servidor ni telemetría:** `pieza.py iniciar` le agrega `.github/workflows/pieza-al-dia.yml`, que
+una vez por semana, en el repo de la app, trae la última Pieza y:
+- con lo que se puede actualizar solo (`pieza.py actualizar --automatico`) abre un **PR**: las pruebas de la app corren ahí;
+- con lo que va a mano (`pieza.py aviso`) abre o pone al día un **issue** con qué cambió y los pasos, y lo cierra cuando todo
+  queda al día.
+
+Sin GitHub: `pieza.py estado <app>` dice lo mismo.

@@ -1,28 +1,31 @@
 ---
 name: "revisar-aportes-open-source"
-description: "Revisar pull requests y propuestas de la comunidad en los repos open source de David: seguridad, defectos, pruebas, contenido y aprendizajes, con veredicto. Nunca junta sin su aprobación."
+description: "Revisar pull requests y propuestas de la comunidad en los repos open source hechos con Pieza: seguridad, defectos, pruebas, contenido y aprendizajes, con veredicto. Nunca junta sin aprobación de quien mantiene."
 ---
 
 # Revisar aportes de la comunidad
 
-Versión del flujo: 2
+Versión del flujo: 3
 
 La comunidad hace el trabajo; nosotros verificamos. Revisar debe ser barato: leer el diff, mirar las pruebas y aplicar la lista.
-No reescribas el aporte: si falta algo, se pide con un comentario amable. Si el repo tiene `.claude/agents/*revisor*.md` o un
+No reescribas el aporte: si falta algo, se pide con un comentario amable, **en el idioma en que escribió la persona**. Si el repo tiene `.claude/agents/*revisor*.md` o un
 `CONTRIBUTING.md` con "Cómo revisamos", esas reglas mandan sobre esta lista.
 
-David quiere dos cosas **siempre**, en cada revisión: buscar defectos de verdad (no solo "se ve bien") y aprender de cada aporte.
-Si alguien hace algo mejor que nosotros, se anota como aprendizaje y se aplica en sus otros proyectos.
+Quien mantiene quiere dos cosas **siempre**, en cada revisión: buscar defectos de verdad (no solo "se ve bien") y aprender de cada aporte.
+Si alguien hace algo mejor que nosotros, se anota como aprendizaje y se aplica en los otros proyectos.
+
+**Configuración local.** Si al final de esta skill hay una sección «Configuración local», o existe `~/.pieza/local.md`, léela
+primero: trae lo propio de quien la usa (su computador, su cuenta) y manda sobre lo genérico. Nunca se sube al repo.
 
 ## 0. Traer lo último (siempre)
 Este flujo vive en **pieza-app/pieza** (`skills/revisar-aportes-open-source/SKILL.md`); esta skill instalada es una copia. Consigue
-Pieza al día (`add_repo` pieza-app/pieza, o `~/Pieza` en el Mac con `git pull`). Si la «Versión del flujo» del repo es mayor que la
-de esta copia, sigue la del repo, y al cerrar ofrécele a David actualizar la skill instalada con `propose_skills` (improvement,
-SKILL.md completo del repo). Los aprendizajes también viven ahí: léelos todos, no solo los de esta copia.
+Pieza al día (clónalo de `https://github.com/pieza-app/pieza` o `git pull`). Si la «Versión del flujo» del repo es mayor que la
+de esta copia, sigue la del repo, y al cerrar ofrece actualizar la copia instalada (Claude Code: `/plugin marketplace update pieza`;
+claude.ai: `propose_skills` improvement con el SKILL.md del repo **más la sección «Configuración local» de esta copia**). Los aprendizajes también viven ahí: léelos todos, no solo los de esta copia.
 
 ## 1. Encontrar y leer
-- `gh pr list -R <org>/<repo>` (y las propuestas: `gh issue list -l propuesta`). Si la sesión no tiene acceso a GitHub, usa `gh` en el
-  Mac de David (`/opt/homebrew/bin`, vía osascript). Orgs: minuta-app, graba-app, alcancia-app, corta-app, repasa-app, esquema-app y pieza-app.
+- `gh pr list -R <org>/<repo>` (y las propuestas: `gh issue list -l propuesta`). Si la sesión no tiene acceso a GitHub, usa `gh` donde
+  la persona tenga sesión (ver «Configuración local»). Orgs de la familia: minuta-app, graba-app, alcancia-app, corta-app, repasa-app, esquema-app y pieza-app.
 - `gh pr view <n> --json files,body,author,statusCheckRollup` y `gh pr diff <n>`. Mira quién es el autor (cuenta nueva vs. con historial).
 - Lee también la descripción del PR: lo que la persona probó y lo que le falló (aunque no sea de su cambio) suele revelar defectos nuestros.
 
@@ -42,7 +45,7 @@ Si el repo tiene `piezas.json`, cruza los archivos del diff con los de cada piez
 - **El aporte reescribe a mano algo que ya es pieza** (otra forma de llamar a la IA, otro catálogo, otro puente) → pide usar la pieza.
 - **En Pieza misma** (pieza-app/pieza): `bash pruebas/correr.sh` valida todos los `pieza.json` (la regla de oro: lo que escribe la
   persona nunca va como argumento de un proceso) y corre las pruebas. Una pieza nueva necesita `recomendar`, `pantallas`,
-  `permisos` y `red` completos y honestos: son lo que el creador de proyectos le muestra a David.
+  `permisos` y `red` completos y honestos: son lo que el creador de proyectos muestra antes de crear una app.
 Revisa también estas brechas que ya aparecieron en las apps (un aporte no puede traerlas de vuelta): el puente acepta mensajes solo
 del marco principal y del origen de la app; las actualizaciones solo bajan de los Releases del propio repo, con sha256; lo del
 catálogo exige sha256; la IA nunca corre sin sus protecciones (ni «reintento sin protecciones» para CLIs viejos), sin las variables
@@ -57,7 +60,7 @@ Además de que "funcione", busca activamente:
 - **Consistencia:** mismos textos traducidos, misma lógica en Python y JS cuando el repo lo exige, ortografía en comentarios y textos.
 - **Plataformas:** Windows (codificación: abrir y leer siempre con `encoding="utf-8"`, también la salida de `subprocess`), Linux, Mac.
 - **Defectos nuestros que el aporte destapa:** arréglalos aparte, dando crédito en el commit.
-Verifica de verdad: corre las pruebas del repo (Playwright está en la nube, no en el Mac) antes de decir que algo está bien.
+Verifica de verdad: corre las pruebas del repo (si tu computador no tiene Playwright, en la nube o en el CI) antes de decir que algo está bien.
 
 ## 4. Revisar según el tipo
 - **Código:** pruebas en verde; respeta el formato de datos documentado; textos nuevos traducidos; sin dependencias nuevas sin conversarlo;
@@ -69,14 +72,14 @@ Verifica de verdad: corre las pruebas del repo (Playwright está en la nube, no 
 
 ## 5. Aprender del aporte (siempre)
 Pregúntate: ¿qué hizo esta persona mejor que nosotros? (cómo estructuró el código, cómo probó, cómo explicó el PR, algo que vio y
-nosotros no). Si hay algo, anótalo en «Aprendizajes» **de la copia en pieza-app/pieza** (fecha, repo y PR; sube «Versión del flujo») y dile a
-David qué es y dónde más conviene aplicarlo. Si el aprendizaje es código, el lugar es una pieza: así llega solo a todas las apps.
+nosotros no). Si hay algo, anótalo en «Aprendizajes» **de la copia en pieza-app/pieza** (fecha, repo y PR; sube «Versión del flujo») y cuéntale
+a quien mantiene qué es y dónde más conviene aplicarlo. Si el aprendizaje es código, el lugar es una pieza: así llega solo a todas las apps.
 
-## 6. Veredicto para David (pocas líneas)
+## 6. Veredicto para quien mantiene (pocas líneas)
 Qué cambia, si es seguro, defectos encontrados (del aporte y nuestros), cómo salieron las pruebas, qué aprendimos y la recomendación:
 **juntar**, **pedir cambios** (con el comentario sugerido, cálido y concreto) o **cerrar** (con el motivo). Explícalo sin jerga.
 
-## 7. Solo cuando David diga que sí
+## 7. Solo cuando quien mantiene diga que sí
 `gh pr review <n> --approve -b "<agradecimiento específico, en el idioma de la persona>"`, `gh pr merge <n> --squash`, cierra el issue que
 resuelve dando crédito (`Resuelto en #n por @autor`), y para contenido nuevo crea lo que el repo pida (p. ej. issue de votos).
 Sincroniza el clon local (`git pull --rebase`) e instala la app si cambió (respetando que Minuta no se reinstala grabando).
