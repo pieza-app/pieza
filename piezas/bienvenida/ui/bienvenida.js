@@ -76,14 +76,16 @@
       get soloIdioma() { return paso === 0; },
       get pasos() { return [{ id: "idioma" }, ...lista()].map((p) => p.id); },
 
-      /** Suma un paso: {id, titulo (frase en español, se traduce), cuerpo: () => html, puede?: () => bool, orden? (50)}.
+      /** Suma un paso: {id, titulo (frase en español, se traduce), cuerpo: () => html, puede?: () => bool, orden? (50),
+       *  saltable? (true: muestra «Lo hago después»; false para un paso que la app necesita sí o sí)}.
        *  El cuerpo lo arma quien suma el paso (con esc() para lo de afuera); la app lo traduce con traducirDOM. */
       sumarPaso(p) {
         if (!p || !ID.test(p.id || "") || p.id === "idioma") throw new Error("bienvenida: el paso necesita un «id» (minúsculas y guiones).");
         if (pasos.some((x) => x.id === p.id)) throw new Error(`bienvenida: el paso «${p.id}» ya existe.`);
         if (typeof p.titulo !== "string" || typeof p.cuerpo !== "function") throw new Error("bienvenida: el paso necesita «titulo» y «cuerpo()».");
         const orden = Number.isFinite(p.orden) ? p.orden : 50;
-        pasos.push({ id: p.id, titulo: p.titulo, cuerpo: p.cuerpo, puede: typeof p.puede === "function" ? p.puede : () => true, orden });
+        pasos.push({ id: p.id, titulo: p.titulo, cuerpo: p.cuerpo, puede: typeof p.puede === "function" ? p.puede : () => true, orden,
+          saltable: p.saltable !== false });
         return bv;
       },
 
@@ -105,7 +107,7 @@
           <div class="cuerpo-bv">${p.cuerpo()}</div>
           <div class="pie-dialogo" data-sin-traducir><button type="button" class="boton izq" data-bv-ir="${paso - 1}">${T("Atrás")}</button>
             ${ultimo ? `<button type="button" class="boton principal" data-bv-fin>${T("Empezar")}</button>`
-              : `<button type="button" class="boton" data-bv-fin>${T("Lo hago después")}</button><button type="button" class="boton principal" data-bv-ir="${paso + 1}"${puede ? "" : " disabled"}>${T("Siguiente")}</button>`}</div></div>`;
+              : `${p.saltable ? `<button type="button" class="boton" data-bv-fin>${T("Lo hago después")}</button>` : ""}<button type="button" class="boton principal" data-bv-ir="${paso + 1}"${puede ? "" : " disabled"}>${T("Siguiente")}</button>`}</div></div>`;
       },
 
       /** Guarda el idioma por el mismo camino que Ajustes, lo carga y sigue ya traducida. */

@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "bienvenida",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Bienvenida",
  "icono": "icono.svg",
@@ -61,6 +61,14 @@
   "i18n": ">=0.1.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "rompe",
+   "resumen": "Colores con variables propias (--bv-acento, --bv-linea, --bv-panel, --bv-texto-suave) y «Lo hago después» opcional por paso (saltable: false). Lo pidió Esquema: su --suave es un fondo.",
+   "migrar": [
+    "En el CSS de la app define --bv-acento, --bv-linea, --bv-panel y --bv-texto-suave con tus colores (por ejemplo --bv-texto-suave: var(--texto-suave))."
+   ]
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

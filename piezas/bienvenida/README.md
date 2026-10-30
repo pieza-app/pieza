@@ -39,3 +39,11 @@ function toast(t) { if (bv.retener(t)) return; /* … */ }
 | `manejarClic(ev)`, `manejarTecla(ev)`, `enfocar()` | Devuelven `true` si era de la bienvenida. |
 
 La app nativa tampoco muestra ni pide nada (permisos, actualizaciones) antes de que se guarde `idioma_ui`.
+
+## Colores y pasos obligatorios (0.2.0)
+
+- Los colores son variables propias de la pieza: define en el CSS de tu app `--bv-acento`, `--bv-linea`, `--bv-panel` y
+  `--bv-texto-suave` (por ejemplo `--bv-texto-suave: var(--texto-suave)`). Sin definirlas se usan unos neutros.
+- `sumarPaso({…, saltable: false})` quita «Lo hago después» en un paso que la app necesita sí o sí (por defecto, se puede saltar).
+- Los atributos son `data-bv-idioma`, `.opciones-idioma` y `.opcion-idioma`. Si tu app o sus pruebas usaban otros (`data-idioma`,
+  `.idiomas`), cámbialos al adoptar la pieza.
