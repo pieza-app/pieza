@@ -1,6 +1,6 @@
 ---
 name: "lanzar-proyecto-open-source"
-description: "Lanzar un proyecto open source completo desde una idea: organización y repos en GitHub, app, página con SEO, íconos, CI, versiones, comunidad, tareas y anuncio."
+description: "Lanzar un proyecto open source completo desde una idea: entrevista con piezas recomendadas de Pieza, ficha con pantallas, configuración, permisos y red, repos, app, página con SEO, CI, comunidad y anuncio."
 ---
 
 # Lanzar un proyecto open source (playbook de David)
