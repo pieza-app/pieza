@@ -13,6 +13,9 @@
                                           app) con los pasos para migrar. Es el cuerpo del issue que abre «Pieza al día».
   pieza.py diferencias <app> <pieza>      Lo que la app cambió de una pieza (para devolverlo a la base si es mejor).
   pieza.py revisar                        Valida todos los pieza.json de la base (formato y reglas de seguridad).
+  pieza.py skills estado [codex|claude]   Qué versión de cada flujo (skill) tienes instalada y cuál trae esta Pieza.
+  pieza.py skills instalar codex|claude   Instala o pone al día las skills (Codex: ~/.agents/skills; Claude Code: ~/.claude/skills)
+                                          sin perder tu sección «Configuración local». Gemini CLI: `gemini extensions install`.
   pieza.py catalogo [--json]              Todas las piezas, listas y planeadas, con todo lo que declaran (lo lee la skill).
   pieza.py ficha <pieza>… [--plataformas mac,windows,linux,ios,android] [--json]
                                           La ficha de una app con esas piezas: requisitos, pantallas, config, permisos por
@@ -496,6 +499,54 @@ def ficha_texto(f):
     return "\n".join(l)
 
 
+# ── Skills (los flujos) para otras IA ───────────────────────────────────────────────────────────────────────────────────────
+
+SKILLS = os.path.join(BASE, "skills")
+DESTINOS_SKILLS = {"codex": os.path.join("~", ".agents", "skills"), "claude": os.path.join("~", ".claude", "skills")}
+LOCAL = "## Configuración local"
+
+
+def version_flujo(texto):
+    m = re.search(r"^Versión del flujo: (\d+)$", texto, re.M)
+    return int(m.group(1)) if m else 0
+
+
+def _destino_skills(donde):
+    if donde not in DESTINOS_SKILLS:
+        sys.exit("Elige dónde: codex o claude. (Gemini CLI: gemini extensions install https://github.com/pieza-app/pieza)")
+    return os.path.expanduser(os.environ.get("PIEZA_SKILLS_DESTINO") or DESTINOS_SKILLS[donde])
+
+
+def skills_estado(donde):
+    destino = _destino_skills(donde)
+    for nombre in sorted(os.listdir(SKILLS)):
+        nueva = version_flujo(open(os.path.join(SKILLS, nombre, "SKILL.md"), encoding="utf-8").read())
+        ruta = os.path.join(destino, nombre, "SKILL.md")
+        if not os.path.isfile(ruta):
+            print(f"{nombre}: no instalada (Pieza trae la versión {nueva})")
+            continue
+        tiene = version_flujo(open(ruta, encoding="utf-8").read())
+        print(f"{nombre}: versión {tiene}" + (" (al día)" if tiene >= nueva else f" → hay {nueva}: pieza.py skills instalar {donde}"))
+
+
+def skills_instalar(donde):
+    """Copia cada skill; si ya había una copia con «Configuración local» (lo propio de quien la usa), la conserva al final."""
+    destino = _destino_skills(donde)
+    for nombre in sorted(os.listdir(SKILLS)):
+        texto = open(os.path.join(SKILLS, nombre, "SKILL.md"), encoding="utf-8").read().rstrip("\n") + "\n"
+        ruta = os.path.join(destino, nombre, "SKILL.md")
+        local = ""
+        if os.path.isfile(ruta):
+            anterior = open(ruta, encoding="utf-8").read()
+            if LOCAL in anterior:
+                local = "\n" + anterior[anterior.index(LOCAL):].rstrip("\n") + "\n"
+        os.makedirs(os.path.dirname(ruta), exist_ok=True)
+        with open(ruta + ".tmp", "w", encoding="utf-8", newline="\n") as f:
+            f.write(texto + local)
+        os.replace(ruta + ".tmp", ruta)
+        print(f"✓ {nombre} versión {version_flujo(texto)}" + (" (con tu configuración local)" if local else "") + f" → {ruta}")
+
+
 def main(a):
     if not a or a[0] in ("-h", "--help", "ayuda"):
         print(__doc__)
@@ -532,6 +583,8 @@ def main(a):
         print(json.dumps(f, ensure_ascii=False, indent=1) if como_json else ficha_texto(f))
     elif orden == "revisar":
         return revisar()
+    elif orden == "skills" and len(resto) == 2 and resto[0] in ("estado", "instalar"):
+        (skills_estado if resto[0] == "estado" else skills_instalar)(resto[1])
     elif orden == "iniciar" and len(resto) == 3:
         iniciar(*resto)
     elif orden == "agregar" and len(resto) == 2:

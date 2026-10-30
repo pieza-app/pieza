@@ -12,6 +12,29 @@
 <meta property="og:description" content="Elige piezas probadas, revisa la ficha completa y enchufa. Cada app que se hace deja piezas para la siguiente.">
 <meta property="og:url" content="https://pieza-app.github.io/pieza/">
 <meta property="og:type" content="website">
+<meta property="og:image" content="https://pieza-app.github.io/pieza/img/compartir.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="es_CL">
+<meta property="og:locale:alternate" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://pieza-app.github.io/pieza/img/compartir.png">
+<link rel="alternate" hreflang="es" href="https://pieza-app.github.io/pieza/">
+<link rel="alternate" hreflang="en" href="https://pieza-app.github.io/pieza/?lang=en">
+<link rel="alternate" hreflang="x-default" href="https://pieza-app.github.io/pieza/">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@graph":[
+ {"@type":"SoftwareSourceCode","name":"Pieza","description":"Framework abierto para apps que viven en tu computador: piezas probadas (tu propia IA, idiomas, actualizaciones seguras, catálogo de la comunidad) que se enchufan en vez de escribirse de cero.","url":"https://pieza-app.github.io/pieza/","codeRepository":"https://github.com/pieza-app/pieza","license":"https://www.gnu.org/licenses/agpl-3.0.html","programmingLanguage":["Python","JavaScript","Swift"],"isAccessibleForFree":true},
+ {"@type":"FAQPage","mainEntity":[
+  {"@type":"Question","name":"¿Pieza es un framework?","acceptedAnswer":{"@type":"Answer","text":"Sí, con una diferencia: las piezas se copian dentro de tu app y son tuyas. No dependes de un paquete que pueda romperse desde afuera, y cuando una pieza mejora la recibes sin perder tus cambios."}},
+  {"@type":"Question","name":"¿Necesito Claude Code?","acceptedAnswer":{"@type":"Answer","text":"No. Los flujos funcionan igual en Claude Code, Gemini CLI y Codex, y con cualquier otra IA siguiendo AGENTS.md. La herramienta pieza.py funciona sola, con Python."}},
+  {"@type":"Question","name":"¿Pieza manda datos a algún servidor?","acceptedAnswer":{"@type":"Answer","text":"No. No hay servidores ni telemetría. El contador de apps solo cuenta repos públicos que se pusieron el topic hecho-con-pieza en GitHub."}},
+  {"@type":"Question","name":"¿Cómo me entero de las versiones nuevas de una pieza?","acceptedAnswer":{"@type":"Answer","text":"Cada app hecha con Pieza trae el workflow Pieza al día: una vez por semana abre un PR con los arreglos y mejoras que se pueden aplicar solos, y un issue con los pasos para lo que hay que hacer a mano."}},
+  {"@type":"Question","name":"¿Qué licencia tiene?","acceptedAnswer":{"@type":"Answer","text":"AGPL-3.0, como las apps de la familia. Es gratis y abierto."}}
+ ]}
+]}
+</script>
 <link rel="stylesheet" href="pagina.css">
 <script src="pagina.js" defer></script>
 </head>
@@ -88,21 +111,40 @@
         <p data-t="e_cc2">Después: «creemos una app para…».</p>
       </article>
       <article>
+        <h3>Gemini CLI</h3>
+        <p data-t="e_gm">Instala la extensión: las mismas skills y los comandos /pieza:crear y /pieza:revisar.</p>
+        <pre><code>gemini extensions install https://github.com/pieza-app/pieza --auto-update</code></pre>
+      </article>
+      <article>
+        <h3>Codex</h3>
+        <p data-t="e_cx">Instala las skills en ~/.agents/skills (las pone al día sin borrar tu configuración local).</p>
+        <pre><code>git clone https://github.com/pieza-app/pieza
+python3 pieza/herramientas/pieza.py skills instalar codex</code></pre>
+      </article>
+      <article>
         <h3>claude.ai</h3>
         <p data-t="e_ai">Descarga las skills y súbelas en las capacidades de tu cuenta.</p>
         <p class="enlaces"><a href="skills/lanzar-proyecto-open-source.zip" download>lanzar-proyecto-open-source.zip</a><a href="skills/revisar-aportes-open-source.zip" download>revisar-aportes-open-source.zip</a></p>
       </article>
-      <article>
-        <h3 data-t="e_otra_h">Otra IA</h3>
-        <p data-t="e_otra">Codex, Gemini o la que uses: clona el repo y pídele que siga <code>AGENTS.md</code>. Los flujos están en <code>skills/</code>.</p>
-        <pre><code>git clone https://github.com/pieza-app/pieza
-python3 pieza/herramientas/pieza.py catalogo</code></pre>
-      </article>
     </div>
+    <p class="nota"><span data-t="e_otra">¿Otra IA? Clona el repo y pídele que siga AGENTS.md. Equivalencias entre herramientas:</span> <a href="https://github.com/pieza-app/pieza/blob/main/docs/otras-ias.md">docs/otras-ias.md</a></p>
     <h3 class="sello-h" data-t="h_sello">¿Hiciste una app con Pieza?</h3>
     <p data-t="sello_p">Ponle el topic <code>hecho-con-pieza</code> a su repo y aparece aquí. Si quieres, suma el sello a tu README o tu página:</p>
     <p><img src="sello.svg" alt="Hecho con Pieza" width="152" height="28"></p>
     <pre><code>[![Hecho con Pieza](https://pieza-app.github.io/pieza/sello.svg)](https://pieza-app.github.io/pieza/)</code></pre>
+  </div>
+</section>
+
+<section id="preguntas" class="raya">
+  <div class="envoltura">
+    <h2 data-t="h_faq">Preguntas frecuentes</h2>
+    <div class="preguntas">
+      <details><summary data-t="q1">¿Pieza es un framework?</summary><p data-t="a1">Sí, con una diferencia: las piezas se copian dentro de tu app y son tuyas. No dependes de un paquete que pueda romperse desde afuera, y cuando una pieza mejora la recibes sin perder tus cambios.</p></details>
+      <details><summary data-t="q2">¿Necesito Claude Code?</summary><p data-t="a2">No. Los flujos funcionan igual en Claude Code, Gemini CLI y Codex, y con cualquier otra IA siguiendo AGENTS.md. La herramienta pieza.py funciona sola, con Python.</p></details>
+      <details><summary data-t="q3">¿Pieza manda datos a algún servidor?</summary><p data-t="a3">No. No hay servidores ni telemetría. El contador de apps solo cuenta repos públicos que se pusieron el topic hecho-con-pieza en GitHub.</p></details>
+      <details><summary data-t="q4">¿Cómo me entero de las versiones nuevas de una pieza?</summary><p data-t="a4">Cada app hecha con Pieza trae el workflow «Pieza al día»: una vez por semana abre un PR con los arreglos y mejoras que se pueden aplicar solos, y un issue con los pasos para lo que hay que hacer a mano.</p></details>
+      <details><summary data-t="q5">¿Qué licencia tiene?</summary><p data-t="a5">AGPL-3.0, como las apps de la familia. Es gratis y abierto.</p></details>
+    </div>
   </div>
 </section>
 
@@ -123,7 +165,7 @@ python3 pieza/herramientas/pieza.py catalogo</code></pre>
 
 <footer class="pie">
   <div class="envoltura">
-    <p><span data-t="pie">Pieza · AGPL-3.0 · sin cookies ni seguimiento</span> · <a href="https://github.com/pieza-app/pieza">GitHub</a></p>
+    <p><span data-t="pie">Pieza · AGPL-3.0 · sin cookies ni seguimiento</span> · <a href="https://github.com/pieza-app/pieza">GitHub</a> · <a href="https://github.com/pieza-app/pieza/discussions" data-t="comunidad">Comunidad</a> · <a href="https://github.com/pieza-app/pieza/blob/main/CONTRIBUTING.md" data-t="aportar">Cómo aportar</a></p>
   </div>
 </footer>
 </body>

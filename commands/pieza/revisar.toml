@@ -1,0 +1,7 @@
+description = "Revisar pull requests de la comunidad con el flujo de Pieza (seguridad, defectos, aprendizajes, veredicto)."
+prompt = """
+Activa la skill `revisar-aportes-open-source` de la extensión Pieza y sigue su flujo desde la fase 0, con las equivalencias para
+Gemini CLI que trae la skill. Qué revisar:
+
+{{args}}
+"""

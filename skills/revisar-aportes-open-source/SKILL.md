@@ -5,7 +5,7 @@ description: "Revisar pull requests y propuestas de la comunidad en los repos op
 
 # Revisar aportes de la comunidad
 
-Versión del flujo: 3
+Versión del flujo: 4
 
 La comunidad hace el trabajo; nosotros verificamos. Revisar debe ser barato: leer el diff, mirar las pruebas y aplicar la lista.
 No reescribas el aporte: si falta algo, se pide con un comentario amable, **en el idioma en que escribió la persona**. Si el repo tiene `.claude/agents/*revisor*.md` o un
@@ -17,11 +17,26 @@ Si alguien hace algo mejor que nosotros, se anota como aprendizaje y se aplica e
 **Configuración local.** Si al final de esta skill hay una sección «Configuración local», o existe `~/.pieza/local.md`, léela
 primero: trae lo propio de quien la usa (su computador, su cuenta) y manda sobre lo genérico. Nunca se sube al repo.
 
+## Si no usas Claude Code (Gemini CLI, Codex u otra)
+Este flujo es el mismo en todas; solo cambia la herramienta para cada cosa. Usa la de tu IA (guía completa en `docs/otras-ias.md`):
+
+| Para… | Claude Code / claude.ai | Gemini CLI | Codex | Otra IA |
+|---|---|---|---|---|
+| Preguntar todo junto | `AskUserQuestion` | un solo mensaje con preguntas numeradas y opciones (a, b, c), la recomendada marcada | igual que Gemini | igual |
+| Lista de tareas visible | `TaskCreate` / `TaskUpdate` | su lista de tareas (`write_todos`) | su plan (`update_plan`) | una lista en el mensaje, al día |
+| Trabajo en paralelo | subagentes (`Agent`) | uno a la vez | uno a la vez | uno a la vez |
+| Conectar un repo | `add_repo`, o `gh` en el computador de la persona | `git` / `gh` con la sesión de la persona | igual | igual |
+| Actualizar esta skill | `/plugin marketplace update pieza` (claude.ai: `propose_skills` o subir el .zip) | `gemini extensions update pieza` | `python3 herramientas/pieza.py skills instalar codex` | `git pull` de Pieza |
+| Pedir permiso para publicar | lo pide la sesión | pregunta antes de cada push/PR | igual | igual |
+
+Lo que nunca cambia: nunca juntar sin aprobación, la regla de oro (lo que escribe la persona nunca va como argumento), la IA de la
+persona con su cuenta y sin herramientas dentro de las apps, y nada inventado.
+
 ## 0. Traer lo último (siempre)
 Este flujo vive en **pieza-app/pieza** (`skills/revisar-aportes-open-source/SKILL.md`); esta skill instalada es una copia. Consigue
 Pieza al día (clónalo de `https://github.com/pieza-app/pieza` o `git pull`). Si la «Versión del flujo» del repo es mayor que la
-de esta copia, sigue la del repo, y al cerrar ofrece actualizar la copia instalada (Claude Code: `/plugin marketplace update pieza`;
-claude.ai: `propose_skills` improvement con el SKILL.md del repo **más la sección «Configuración local» de esta copia**). Los aprendizajes también viven ahí: léelos todos, no solo los de esta copia.
+de esta copia, sigue la del repo, y al cerrar ofrece actualizar la copia instalada (ver la tabla de abajo; en claude.ai, con el SKILL.md del
+repo **más la sección «Configuración local» de esta copia**). Los aprendizajes también viven ahí: léelos todos, no solo los de esta copia.
 
 ## 1. Encontrar y leer
 - `gh pr list -R <org>/<repo>` (y las propuestas: `gh issue list -l propuesta`). Si la sesión no tiene acceso a GitHub, usa `gh` donde

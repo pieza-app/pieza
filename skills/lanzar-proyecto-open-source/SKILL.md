@@ -5,7 +5,7 @@ description: "Lanzar un proyecto open source completo desde una idea: entrevista
 
 # Lanzar un proyecto open source con Pieza
 
-Versión del flujo: 4
+Versión del flujo: 5
 
 Quien mantiene el proyecto dice "creemos una aplicación para…" y espera el paquete completo, no preguntas una por una. Este flujo
 sale de lanzar Minuta, Graba, Corta, Alcancía, Repasa y Esquema. Trabaja por fases, con lista de tareas visible, y entrega algo usable al final de cada fase.
@@ -14,17 +14,32 @@ sale de lanzar Minuta, Graba, Corta, Alcancía, Repasa y Esquema. Trabaja por fa
 **Configuración local.** Si al final de esta skill hay una sección «Configuración local», o existe `~/.pieza/local.md`, léela
 primero: trae lo propio de quien la usa (su computador, su cuenta, sus páginas) y manda sobre lo genérico. Nunca se sube al repo.
 
+## Si no usas Claude Code (Gemini CLI, Codex u otra)
+Este flujo es el mismo en todas; solo cambia la herramienta para cada cosa. Usa la de tu IA (guía completa en `docs/otras-ias.md`):
+
+| Para… | Claude Code / claude.ai | Gemini CLI | Codex | Otra IA |
+|---|---|---|---|---|
+| Preguntar todo junto | `AskUserQuestion` | un solo mensaje con preguntas numeradas y opciones (a, b, c), la recomendada marcada | igual que Gemini | igual |
+| Lista de tareas visible | `TaskCreate` / `TaskUpdate` | su lista de tareas (`write_todos`) | su plan (`update_plan`) | una lista en el mensaje, al día |
+| Trabajo en paralelo | subagentes (`Agent`) | uno a la vez | uno a la vez | uno a la vez |
+| Conectar un repo | `add_repo`, o `gh` en el computador de la persona | `git` / `gh` con la sesión de la persona | igual | igual |
+| Actualizar esta skill | `/plugin marketplace update pieza` (claude.ai: `propose_skills` o subir el .zip) | `gemini extensions update pieza` | `python3 herramientas/pieza.py skills instalar codex` | `git pull` de Pieza |
+| Pedir permiso para publicar | lo pide la sesión | pregunta antes de cada push/PR | igual | igual |
+
+Lo que nunca cambia: preguntar antes de publicar, la regla de oro (lo que escribe la persona nunca va como argumento), la IA de la
+persona con su cuenta y sin herramientas dentro de las apps, y nada inventado.
+
 ## 0. Traer lo último (siempre, antes de preguntar nada)
 Este flujo y el catálogo de piezas viven en el repo **pieza-app/pieza**; esta skill instalada es solo una copia.
 1. Consigue Pieza al día: clónalo (`https://github.com/pieza-app/pieza`) o, si ya lo tienes, `git pull`.
 2. Lee `skills/lanzar-proyecto-open-source/SKILL.md` del repo. Si su «Versión del flujo» es mayor que la de esta copia, **sigue la
-   del repo** desde aquí, y al cerrar ofrece actualizar la copia instalada (en Claude Code: `/plugin marketplace update pieza`; en
-   claude.ai: `propose_skills` improvement con el SKILL.md completo del repo **más la sección «Configuración local» de esta copia**).
+   del repo** desde aquí, y al cerrar ofrece actualizar la copia instalada (ver «Actualizar esta skill» en la tabla de abajo; en
+   claude.ai, con el SKILL.md completo del repo **más la sección «Configuración local» de esta copia**).
 3. `python3 herramientas/pieza.py catalogo --json`: todas las piezas, listas y planeadas, con cuándo recomendarlas, pantallas,
    permisos, red y tareas. **Nunca uses una lista de piezas de memoria**: el catálogo cambia.
 
 ## 1. Entrevista (una sola ronda, con recomendaciones)
-Con AskUserQuestion, todo junto (si no responde, usa los valores por defecto y dilo):
+Todo junto, en una sola pregunta (ver «Preguntar todo junto»; si no responde, usa los valores por defecto y dilo):
 - Nombre y una frase de qué hace y para quién. Org de GitHub `<nombre>-app` por defecto (la familia usa nombres terminados en «a»).
 - Plataformas: Mac, Windows, Linux, iPhone, Android (por defecto las tres de escritorio; móvil después).
 - Idiomas (por defecto español de Chile neutro + inglés). Licencia (por defecto **AGPL-3.0**, como las apps hermanas).
@@ -59,8 +74,8 @@ La persona confirma o ajusta; recién ahí crea la lista de tareas con las fases
 Nunca ingreses contraseñas ni códigos de verificación: eso lo hace ella.
 
 ## 4. Cómo trabajar con GitHub
-- Si la sesión puede, conecta cada repo con permiso de escritura (`add_repo` con `access: "push"`); si no, usa `gh` donde la persona
-  tenga sesión (ver «Configuración local»).
+- Conecta cada repo con permiso de escritura (ver «Conectar un repo»); si la sesión no puede, usa `gh` donde la persona tenga
+  sesión (ver «Configuración local»).
 - Autor de commits: el usuario de GitHub de la persona con su correo `@users.noreply.github.com` (nunca su correo personal) + las
   líneas de atribución que pida la sesión. Nunca reescribas historia publicada.
 - **Publicar es visible para todos**: subir ramas, abrir PRs o cambiar la org se confirma con la persona antes.

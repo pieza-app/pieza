@@ -228,6 +228,35 @@ class Herramienta(AppDePrueba):
         self.assertEqual(correr(nueva, "actualizar", self.app, "--automatico").stdout.strip(), "")
         self.assertIn("pieza.py diferencias", correr(nueva, "aviso", self.app).stdout)
 
+    def test_skills_para_codex_conservan_lo_local(self):
+        destino = os.path.join(self.tmp.name, "agents-skills")
+        env = {**os.environ, "PIEZA_SKILLS_DESTINO": destino}
+        mia = os.path.join(destino, "lanzar-proyecto-open-source", "SKILL.md")
+        os.makedirs(os.path.dirname(mia))
+        with open(mia, "w") as f:
+            f.write("---\nname: x\n---\nVersión del flujo: 1\n\n## Configuración local\n- mi computador\n")
+        self.assertIn("hay", correr(PIEZA, "skills", "estado", "codex", env=env).stdout)
+        self.assertEqual(correr(PIEZA, "skills", "instalar", "codex", env=env).returncode, 0)
+        texto = open(mia).read()
+        self.assertIn("## Configuración local\n- mi computador", texto)
+        self.assertNotIn("Versión del flujo: 1\n", texto)
+        self.assertNotIn("hay", correr(PIEZA, "skills", "estado", "codex", env=env).stdout)
+
+    def test_extension_de_gemini(self):
+        import tomllib
+        with open(os.path.join(BASE, "gemini-extension.json")) as f:
+            ext = json.load(f)
+        self.assertEqual(ext["name"], "pieza")
+        self.assertTrue(os.path.isfile(os.path.join(BASE, ext["contextFileName"])))
+        for c in ("crear", "revisar"):
+            with open(os.path.join(BASE, "commands", "pieza", c + ".toml"), "rb") as f:
+                t = tomllib.load(f)
+            self.assertIn("{{args}}", t["prompt"])
+        with open(os.path.join(BASE, ".claude-plugin", "plugin.json")) as f:
+            self.assertEqual(json.load(f)["version"], ext["version"], "sube la versión igual en plugin.json y gemini-extension.json")
+        for s in os.listdir(os.path.join(BASE, "skills")):
+            self.assertTrue(os.path.isfile(os.path.join(BASE, ".agents", "skills", s, "SKILL.md")), s)
+
     def test_regla_de_oro_texto_nunca_en_args(self):
         sys.path.insert(0, os.path.join(BASE, "herramientas"))
         import pieza

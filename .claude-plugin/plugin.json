@@ -1,7 +1,7 @@
 {
   "name": "pieza",
-  "version": "0.3.0",
-  "description": "Crear apps abiertas que viven en tu computador con piezas probadas, y revisar aportes de la comunidad con el mismo flujo.",
+  "version": "0.4.0",
+  "description": "Crear apps abiertas que viven en tu computador con piezas probadas, y revisar aportes de la comunidad con el mismo flujo. También para Gemini CLI y Codex.",
   "author": {
     "name": "Pieza",
     "url": "https://github.com/pieza-app"
