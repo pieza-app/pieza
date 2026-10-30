@@ -1,8 +1,8 @@
 {
  "formato": 1,
  "id": "actualizaciones",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Actualizaciones",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
@@ -12,7 +12,6 @@
   "siempre": true,
   "cuando": "Siempre en escritorio."
  },
- "tomar_de": "esquema Actualizaciones.swift + escritorio/src/actualizaciones.js (esDescargaNuestra, comillas)",
  "requiere": [],
  "plataformas": [
   "mac",
@@ -23,15 +22,42 @@
   {
    "donde": "Ajustes",
    "nombre": "Actualizaciones",
-   "que": "buscar, ver el avance «Paso n de 3» y «Estás en la última versión»"
+   "que": "buscar, ver el avance «Paso n de 3» y «Estás en la última versión» (la pieza da los datos y los textos; la fila la pinta la app)"
   }
  ],
  "red": [
-  "github.com",
   "api.github.com",
-  "objects.githubusercontent.com"
+  "github.com",
+  "objects.githubusercontent.com",
+  "release-assets.githubusercontent.com"
  ],
  "tareas_persona": [
   "Publicar versiones como Releases con los archivos y su .sha256 (lo hace el workflow publicar)"
+ ],
+ "origen": "esquema (Actualizaciones.swift + escritorio/src/actualizaciones.js: esDescargaNuestra, comillas, avance por pasos, .anterior si falla) + repasa (URL sin puerto ni «..», se vuelve a validar al instalar, PATH fijo, revisa que el .app exista) + repasa/alcancia (textos en español que traduce la interfaz). Nuevo: nada de la app adentro (repo, nombre y archivos por parámetro; Swift en su propio target), el guion solo escribe códigos de paso (ningún texto traducido entra a bash), huella de 64 hex obligatoria, versiones que no son números se ignoran, la redirección de GitHub solo por https y Electron inyectable para probarlo en Node.",
+ "archivos": {
+  "mac/Actualizaciones.swift": "app/Sources/PiezaActualizaciones/Actualizaciones.swift",
+  "escritorio/actualizaciones.js": "escritorio/src/actualizaciones.js"
+ },
+ "config": {},
+ "acciones": {},
+ "textos": {
+  "Versión {v}": "Version {v}",
+  "Descargando la versión nueva…": "Downloading the new version…",
+  "Preparando la versión nueva…": "Getting the new version ready…",
+  "Instalando: {app} se cerrará y volverá a abrirse sola": "Installing: {app} will close and reopen on its own",
+  "No pude descargar la versión nueva. Revisa tu conexión e intenta de nuevo.": "I couldn't download the new version. Check your connection and try again.",
+  "No pude preparar la versión nueva. {app} sigue igual que antes; intenta de nuevo más tarde.": "I couldn't get the new version ready. {app} is just as it was; try again later.",
+  "No encontré la descarga de la versión nueva.": "I couldn't find the download for the new version."
+ },
+ "permisos": {},
+ "red_nota": "Solo pregunta a GitHub por la última versión del repo de la app (al abrir y cada 6 horas) y baja de sus Releases; GitHub redirige la descarga a su almacenamiento. Sin datos de la persona.",
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "seguridad": true,
+   "resumen": "Primera versión: Mac (Swift) y Windows/Linux (Electron) con lo mejor de Esquema y Repasa; descarga solo de los Releases del repo, huella SHA-256 obligatoria y nada variable en un guion sin comillas."
+  }
  ]
 }

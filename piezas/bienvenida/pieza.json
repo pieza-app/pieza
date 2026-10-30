@@ -1,8 +1,8 @@
 {
  "formato": 1,
  "id": "bienvenida",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Bienvenida",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
@@ -12,7 +12,6 @@
   "siempre": true,
   "cuando": "Siempre."
  },
- "tomar_de": "repasa/ui (lista de idiomas extensible, atajos 1/2) + esquema (avisos pendientes)",
  "requiere": [
   "i18n"
  ],
@@ -33,6 +32,39 @@
    "donde": "Bienvenida",
    "nombre": "Listo",
    "que": "último paso, qué hacer primero"
+  }
+ ],
+ "origen": "repasa/ui (lista de idiomas, teclas 1/2, «Sugerido» escrito en su idioma) + esquema (avisos que esperan a que se elija el idioma, foco en el título) + graba (flechas entre opciones, nada se pinta antes de elegir) + alcancia (nota bilingüe «puedes cambiarlo en Ajustes»; quien eligió y la dejó a medias sigue desde el saludo). Nuevo: pasos que cada app o pieza suma con sumarPaso({id, titulo, cuerpo, puede, orden}) y «Siguiente» que solo avanza si el paso está listo.",
+ "archivos": {
+  "ui/bienvenida.js": "ui/bienvenida.js",
+  "ui/bienvenida.css": "ui/bienvenida.css"
+ },
+ "config": {
+  "idioma_ui": [
+   "es",
+   "en"
+  ],
+  "bienvenida": "bool"
+ },
+ "acciones": {},
+ "textos": {
+  "Atrás": "Back",
+  "Siguiente": "Next",
+  "Lo hago después": "I'll do it later",
+  "Empezar": "Start",
+  "Todo listo": "All set",
+  "Ya puedes empezar. Todo lo que elegiste se cambia cuando quieras en Ajustes.": "You're ready to go. You can change anything you chose at any time in Settings."
+ },
+ "permisos": {},
+ "red": [],
+ "compatible": {
+  "i18n": ">=0.1.0 <1.0.0"
+ },
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "resumen": "Primera versión: el idioma primero (bilingüe, teclas 1/2, el del sistema sugerido y con el foco), pasos que suma cada app o pieza y avisos que esperan."
   }
  ]
 }
