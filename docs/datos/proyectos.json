@@ -1,7 +1,106 @@
 {
  "topic": "hecho-con-pieza",
- "total": 0,
- "aprobados": 0,
- "actualizado": "2026-10-30T21:07Z",
- "proyectos": []
+ "total": 7,
+ "aprobados": 7,
+ "actualizado": "2026-10-30T21:10Z",
+ "proyectos": [
+  {
+   "nombre": "alcancia",
+   "repo": "alcancia-app/alcancia",
+   "descripcion": "Control de gastos gratis y de código abierto: lee la cartola de cualquier banco, tu IA ordena y aconseja, tus datos en tu computador.",
+   "url": "https://github.com/alcancia-app/alcancia",
+   "pagina": "https://alcancia-app.github.io/alcancia/",
+   "actualizado": "2026-10-30T20:07:21Z",
+   "familia": true,
+   "icono": "iconos/proyectos/alcancia-app--alcancia.svg",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30"
+   }
+  },
+  {
+   "nombre": "corta",
+   "repo": "corta-app/corta",
+   "descripcion": "Editor gratis y de código abierto para Shorts, Reels y TikTok: editas el texto y se edita el video. Subtítulos animados, sin silencios y tu propia IA.",
+   "url": "https://github.com/corta-app/corta",
+   "pagina": "https://corta-app.github.io/corta/",
+   "actualizado": "2026-10-30T20:07:15Z",
+   "familia": true,
+   "icono": "iconos/proyectos/corta-app--corta.svg",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30"
+   }
+  },
+  {
+   "nombre": "esquema",
+   "repo": "esquema-app/esquema",
+   "descripcion": "Diagramas (flujo, secuencia, arquitectura, BPMN y más) y documentación con tu propia IA. Compatible con Mermaid y 40–100× más rápido. Gratis y abierto.",
+   "url": "https://github.com/esquema-app/esquema",
+   "pagina": "https://esquema-app.github.io/esquema/",
+   "actualizado": "2026-10-30T20:07:28Z",
+   "familia": true,
+   "icono": "iconos/proyectos/esquema-app--esquema.svg",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30"
+   }
+  },
+  {
+   "nombre": "graba",
+   "repo": "graba-app/graba",
+   "descripcion": "Graba tu pantalla con tu cámara y tu IA te deja notas, guion para YouTube, capítulos y subtítulos. Gratis, open source y privado.",
+   "url": "https://github.com/graba-app/graba",
+   "pagina": "https://graba-app.github.io/graba/",
+   "actualizado": "2026-10-30T20:53:00Z",
+   "familia": true,
+   "icono": "iconos/proyectos/graba-app--graba.svg",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30"
+   }
+  },
+  {
+   "nombre": "minuta",
+   "repo": "minuta-app/minuta",
+   "descripcion": "Notas de reuniones con IA y coach de comunicación: transcribe en tu computador, usa tu propia IA (Claude, ChatGPT o Gemini) y guarda todo en tu Git. Mac, Windows y Linux. Gratis y abierto.",
+   "url": "https://github.com/minuta-app/minuta",
+   "pagina": "https://minuta-app.github.io/minuta/",
+   "actualizado": "2026-10-30T20:53:03Z",
+   "familia": true,
+   "icono": "iconos/proyectos/minuta-app--minuta.svg",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30"
+   }
+  },
+  {
+   "nombre": "pieza",
+   "repo": "pieza-app/pieza",
+   "descripcion": "Framework abierto para apps que viven en tu computador: piezas probadas que se enchufan en vez de escribirse de cero.",
+   "url": "https://github.com/pieza-app/pieza",
+   "pagina": "https://pieza-app.github.io/pieza/",
+   "actualizado": "2026-10-30T21:10:05Z",
+   "familia": true,
+   "icono": "iconos/proyectos/pieza-app--pieza.svg",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30"
+   }
+  },
+  {
+   "nombre": "repasa",
+   "repo": "repasa-app/repasa",
+   "descripcion": "Estudia desde la foto del cuaderno: preguntas, repaso espaciado y la IA de tu familia. Gratis, abierto y en tu computador.",
+   "url": "https://github.com/repasa-app/repasa",
+   "pagina": "https://repasa-app.github.io/repasa/",
+   "actualizado": "2026-10-30T20:07:25Z",
+   "familia": true,
+   "icono": "iconos/proyectos/repasa-app--repasa.svg",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30"
+   }
+  }
+ ]
 }

@@ -28,8 +28,10 @@ cópiala a `piezas/<id>/` en tu fork y corre lo mismo.
 | **Sin revisar** | Pasó la validación automática, pero nadie leyó el código todavía. | Solo con `--sin-revisar`, bajo tu responsabilidad. |
 | **Rechazada** | Se revisó y no es segura. No se muestra. | Nunca. |
 
-Si el autor cambia el código después de una revisión, la pieza vuelve a «Sin revisar» (la versión revisada sigue siendo la que
-se instala como segura hasta que se revise la nueva). Lo mismo si cambia el ícono. Si cambia algo que no es código,
+Si el autor cambia el código después de una revisión, lo nuevo queda «Sin revisar» y `pieza.py agregar` sigue instalando la
+**última versión revisada** (verificada con sus huellas) hasta que se revise la nueva. Lo mismo si cambia el ícono. Un rechazo es
+del repo: sigue rechazado aunque cambie, hasta que alguien lo apruebe. Si la búsqueda de GitHub viene incompleta o cae de golpe, no
+se quita nada (un error de GitHub no borra revisiones). Si cambia algo que no es código,
 `pieza.json` ni el ícono, la revisión se mantiene.
 
 ## Revisar (quien mantiene Pieza)
@@ -38,8 +40,8 @@ Con la skill `revisar-aportes-open-source` (en Claude Code, Gemini CLI o Codex):
 de la pieza, revísalo como un PR (fase 2b: regla de oro, permisos y red honestos, brechas conocidas) y deja el veredicto:
 
 ```bash
-python3 herramientas/comunidad.py revisar <id> aprobar
-python3 herramientas/comunidad.py revisar <id> rechazar "por qué"
+python3 herramientas/comunidad.py revisar <id> aprobar <commit que leíste>
+python3 herramientas/comunidad.py revisar <id> rechazar <commit> "por qué"
 ```
 
 Fija la revisión a ese commit y a la huella de cada archivo. Haz commit de `comunidad/catalogo.json`: la página se actualiza sola.
@@ -56,7 +58,8 @@ Si hiciste una app con Pieza, aparece sola en la [página](https://pieza-app.git
    revisar»**. Cuando quien mantiene Pieza la mira, pasa a **«Aprobada por la comunidad ✓»**.
 
 Aprobar un proyecto dice que **es una app hecha con Pieza, que cumple el manifiesto y que no engaña** (no es una revisión
-línea por línea de todo su código, como la de una pieza). Se aprueba el proyecto, no un commit. Uno rechazado no aparece.
+línea por línea de todo su código, como la de una pieza). Se aprueba el proyecto, no un commit; pero si cambia su nombre o el
+enlace a su página, vuelve a «Sin revisar» (y la página solo enlaza el sitio de los aprobados). Uno rechazado no aparece.
 
 ```bash
 python3 herramientas/comunidad.py proyecto <dueño/repo> aprobar

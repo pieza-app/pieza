@@ -53,7 +53,7 @@ enruten solos.
 | Campo | Para qué |
 |---|---|
 | `icono` | **Obligatorio.** Un `.svg` dentro de la pieza (ver «El ícono»). Es lo que la gente ve en el catálogo, la página y el creador. |
-| `archivos` | Origen en la pieza → destino en la app. `pieza.py agregar` los copia y anota su huella. |
+| `archivos` | Origen en la pieza → destino en la app. `pieza.py agregar` los copia y anota su huella. El destino va dentro de `bin/`, `ui/`, `app/`, `escritorio/`, `movil/`, `docs/`, `pruebas/` o `herramientas/`, nunca en carpetas que empiezan con punto (`.github/`, `.git/`, `.claude/`: ahí un archivo ejecuta código), y sin enlaces. |
 | `requiere` | Otras piezas que se agregan antes, solas. |
 | `config` | Claves que la pieza necesita en `app.json` (lista = valores posibles; `"bool"`, `"texto"`, `"numero"` = tipo). Se suman sin pisar. |
 | `acciones` | Las acciones tipo (a) que trae la pieza (abajo). |
@@ -66,7 +66,6 @@ enruten solos.
 | `permisos` | Por plataforma, `[{clave, por}]`: la clave de Info.plist, el permiso de Android o el aviso del sistema, y para qué. |
 | `red` | Dominios a los que sale. Vacío = funciona sin internet. |
 | `tareas_persona` | Lo que solo puede hacer una persona (crear una org, una cuenta de desarrollador, verificar un sitio). |
-
 | `compatible` | `{"nucleo": ">=0.1.0 <1.0.0"}`: con qué versiones de lo que requiere funciona. `pieza.py` no deja combinar versiones que no se llevan. |
 | `cambios` | De la más nueva a la más vieja: `{version, tipo, resumen, seguridad?, migrar?}`. Es lo que se le avisa a cada app. |
 | `red_nota` | Cuando la app no sale a internet pero algo de la persona sí (su IA, su proveedor): dicho en una frase. |
@@ -107,7 +106,8 @@ red). Así el catálogo se recorre mirando, no leyendo.
 
 - **Formato:** `viewBox="0 0 24 24"`, trazo de 2 (`stroke-width="2"`), puntas y uniones redondeadas, `fill="none"`.
 - **Color:** solo `currentColor` (o `none`): la página, la app y el creador lo pintan con su color, en claro y oscuro.
-- **Seguro:** solo formas (`svg`, `g`, `path`, `circle`, `ellipse`, `rect`, `line`, `polyline`, `polygon`, `title`), hasta 8 KB,
+- **Seguro:** solo formas (`svg`, `g`, `path`, `circle`, `ellipse`, `rect`, `line`, `polyline`, `polygon`, `title`; los de
+  proyectos también degradados: `defs`, `linearGradient`, `radialGradient`, `stop`, `clipPath`), hasta 8 KB,
   sin `<script>`, `<style>`, `<image>`, `<use>`, `<a>`, `href`, `style` ni `on…`, sin DOCTYPE ni entidades.
   `herramientas/icono.py` lo revisa (en `pieza.py revisar`, en el catálogo de la comunidad y al armar la página): si no pasa,
   la pieza no entra.

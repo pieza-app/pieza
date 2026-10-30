@@ -126,15 +126,59 @@ def todas():
             if os.path.isfile(os.path.join(PIEZAS, d, "pieza.json"))}
 
 
-def con_requisitos(pid, vistos=None):
-    """La pieza y todo lo que requiere, en orden (primero lo que se necesita antes)."""
+def con_requisitos(pid, vistos=None, camino=()):
+    """La pieza y todo lo que requiere, en orden (primero lo que se necesita antes). Un ciclo es un error."""
     vistos = vistos if vistos is not None else []
+    if pid in camino:
+        sys.exit("«requiere» tiene un ciclo: " + " → ".join(camino + (pid,)))
     for r in pieza(pid).get("requiere", []):
         if r not in vistos:
-            con_requisitos(r, vistos)
+            con_requisitos(r, vistos, camino + (pid,))
     if pid not in vistos:
         vistos.append(pid)
     return vistos
+
+
+#: Dónde puede escribir una pieza dentro de una app. Nunca .github/, .git/, .claude/ ni nada que empiece con punto: ahí un
+#: archivo «más» ejecuta código (workflows, hooks de git, hooks de la IA).
+PREFIJOS_DESTINO = ("bin/", "ui/", "app/", "escritorio/", "movil/", "docs/", "pruebas/", "herramientas/")
+
+
+def ruta_relativa_ok(r):
+    return (isinstance(r, str) and 0 < len(r) < 200 and not r.startswith("/") and "\\" not in r and ":" not in r
+            and all(x not in ("", ".", "..") and not x.startswith(".") for x in r.split("/")))
+
+
+#: La forma de cada campo, antes de mirar su contenido (un pieza.json de afuera puede traer cualquier cosa).
+FORMA = {"version": str, "estado": str, "nombre": str, "icono": str, "categoria": str, "descripcion": str, "recomendar": dict,
+         "requiere": list, "compatible": dict, "plataformas": list, "pantallas": list, "permisos": dict, "red": list,
+         "red_nota": str, "tareas_persona": list, "archivos": dict, "config": dict, "acciones": dict, "textos": dict,
+         "cambios": list, "tomar_de": (str, list), "origen": str}
+
+
+def errores_forma(p):
+    if not isinstance(p, dict):
+        return ["pieza.json no es un objeto"]
+    e = [f"«{k}» tiene el tipo equivocado" for k, t in FORMA.items() if k in p and not isinstance(p[k], t)]
+    if e:
+        return e
+    if not all(isinstance(x, str) for x in p.get("requiere", []) + p.get("red", []) + p.get("plataformas", [])):
+        e.append("«requiere», «red» y «plataformas» son listas de textos")
+    if not all(isinstance(v, list) for v in p.get("permisos", {}).values()):
+        e.append("«permisos» es {plataforma: [{clave, por}]}")
+    if not all(isinstance(c, dict) for c in p.get("cambios", [])):
+        e.append("cada cambio es un objeto")
+    if not all(isinstance(k, str) and isinstance(v, str) for k, v in p.get("archivos", {}).items()):
+        e.append("«archivos» es {origen: destino} con textos")
+    if not all(isinstance(v, str) for v in p.get("compatible", {}).values()):
+        e.append("«compatible» es {pieza: rango}")
+    for a in p.get("acciones", {}).values():
+        if not isinstance(a, dict) or not isinstance(a.get("datos", {}), dict) or not isinstance(a.get("args", []), list) \
+                or not all(isinstance(x, str) for x in a.get("args", [])) \
+                or not all(isinstance(r, dict) for r in a.get("datos", {}).values()):
+            e.append("cada acción es {script, args: [textos], datos: {campo: {tipo…}}, limite}")
+            break
+    return e
 
 
 def destino_seguro(app, relativa):
@@ -147,7 +191,9 @@ def destino_seguro(app, relativa):
 # ── Revisar ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def errores_pieza(pid, p, ids, carpeta="local"):
-    e = []
+    e = errores_forma(p)
+    if e:
+        return e
     if p.get("id") != pid or not ID.match(pid):
         e.append("«id» debe ser igual a la carpeta: minúsculas, números y guiones")
     if not VERSION.match(str(p.get("version", ""))):
@@ -219,8 +265,12 @@ def errores_pieza(pid, p, ids, carpeta="local"):
     for origen, destino in p.get("archivos", {}).items():
         if carpeta is not None and not os.path.isfile(os.path.join(carpeta_de(pid), origen)):
             e.append(f"falta el archivo {origen}")
-        if os.path.isabs(destino) or ".." in destino.split("/"):
-            e.append(f"destino inválido {destino}")
+        if not ruta_relativa_ok(origen):
+            e.append(f"origen inválido {origen}")
+        elif carpeta is not None and os.path.islink(os.path.join(carpeta_de(pid), origen)):
+            e.append(f"{origen} es un enlace: copia el archivo")
+        if not ruta_relativa_ok(destino) or not destino.startswith(PREFIJOS_DESTINO):
+            e.append(f"destino inválido {destino}: va dentro de {', '.join(PREFIJOS_DESTINO)} (nunca carpetas que empiezan con punto)")
     scripts = {os.path.basename(d) for d in p.get("archivos", {}).values()}
     for nombre, a in p.get("acciones", {}).items():
         donde = f"acción «{nombre}»"
@@ -255,8 +305,19 @@ def errores_pieza(pid, p, ids, carpeta="local"):
 def revisar():
     ps = todas()
     total = 0
+    def ciclo(pid, camino=()):
+        if pid in camino:
+            return " → ".join(camino + (pid,))
+        for r in ((ps.get(pid) or {}).get("requiere") or []):
+            c = ciclo(r, camino + (pid,)) if r in ps else None
+            if c:
+                return c
+        return None
     for pid, p in ps.items():
         e = errores_pieza(pid, p or {}, ps)
+        c = ciclo(pid)
+        if c:
+            e.append(f"«requiere» tiene un ciclo: {c}")
         total += len(e)
         print(f"{'✗' if e else '✓'} {pid}" + "".join(f"\n    {x}" for x in e))
     return 1 if total else 0
@@ -315,8 +376,12 @@ def copiar(pid, app, forzar=False, lock=None):
                 saltados.append(destino)
                 copiados[destino] = anterior or ""
                 continue
+        fuente = os.path.join(carpeta_de(pid), origen)
+        if not ruta_relativa_ok(origen) or not ruta_relativa_ok(destino) or not destino.startswith(PREFIJOS_DESTINO) \
+                or os.path.islink(fuente):
+            sys.exit(f"{pid}: no copio {origen} → {destino} (ruta no permitida o enlace)")
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        shutil.copy2(os.path.join(carpeta_de(pid), origen), dst)
+        shutil.copy2(fuente, dst)
         copiados[destino] = huella(dst)
     # Config: suma las claves que la pieza necesita a app.json (sin tocar las que ya existen).
     ruta_app = os.path.join(app, "app.json")
@@ -337,7 +402,9 @@ def copiar(pid, app, forzar=False, lock=None):
             escribir(en, d)
     # Si algún archivo quedó sin actualizar (la app lo cambió), la versión anotada no avanza: estado sigue avisando.
     version = p["version"] if not saltados else antes.get("version", "0.0.0")
-    lock["piezas"][pid] = {"version": version, "archivos": copiados}
+    lock["piezas"][pid] = {"version": version, "archivos": copiados,
+                           # Lo que la app aceptó: si una versión nueva pide más (otra pieza, permisos, red), no se aplica sola.
+                           "ficha": {k: p.get(k, [] if k != "permisos" else {}) for k in ("requiere", "permisos", "red")}}
     if pid in _FUENTE:
         lock["piezas"][pid]["fuente"] = _FUENTE[pid]
     escribir(os.path.join(app, "piezas.json"), lock)
@@ -345,6 +412,8 @@ def copiar(pid, app, forzar=False, lock=None):
 
 
 def agregar(pid, app, sin_revisar=False):
+    if not ID.match(pid):
+        sys.exit("El id de una pieza va en minúsculas, números y guiones.")
     if not os.path.isfile(os.path.join(app, "app.json")):
         sys.exit("La app no tiene app.json. Créalo con: pieza.py iniciar <app> <id> <Nombre>")
     if not os.path.isfile(os.path.join(PIEZAS, pid, "pieza.json")):
@@ -371,7 +440,9 @@ def estado_app(app):
     nuevas = {pid: (todas().get(pid) or {}).get("version", info["version"]) for pid, info in lock["piezas"].items()}
     salida = []
     for pid, info in sorted(lock["piezas"].items()):
-        p = todas().get(pid) or {}
+        if info.get("fuente"):  # de la comunidad: nunca se compara (ni se reemplaza) con una oficial del mismo id
+            nuevas[pid] = info["version"]
+        p = {} if info.get("fuente") else (todas().get(pid) or {})
         nueva = nuevas[pid]
         pendientes = cambios_entre(p, info["version"], nueva) if p else []
         tipo = max((c["tipo"] for c in pendientes), key=lambda t: TIPOS_CAMBIO[t], default=None)
@@ -384,10 +455,13 @@ def estado_app(app):
                 cambiados.append(destino)
         con_esta = {**{k: v["version"] for k, v in lock["piezas"].items()}, pid: nueva}
         choques = [x for x in incompatibles(con_esta) if pid in (x[0], x[1])]
-        salida.append({"pieza": pid, "actual": info["version"], "nueva": nueva, "al_dia": semver(info["version"]) >= semver(nueva),
+        pide_mas = bool(p) and bool(pendientes) and info.get("ficha") != {k: p.get(k, [] if k != "permisos" else {})
+                                                                     for k in ("requiere", "permisos", "red")}
+        salida.append({"pieza": pid, "actual": info["version"], "comunidad": bool(info.get("fuente")), "pide_mas": pide_mas, "nueva": nueva, "al_dia": semver(info["version"]) >= semver(nueva),
                        "tipo": tipo, "seguridad": any(c.get("seguridad") for c in pendientes), "cambios": pendientes,
                        "cambiados_por_la_app": cambiados, "faltan": faltan, "choques": choques,
-                       "automatico": bool(pendientes) and tipo != "rompe" and not cambiados and not choques})
+                       "automatico": bool(pendientes) and tipo != "rompe" and not cambiados and not faltan and not choques
+                       and not pide_mas})
     return salida
 
 
@@ -403,7 +477,8 @@ def estado(app, como_json=False):
             marca = "al día"
         else:
             marca = f"hay {x['nueva']}: {x['tipo']}" + (" · SEGURIDAD" if x["seguridad"] else "") + \
-                    (" · se actualiza sola" if x["automatico"] else " · a mano")
+                    (" · se actualiza sola" if x["automatico"] else " · a mano") + \
+                    (" · pide más (otra pieza, permisos o red)" if x.get("pide_mas") else "")
         print(f"{x['pieza']} {x['actual']} ({marca})")
         for d in x["cambiados_por_la_app"]:
             print(f"    ~ la app cambió {d}")
@@ -427,6 +502,12 @@ def actualizar(app, solo=None, forzar=False, automatico=False):
         if x["choques"] and not forzar:
             print(f"! no actualicé {pid}: " + "; ".join(f"{a} necesita {b} {c} (hay {d})" for a, b, c, d in x["choques"]))
             continue
+        for r in con_requisitos(pid):  # lo que la versión nueva requiere y la app aún no tiene
+            if r != pid and r not in lock["piezas"]:
+                if pieza(r).get("estado") == "planeada":
+                    sys.exit(f"{pid} ahora requiere «{r}», que aún no está extraída.")
+                copiar(r, app, lock=lock)
+                print(f"+ {r} {pieza(r)['version']} (la requiere {pid})")
         saltados = copiar(pid, app, forzar=forzar, lock=lock)
         print(f"↑ {pid} {x['actual']} → {pieza(pid)['version']}" + (" (seguridad)" if x["seguridad"] else ""))
         for s in saltados:

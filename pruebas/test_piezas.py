@@ -333,7 +333,7 @@ class Comunidad(unittest.TestCase):
         self.publicar("ana/saludo", "a" * 40)
         self.assertIn("+ saludo", " ".join(self.c.buscar(self.red, hoy="2026-10-30")))
         self.assertEqual(self.entrada()["revision"]["estado"], "sin-revisar")
-        self.c.revisar("saludo", "aprobar", hoy="2026-10-31")
+        self.c.revisar("saludo", "aprobar", "a" * 40, hoy="2026-10-31")
         self.assertEqual(self.entrada()["revision"]["estado"], "revisada")
         # Un commit nuevo con los mismos archivos sigue revisado; si cambia el código, vuelve a «sin revisar».
         self.publicar("ana/saludo", "b" * 40)
@@ -351,6 +351,42 @@ class Comunidad(unittest.TestCase):
         self.assertIn("enum o entero", resumen)
         self.assertIn("es de una pieza oficial", resumen)
         self.assertEqual(self.c.leer()["piezas"], [])
+
+    def test_revision_atada_y_rechazo_pegajoso(self):
+        self.publicar("ana/saludo", "a" * 40)
+        self.c.buscar(self.red)
+        with self.assertRaises(SystemExit):  # se aprueba lo que se leyó, no lo que haya ahora
+            self.c.revisar("saludo", "aprobar", "b" * 40)
+        self.c.revisar("saludo", "aprobar", "aaaaaaa")
+        # Cambia el código: queda sin revisar, pero se sigue instalando lo último revisado.
+        self.publicar("ana/saludo", "c" * 40, codigo="otra\n")
+        self.c.buscar(self.red)
+        e = self.entrada()
+        self.assertEqual((e["revision"]["estado"], e["revision"]["ultima_revisada"]["commit"]), ("sin-revisar", "a" * 40))
+        carpeta, f = self.c.descargar("saludo", red=self.red, cache=os.path.join(self.tmp.name, "k"))
+        self.assertEqual((f["commit"], f["revision"]), ("a" * 40, "revisada"))
+        # Un rechazo es del repo: un commit nuevo no lo devuelve a la página.
+        self.c.revisar("saludo", "rechazar", "c" * 40, "no")
+        self.publicar("ana/saludo", "d" * 40, codigo="otra mas\n")
+        self.c.buscar(self.red)
+        self.assertEqual(self.entrada()["revision"]["estado"], "rechazada")
+
+    def test_pieza_rara_no_tumba_el_catalogo_y_busqueda_vacia_no_borra(self):
+        self.publicar("ana/saludo", "a" * 40)
+        for i, raro in enumerate(({"permisos": ["x"]}, {"cambios": ["x"]}, {"acciones": {"a": "x"}}, {"red": [5]},
+                                  {"archivos": {"python/saludo.py": 5}}, {"archivos": {"python/saludo.py": ".github/workflows/x.yml"}},
+                                  {"archivos": {"python/saludo.py": ".git/hooks/pre-commit"}})):
+            self.publicar(f"ana/raro{i}", f"{i:x}" * 40, id=f"raro{i}", **raro)
+        self.c.buscar(self.red)
+        self.assertEqual([x["id"] for x in self.c.leer()["piezas"]], ["saludo"])
+        self.c.revisar("saludo", "aprobar", "a" * 40)
+        guardado = self.c.Red.json
+        self.c.Red.json = lambda yo, url: {"items": [], "incomplete_results": True} if "search" in url else guardado(yo, url)
+        try:
+            self.c.buscar(self.red)
+        finally:
+            self.c.Red.json = guardado
+        self.assertEqual(self.entrada()["revision"]["estado"], "revisada")
 
     def test_icono_obligatorio_y_seguro(self):
         self.publicar("ana/saludo", "a" * 40)
@@ -431,7 +467,7 @@ class Comunidad(unittest.TestCase):
         self.assertIn("--sin-revisar", str(e.exception))
         carpeta, fuente = self.c.descargar("saludo", sin_revisar=True, red=self.red, cache=cache)
         self.assertEqual(fuente["revision"], "sin-revisar")
-        self.c.revisar("saludo", "aprobar")
+        self.c.revisar("saludo", "aprobar", self.entrada()["commit"])
         # Lo revisado se baja del commit revisado, aunque el repo haya cambiado después, y se compara con su huella.
         self.publicar("ana/saludo", "f" * 40, codigo="otra cosa\n")
         carpeta, fuente = self.c.descargar("saludo", red=self.red, cache=cache)
@@ -450,7 +486,7 @@ class Comunidad(unittest.TestCase):
         self.p.escribir(os.path.join(app, "app.json"), {"nombre": "Prueba", "id": "prueba", "config": {}})
         self.publicar("ana/saludo", "a" * 40)
         self.c.buscar(self.red)
-        self.c.revisar("saludo", "aprobar")
+        self.c.revisar("saludo", "aprobar", self.entrada()["commit"])
         antes = self.c.descargar
         self.c.descargar = lambda pid, sin_revisar=False: antes(pid, sin_revisar, red=self.red, cache=os.path.join(self.tmp.name, "c"))
         try:
@@ -465,7 +501,7 @@ class Comunidad(unittest.TestCase):
     def test_rechazada_nunca_se_instala(self):
         self.publicar("ana/saludo", "a" * 40)
         self.c.buscar(self.red)
-        self.c.revisar("saludo", "rechazar", "lee archivos de más")
+        self.c.revisar("saludo", "rechazar", self.entrada()["commit"], "lee archivos de más")
         with self.assertRaises(SystemExit) as e:
             self.c.descargar("saludo", sin_revisar=True, red=self.red, cache=self.tmp.name)
         self.assertIn("rechazada", str(e.exception))

@@ -56,8 +56,8 @@ catálogo exige SHA-256; la IA nunca se reintenta sin sus protecciones; los valo
 - Las piezas se **copian** dentro de cada app y `piezas.json` guarda la huella SHA-256 de cada archivo: `pieza.py actualizar`
   nunca pisa lo que la app cambió, y lo que rompe nunca se actualiza solo (trae los pasos en `migrar`).
 - Las GitHub Actions (aquí y en «Pieza al día») están fijadas por SHA con su versión en un comentario, con permisos mínimos,
-  `persist-credentials: false` (salvo el checkout de la app en «Pieza al día», que necesita empujar su rama y lo dice en un
-  comentario), sin `pull_request_target` y sin expresiones de GitHub dentro de `run:`. Dependabot propone actualizaciones con
+  `persist-credentials: false` (salvo el checkout de la app en «Pieza al día» y el del workflow `comunidad`, que necesitan
+  empujar y lo dicen en un comentario), sin `pull_request_target` y sin expresiones de GitHub dentro de `run:`. Dependabot propone actualizaciones con
   unos días de espera (`.github/dependabot.yml`) y `pruebas/correr.sh` revisa que todo siga fijado.
 - `herramientas/revisar_privacidad.sh` corre en cada cambio: nada de correos personales, rutas de usuario ni datos reales.
 

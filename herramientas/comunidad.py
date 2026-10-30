@@ -7,10 +7,11 @@
   comunidad.py proyectos                     Busca los repos públicos con el topic «hecho-con-pieza» (apps hechas con Pieza), lee
                                              su ícono (validado) y los deja en comunidad/proyectos.json; los nuevos, «sin revisar».
   comunidad.py listar                        Lo que hay (piezas y proyectos), con su estado de revisión.
-  comunidad.py revisar <id> aprobar|rechazar [nota]
-                                             Quien mantiene Pieza marca el commit actual como revisado (o rechazado). Lo revisado
-                                             queda fijado a ese commit y a la huella de cada archivo: es lo único que se instala
-                                             como seguro.
+  comunidad.py revisar <id> aprobar|rechazar <commit> [nota]
+                                             Quien mantiene Pieza marca como revisado (o rechazado) el commit que LEYÓ (si el
+                                             catálogo ya apunta a otro, no hace nada). Lo revisado queda fijado a ese commit y a la
+                                             huella de cada archivo: es lo único que se instala como seguro. Un rechazo es del repo:
+                                             sigue rechazado aunque cambie, hasta que alguien lo apruebe.
   comunidad.py proyecto <dueño/repo> aprobar|rechazar [nota]
                                              Marca un proyecto como aprobado por la comunidad (o lo saca de la página). Se aprueba
                                              el proyecto, no un commit: si cambia su ícono, sigue aprobado (el ícono siempre se
@@ -128,7 +129,12 @@ def validar_remota(repo, commit, red, oficiales, ocupados):
         errores.append(f"«archivos» tiene que tener entre 1 y {MAXIMO_ARCHIVOS}")
         archivos = {}
     # Las mismas reglas que una pieza oficial (regla de oro, permisos, red, cambios…), sin mirar el disco.
-    errores += [e for e in P.errores_pieza(pid, p, oficiales, carpeta=None) if not e.startswith("falta el archivo")]
+    try:
+        errores += [e for e in P.errores_pieza(pid, p, oficiales, carpeta=None) if not e.startswith("falta el archivo")]
+    except Exception as e:  # noqa: BLE001 — un pieza.json raro nunca tumba el catálogo de los demás
+        errores.append(f"pieza.json con una forma que no entiendo: {type(e).__name__}")
+    if errores:
+        return None, {}, errores
     huellas = {"pieza.json": sha(crudo)}
     svg = ""
     if isinstance(p.get("icono"), str) and ruta_segura(p["icono"]) and p["icono"].endswith(".svg"):
@@ -152,6 +158,28 @@ def validar_remota(repo, commit, red, oficiales, ocupados):
     return salida, huellas, errores
 
 
+def buscar_repos(red, topic):
+    """Todos los repos públicos con el topic (de a 100). completo=False si GitHub dijo que la búsqueda quedó incompleta."""
+    repos, completo, pagina = [], True, 1
+    while len(repos) < 1000:
+        q = urllib.parse.urlencode({"q": f"topic:{topic} is:public fork:false archived:false", "sort": "updated",
+                                    "per_page": 100, "page": pagina})
+        d = red.json(f"https://api.github.com/search/repositories?{q}")
+        if not isinstance(d, dict) or d.get("incomplete_results"):
+            completo = False
+        items = (d.get("items") if isinstance(d, dict) else None) or []
+        repos += [r for r in items if isinstance(r, dict) and isinstance(r.get("full_name"), str) and REPO.match(r["full_name"])]
+        if len(items) < 100:
+            break
+        pagina += 1
+    return repos, completo
+
+
+def se_puede_quitar(antes, encontrados, completo):
+    """Solo se quita lo que desapareció si la búsqueda fue completa y no cayó de golpe (un error de GitHub no borra revisiones)."""
+    return completo and (antes < 4 or encontrados >= antes // 2)
+
+
 def buscar(red=None, hoy=None):
     """Recorre los repos con el topic y deja el catálogo al día. Devuelve un resumen de lo que cambió."""
     red = red or Red()
@@ -160,9 +188,7 @@ def buscar(red=None, hoy=None):
     oficiales = P.todas()
     previas = {e["repo"]: e for e in cat["piezas"]}
     ocupados = {e["id"]: e["repo"] for e in cat["piezas"]}
-    q = urllib.parse.urlencode({"q": f"topic:{TOPIC} is:public fork:false archived:false", "per_page": 100})
-    repos = [r for r in red.json(f"https://api.github.com/search/repositories?{q}").get("items", [])
-             if isinstance(r.get("full_name"), str) and REPO.match(r["full_name"])]
+    repos, completo = buscar_repos(red, TOPIC)
     nuevas, cambio, resumen = [], False, []
     for r in repos:
         repo = r["full_name"]
@@ -179,15 +205,23 @@ def buscar(red=None, hoy=None):
         if anterior and anterior.get("commit") == commit:
             nuevas.append(anterior)
             continue
-        p, huellas, errores = validar_remota(repo, commit, red, oficiales, ocupados)
+        try:
+            p, huellas, errores = validar_remota(repo, commit, red, oficiales, ocupados)
+        except Exception as e:  # noqa: BLE001
+            p, huellas, errores = None, {}, [f"error al validar: {type(e).__name__}"]
         if errores:
             resumen.append(f"✗ {repo}: " + "; ".join(errores[:5]))
             if anterior:  # un cambio malo no borra lo que ya estaba: queda la versión anterior (y su revisión)
                 nuevas.append(anterior)
             continue
-        rev = (anterior or {}).get("revision", {"estado": "sin-revisar"})
-        if rev.get("estado") in ("revisada", "rechazada") and rev.get("huellas") != huellas:
-            rev = {"estado": "sin-revisar", "antes": rev.get("estado")}
+        rev = dict((anterior or {}).get("revision", {"estado": "sin-revisar"}))
+        if (anterior or {}).get("repo") and rev.get("estado") == "rechazada":
+            pass  # un rechazo es del repo: no vuelve solo a la página
+        elif rev.get("estado") == "revisada" and rev.get("huellas") != huellas:
+            # Cambió el código: lo nuevo queda sin revisar, pero lo último revisado sigue siendo lo que se instala como seguro.
+            rev = {"estado": "sin-revisar", "ultima_revisada": {k: rev[k] for k in ("commit", "huellas", "fecha") if k in rev}}
+        elif rev.get("estado") == "sin-revisar" and rev.get("ultima_revisada", {}).get("huellas") == huellas:
+            rev = {"estado": "revisada", **rev["ultima_revisada"]}  # volvió a lo que ya se revisó
         entrada = {"id": p["id"], "repo": repo, "commit": commit, "encontrada": (anterior or {}).get("encontrada", hoy),
                    "actualizada": hoy, "pieza": p, "huellas": huellas, "revision": rev}
         ocupados[p["id"]] = repo
@@ -195,6 +229,10 @@ def buscar(red=None, hoy=None):
         cambio = True
         resumen.append(("↑ " if anterior else "+ ") + f"{p['id']} ({repo}) → {rev['estado']}")
     quitadas = set(previas) - {e["repo"] for e in nuevas}
+    if quitadas and not se_puede_quitar(len(previas), len(repos), completo):
+        resumen.append(f"! la búsqueda vino incompleta o cayó de golpe: no quito {len(quitadas)} pieza(s)")
+        nuevas += [previas[r] for r in quitadas]
+        quitadas = set()
     for repo in quitadas:
         cambio = True
         resumen.append(f"− {previas[repo]['id']} ({repo}): ya no tiene el topic o no existe")
@@ -204,7 +242,7 @@ def buscar(red=None, hoy=None):
     return resumen
 
 
-def revisar(pid, veredicto, nota="", hoy=None):
+def revisar(pid, veredicto, commit, nota="", hoy=None):
     cat = leer()
     e = next((x for x in cat["piezas"] if x["id"] == pid), None)
     if not e:
@@ -212,6 +250,9 @@ def revisar(pid, veredicto, nota="", hoy=None):
     estado = {"aprobar": "revisada", "rechazar": "rechazada"}.get(veredicto)
     if not estado:
         sys.exit("El veredicto es aprobar o rechazar.")
+    if not re.match(r"^[0-9a-f]{7,40}$", commit or "") or not e["commit"].startswith(commit):
+        sys.exit(f"El catálogo apunta a {e['commit'][:12]}, no a lo que revisaste ({commit}). Revisa ese commit y vuelve a dar"
+                 " el veredicto con su sha.")
     e["revision"] = {"estado": estado, "commit": e["commit"], "huellas": e["huellas"],
                      "fecha": hoy or datetime.date.today().isoformat(), "nota": nota[:300]}
     guardar(cat)
@@ -233,6 +274,9 @@ def descargar(pid, sin_revisar=False, red=None, cache=None):
         sys.exit(f"«{pid}» fue revisada y rechazada: {rev.get('nota') or 'no es segura'}.")
     if rev.get("estado") == "revisada":
         commit, huellas = rev["commit"], rev["huellas"]
+    elif rev.get("ultima_revisada") and not sin_revisar:
+        commit, huellas = rev["ultima_revisada"]["commit"], rev["ultima_revisada"]["huellas"]
+        print(f"«{pid}» tiene cambios sin revisar: instalo la última versión revisada ({commit[:7]}).")
     elif sin_revisar:
         commit, huellas = e["commit"], e["huellas"]
         print(f"⚠️  «{pid}» aún NO está revisada por Pieza. La instalas bajo tu responsabilidad (commit {commit[:7]} de {e['repo']}).")
@@ -250,7 +294,8 @@ def descargar(pid, sin_revisar=False, red=None, cache=None):
         os.makedirs(os.path.dirname(destino), exist_ok=True)
         with open(destino, "wb") as f:
             f.write(datos)
-    return carpeta, {"repo": e["repo"], "commit": commit, "revision": rev.get("estado", "sin-revisar")}
+    revisado = rev.get("estado") == "revisada" or (rev.get("ultima_revisada", {}).get("commit") == commit)
+    return carpeta, {"repo": e["repo"], "commit": commit, "revision": "revisada" if revisado else "sin-revisar"}
 
 
 # ── Proyectos hechos con Pieza ───────────────────────────────────────────────────────────────────────────────────────────────
@@ -302,15 +347,7 @@ def buscar_proyectos(red=None, hoy=None):
     hoy = hoy or datetime.date.today().isoformat()
     reg = leer_proyectos()
     previos = {e["repo"]: e for e in reg["proyectos"]}
-    repos, pagina = [], 1
-    while len(repos) < 1000:
-        q = urllib.parse.urlencode({"q": f"topic:{TOPIC_PROYECTOS} is:public fork:false archived:false", "sort": "updated",
-                                    "per_page": 100, "page": pagina})
-        items = red.json(f"https://api.github.com/search/repositories?{q}").get("items") or []
-        repos += [r for r in items if isinstance(r.get("full_name"), str) and REPO.match(r["full_name"])]
-        if len(items) < 100:
-            break
-        pagina += 1
+    repos, completo = buscar_repos(red, TOPIC_PROYECTOS)
     nuevos, resumen = [], []
     for r in repos:
         repo = r["full_name"]
@@ -329,12 +366,21 @@ def buscar_proyectos(red=None, hoy=None):
                    "icono": ruta, "icono_svg": svg, "encontrado": anterior.get("encontrado", hoy),
                    "actualizado": texto(r.get("pushed_at"), 25),
                    "revision": anterior.get("revision", {"estado": "sin-revisar"})}
+        if entrada["revision"].get("estado") == "revisado" and any(entrada[k] != anterior.get(k) for k in ("nombre", "pagina")):
+            # Lo aprobado fue ese nombre y esa página: si cambian, se vuelve a mirar (un enlace no puede cambiar a escondidas).
+            entrada["revision"] = {"estado": "sin-revisar", "antes": "revisado"}
+            resumen.append(f"! {repo}: cambió su nombre o su página → vuelve a «sin revisar»")
         if not anterior:
             resumen.append(f"+ {repo} → sin revisar")
         elif {k: v for k, v in entrada.items() if k != "actualizado"} != {k: v for k, v in anterior.items() if k != "actualizado"}:
             resumen.append(f"↑ {repo}")
         nuevos.append(entrada)
-    for repo in set(previos) - {e["repo"] for e in nuevos}:
+    quitados = set(previos) - {e["repo"] for e in nuevos}
+    if quitados and not se_puede_quitar(len(previos), len(repos), completo):
+        resumen.append(f"! la búsqueda vino incompleta o cayó de golpe: no quito {len(quitados)} proyecto(s)")
+        nuevos += [previos[r] for r in quitados]
+        quitados = set()
+    for repo in quitados:
         resumen.append(f"− {repo}: ya no tiene el topic o no existe")
     if nuevos != reg["proyectos"]:
         reg["proyectos"] = nuevos
@@ -374,8 +420,8 @@ if __name__ == "__main__":
         revisar_proyecto(a[1], a[2], " ".join(a[3:]))
     elif a[:1] == ["listar"]:
         listar()
-    elif len(a) >= 3 and a[0] == "revisar":
-        revisar(a[1], a[2], " ".join(a[3:]))
+    elif len(a) >= 4 and a[0] == "revisar":
+        revisar(a[1], a[2], a[3], " ".join(a[4:]))
     else:
         print(__doc__)
         sys.exit(2)

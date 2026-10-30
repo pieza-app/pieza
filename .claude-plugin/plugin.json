@@ -1,6 +1,6 @@
 {
   "name": "pieza",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "description": "Crear apps abiertas que viven en tu computador con piezas probadas, y revisar aportes de la comunidad con el mismo flujo. También para Gemini CLI y Codex.",
   "author": {
     "name": "Pieza",
