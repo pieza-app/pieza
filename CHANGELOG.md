@@ -1,5 +1,10 @@
 # Cambios
 
+## Sin publicar
+- **Pieza `i18n` 0.1.0 (lista):** `T`, `Tp`, `Thtml`, `tr` y `traducirDOM` de las apps en un solo archivo; valida las traducciones que vienen de afuera (solo texto, mismos marcadores) y escapa también los valores.
+- **Pieza `bienvenida` 0.1.0 (lista):** el idioma siempre primero (bilingüe, teclas 1/2, el del sistema sugerido) y pasos que suma cada app o pieza.
+- **Pieza `actualizaciones` 0.1.0 (lista):** Mac y Windows/Linux, solo desde los Releases del propio repo, `.sha256` obligatorio y nada de la app adentro.
+
 ## 0.6.1 — 2026-10-30
 - **Más seguro, después de una revisión independiente:** una pieza de la comunidad mal formada ya no tumba el catálogo; una
   búsqueda de GitHub incompleta no borra nada; el veredicto se da con el commit que se leyó (`revisar <id> aprobar <commit>`);

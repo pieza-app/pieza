@@ -505,3 +505,87 @@ class Comunidad(unittest.TestCase):
         with self.assertRaises(SystemExit) as e:
             self.c.descargar("saludo", sin_revisar=True, red=self.red, cache=self.tmp.name)
         self.assertIn("rechazada", str(e.exception))
+
+
+class PiezasDeInterfaz(unittest.TestCase):
+    """i18n, bienvenida y actualizaciones: se agregan a una app con sus requisitos, textos y config, y su código no trae
+    nada de una app. La lógica de JavaScript se prueba en pruebas/piezas_js.mjs (node --test)."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.app = os.path.join(self.tmp.name, "prueba")
+        os.makedirs(os.path.join(self.app, "ui", "idiomas"))
+        with open(os.path.join(self.app, "ui", "idiomas", "en.json"), "w") as f:
+            json.dump({"codigo": "en", "nombre": "English", "textos": {"Atrás": "Volver (de la app)"}}, f)
+        self.assertEqual(correr(PIEZA, "iniciar", self.app, "prueba", "Prueba").returncode, 0)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def ficha(self, pid):
+        with open(os.path.join(BASE, "piezas", pid, "pieza.json"), encoding="utf-8") as f:
+            return json.load(f)
+
+    def fuente(self, pid, ruta):
+        with open(os.path.join(BASE, "piezas", pid, ruta), encoding="utf-8") as f:
+            return f.read()
+
+    def test_bienvenida_trae_i18n_textos_y_config(self):
+        r = correr(PIEZA, "agregar", "bienvenida", self.app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        for ruta in ("ui/i18n.js", "ui/bienvenida.js", "ui/bienvenida.css"):
+            self.assertTrue(os.path.isfile(os.path.join(self.app, ruta)), ruta)
+        lock = json.load(open(os.path.join(self.app, "piezas.json")))["piezas"]
+        self.assertEqual(sorted(lock), ["bienvenida", "i18n"])
+        en = json.load(open(os.path.join(self.app, "ui", "idiomas", "en.json")))["textos"]
+        self.assertEqual(en["Atrás"], "Volver (de la app)", "lo que la app ya tenía no se pisa")
+        self.assertEqual(en["Siguiente"], "Next")
+        config = json.load(open(os.path.join(self.app, "app.json")))["config"]
+        self.assertIn("idioma_ui", config)
+        self.assertEqual(config["bienvenida"], "bool")
+
+    def test_actualizaciones_queda_en_su_target_y_en_escritorio(self):
+        r = correr(PIEZA, "agregar", "actualizaciones", self.app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertTrue(os.path.isfile(os.path.join(self.app, "app", "Sources", "PiezaActualizaciones", "Actualizaciones.swift")))
+        self.assertTrue(os.path.isfile(os.path.join(self.app, "escritorio", "src", "actualizaciones.js")))
+
+    def test_textos_completos_y_con_los_mismos_marcadores(self):
+        import re
+        marcas = lambda t: sorted(re.findall(r"\{(\w+)\}", t))
+        for pid in ("i18n", "bienvenida", "actualizaciones"):
+            for es, en in self.ficha(pid)["textos"].items():
+                self.assertEqual(marcas(es), marcas(en), f"{pid}: {es}")
+        bv = self.ficha("bienvenida")["textos"]
+        codigo = self.fuente("bienvenida", "ui/bienvenida.js")
+        usados = set(re.findall(r'\bT\("([^"]+)"', codigo)) | set(re.findall(r'titulo \|\| "([^"]+)"', codigo))
+        self.assertTrue(usados)
+        self.assertEqual(usados - set(bv), set(), "cada frase de la bienvenida tiene su inglés en pieza.json")
+        act = self.ficha("actualizaciones")["textos"]
+        js = self.fuente("actualizaciones", "escritorio/actualizaciones.js")
+        bloque = js[js.index("const TEXTOS = {"):js.index("};", js.index("const TEXTOS = {"))]
+        frases = re.findall(r':\s*"([^"]+)"', bloque)
+        self.assertEqual(len(frases), 7)
+        self.assertEqual(set(frases) - set(act), set())
+
+    def test_el_guion_de_swift_solo_mete_lo_variable_con_comillas(self):
+        import re
+        swift = self.fuente("actualizaciones", "mac/Actualizaciones.swift")
+        guiones = re.findall(r'texto = """(.*?)"""', swift, re.S)
+        self.assertEqual(len(guiones), 2)
+        permitidos = ("comillas(", "paso(", "pid)", "progreso)", "cerrar)")
+        for g in guiones:
+            for m in re.finditer(r"\\\(", g):
+                self.assertTrue(g[m.end():].startswith(permitidos), g[m.start():m.start() + 60])
+        # Lo que arma «paso» y «cerrar» también pasa por comillas, y la variable del avance se valida antes.
+        self.assertIn('"echo \\(comillas(p + "|" + codigo)) > \\(comillas(e))"', swift)
+        self.assertIn('osascript -e \\(comillas(', swift)
+        self.assertIn('^[A-Z][A-Z0-9_]{0,40}$', swift)
+        self.assertIn("--proto-redir '=https'", swift)
+
+    def test_nada_de_una_app_adentro(self):
+        import re
+        for pid, rutas in (("i18n", ["ui/i18n.js"]), ("bienvenida", ["ui/bienvenida.js", "ui/bienvenida.css"]),
+                           ("actualizaciones", ["mac/Actualizaciones.swift", "escritorio/actualizaciones.js"])):
+            for ruta in rutas:
+                self.assertIsNone(re.search(r"esquema|minuta|graba|corta|repasa|alcanc", self.fuente(pid, ruta), re.I), f"{pid}/{ruta}")

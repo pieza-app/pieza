@@ -4,6 +4,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 python3 herramientas/pieza.py revisar
 python3 -W ignore -m unittest -q pruebas/test_piezas.py
+# Las piezas de JavaScript (i18n, bienvenida, actualizaciones de Electron): Node, sin dependencias.
+node --test pruebas/piezas_js.mjs > /dev/null || node --test pruebas/piezas_js.mjs
 # El flujo oficial tiene que decir su versión: las skills instaladas la comparan para saber si quedaron atrás.
 for s in skills/*/SKILL.md; do
   grep -Eq '^Versión del flujo: [0-9]+$' "$s" || { echo "Falta «Versión del flujo: N» en $s"; exit 1; }
