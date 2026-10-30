@@ -541,7 +541,7 @@ void main(){
     const dt = ultimo ? Math.min(0.1, (ahora - ultimo) / 1000) : 1 / 60;
     // En celular, ya armado, basta la mitad de cuadros para flotar: menos batería.
     if (angosto.matches && tiempo > finTotal() + 1 && ahora - ultimo < 30) { cuadro = requestAnimationFrame(bucle); return; }
-    if (vigilando && ultimo && tiempo > 1.6) {
+    if (vigilando && ultimo && tiempo > 1.6 && ahora - ultimo < 1000 && document.hasFocus()) {  // un salto largo es la pestaña dormida, no un equipo lento
       // Se mide cuando ya hay varias piezas en vuelo (lo más pesado). Si el equipo no da abasto (render por software,
       // GPU muy lenta), vuelve al rompecabezas CSS.
       medidas.push(ahora - ultimo);
@@ -582,9 +582,16 @@ void main(){
     return;
   }
   lienzo.addEventListener("webglcontextlost", (e) => { e.preventDefault(); sinGL(); });
-  new ResizeObserver(() => { medir(); if (!cuadro) pedirCuadro(); }).observe(lienzo);
-  new IntersectionObserver((e) => { visible = e[0].isIntersecting; if (visible) seguir(); }).observe(lienzo);
-  document.addEventListener("visibilitychange", seguir);
+  // ¿Se ve? El observador puede quedarse con un «no» si la página cargó oculta (pestaña de fondo, panel cerrado) y no volver a
+  // avisar: por eso, ante cualquier señal (tamaño, foco, visibilidad), se vuelve a mirar la posición real del lienzo.
+  const enPantalla = () => { const r = lienzo.getBoundingClientRect(); return r.width > 0 && r.bottom > 0 && r.top < innerHeight; };
+  const revisar = () => { visible = enPantalla(); seguir(); if (!cuadro) pedirCuadro(); };
+  new ResizeObserver(() => { medir(); revisar(); }).observe(lienzo);
+  new IntersectionObserver((e) => { visible = e[0].isIntersecting || enPantalla(); if (visible) seguir(); }).observe(lienzo);
+  document.addEventListener("visibilitychange", revisar);
+  window.addEventListener("focus", revisar);
+  window.addEventListener("pageshow", revisar);
+  window.addEventListener("resize", revisar, { passive: true });
   window.addEventListener("pointermove", (e) => {
     mx = e.clientX / window.innerWidth - 0.5; my = e.clientY / window.innerHeight - 0.5;
   }, { passive: true });
@@ -595,6 +602,7 @@ void main(){
 
   function partir() {
     empezo = true;
+    visible = enPantalla() || visible;
     if (quieto.matches) { pedirCuadro(); return; }
     seguir();
   }
