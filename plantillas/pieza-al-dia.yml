@@ -61,6 +61,11 @@ jobs:
           python3 "$P" estado .
           python3 "$P" actualizar . --automatico | tee "$RUNNER_TEMP/cambios.txt"
           python3 "$P" aviso . > "$RUNNER_TEMP/aviso.md" || true
+          # ¿Hay una versión más nueva de la herramienta? Solo se avisa: subirla es un cambio a mano en este archivo.
+          ULTIMA=$(git ls-remote --tags --refs https://github.com/pieza-app/pieza 'v*' | sed 's|.*refs/tags/||' | sort -V | tail -n 1)
+          if [ -n "$ULTIMA" ] && [ "$ULTIMA" != "$PIEZA_HERRAMIENTA" ] && [ "$(printf '%s\n%s\n' "$PIEZA_HERRAMIENTA" "$ULTIMA" | sort -V | tail -n 1)" = "$ULTIMA" ]; then
+            printf '\n## La herramienta de Pieza tiene una versión nueva: %s\n\nEste workflow ejecuta `pieza.py` %s. Lee [qué cambió](https://github.com/pieza-app/pieza/blob/main/CHANGELOG.md) y, si estás de acuerdo, cambia `PIEZA_HERRAMIENTA` en `.github/workflows/pieza-al-dia.yml`.\n' "$ULTIMA" "$PIEZA_HERRAMIENTA" >> "$RUNNER_TEMP/aviso.md"
+          fi
           rm -rf .pieza-herramienta .pieza-catalogo
           git diff --binary > "$RUNNER_TEMP/actualizacion.patch"
           git ls-files --others --exclude-standard -z | xargs -0 -r git add -N
