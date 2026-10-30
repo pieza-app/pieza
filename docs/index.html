@@ -39,55 +39,176 @@
 <script src="pagina.js" defer></script>
 </head>
 <body>
+<svg class="oculto" aria-hidden="true" focusable="false"><defs><path id="f0" d="M0 0L100 0L100 38A14 14 0 1 0 100 62L100 100L62 100A14 14 0 1 1 38 100L0 100L0 0Z"/><path id="f1" d="M0 0L100 0L100 38A14 14 0 1 1 100 62L100 100L62 100A14 14 0 1 0 38 100L0 100L0 62A14 14 0 1 1 0 38L0 0Z"/><path id="f2" d="M0 0L100 0L100 100L62 100A14 14 0 1 1 38 100L0 100L0 62A14 14 0 1 0 0 38L0 0Z"/><path id="f3" d="M0 0L38 0A14 14 0 1 0 62 0L100 0L100 38A14 14 0 1 1 100 62L100 100L62 100A14 14 0 1 0 38 100L0 100L0 0Z"/><path id="f4" d="M0 0L38 0A14 14 0 1 1 62 0L100 0L100 38A14 14 0 1 0 100 62L100 100L62 100A14 14 0 1 1 38 100L0 100L0 62A14 14 0 1 0 0 38L0 0Z"/><path id="f5" d="M0 0L38 0A14 14 0 1 0 62 0L100 0L100 100L62 100A14 14 0 1 0 38 100L0 100L0 62A14 14 0 1 1 0 38L0 0Z"/><path id="f6" d="M0 0L38 0A14 14 0 1 1 62 0L100 0L100 38A14 14 0 1 0 100 62L100 100L0 100L0 0Z"/><path id="f7" d="M0 0L38 0A14 14 0 1 0 62 0L100 0L100 38A14 14 0 1 1 100 62L100 100L0 100L0 62A14 14 0 1 1 0 38L0 0Z"/><path id="f8" d="M0 0L38 0A14 14 0 1 1 62 0L100 0L100 100L0 100L0 62A14 14 0 1 0 0 38L0 0Z"/></defs></svg>
 <a class="saltar" href="#contenido" data-t="saltar">Ir al contenido</a>
 <header class="barra">
   <div class="envoltura barra-dentro">
     <a class="marca" href="#arriba"><img src="favicon.svg" alt="" width="28" height="28"><span>Pieza</span></a>
     <nav aria-label="Secciones" data-t-aria="secciones">
       <a href="#como" data-t="n_como">Cómo funciona</a>
-      <a href="#proyectos" data-t="n_proy">Proyectos</a>
-      <a href="#catalogo" data-t="n_cat">Catálogo</a>
       <a href="#empezar" data-t="n_emp">Empezar</a>
+      <a href="#catalogo" data-t="n_cat">Catálogo</a>
+      <a href="#proyectos" data-t="n_proy">Proyectos</a>
+      <a href="#manifiesto" data-t="n_man">Manifiesto</a>
     </nav>
     <button class="chico" id="idioma" type="button" lang="en" aria-label="Read in English">EN</button>
   </div>
 </header>
 
 <main id="contenido">
-<section class="portada" id="arriba">
-  <div class="envoltura">
-    <p class="antetitulo" data-t="ante">Framework abierto · AGPL-3.0</p>
-    <h1 data-t="h1">Arma apps abiertas con piezas probadas.</h1>
-    <p class="bajada" data-t="bajada">Tu propia IA, idiomas, actualizaciones seguras, un catálogo de la comunidad… Elige las piezas, revisa la ficha completa de tu app y enchúfalas. Cada app que se hace deja piezas para la siguiente.</p>
-    <div class="cifras" aria-live="polite">
-      <div><strong id="n-apps">—</strong><span data-t="c_apps">apps hechas con Pieza</span></div>
-      <div><strong id="n-piezas">—</strong><span data-t="c_piezas">piezas en el catálogo</span></div>
-      <div><strong id="n-listas">—</strong><span data-t="c_listas">listas para usar</span></div>
+<section class="portada espacio" id="arriba">
+  <canvas class="estrellas" id="estrellas" aria-hidden="true"></canvas>
+  <div class="envoltura portada-dentro">
+    <div class="portada-texto">
+      <p class="antetitulo" data-t="ante">Framework abierto y gratis</p>
+      <h1 data-t="h1">Arma apps abiertas con piezas probadas.</h1>
+      <p class="bajada" data-t="bajada2">Tu propia IA, idiomas, actualizaciones seguras, un catálogo de la comunidad… Eliges las piezas y tu IA las enchufa. Cada app que se hace deja piezas para la siguiente.</p>
+      <div class="acciones">
+        <a class="boton" href="#empezar" data-t="b_emp">Empezar</a>
+        <a class="boton secundario" href="https://github.com/pieza-app/pieza" data-t="b_cod">Ver el código</a>
+      </div>
+      <div class="cifras" aria-live="polite">
+        <div><strong id="n-apps">—</strong><span data-t="c_apps">apps hechas con Pieza</span></div>
+        <div><strong id="n-piezas">—</strong><span data-t="c_piezas">piezas en el catálogo</span></div>
+        <div><strong id="n-listas">—</strong><span data-t="c_listas">listas para usar</span></div>
+      </div>
     </div>
-    <div class="acciones">
-      <a class="boton" href="#empezar" data-t="b_emp">Empezar</a>
-      <a class="boton secundario" href="https://github.com/pieza-app/pieza" data-t="b_cod">Ver el código</a>
+    <div class="escena" aria-hidden="true">
+      <div class="flota"><div class="armado">
+<div class="pz p0"><svg class="canto k4" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f0"/></svg><svg class="canto k3" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f0"/></svg><svg class="canto k2" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f0"/></svg><svg class="canto k1" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f0"/></svg><svg class="cara" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f0"/></svg><span class="rotulo" data-t="r0">IA</span></div>
+<div class="pz p1"><svg class="canto k4" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f1"/></svg><svg class="canto k3" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f1"/></svg><svg class="canto k2" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f1"/></svg><svg class="canto k1" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f1"/></svg><svg class="cara" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f1"/></svg><span class="rotulo" data-t="r1">Idiomas</span></div>
+<div class="pz p2"><svg class="canto k4" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f2"/></svg><svg class="canto k3" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f2"/></svg><svg class="canto k2" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f2"/></svg><svg class="canto k1" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f2"/></svg><svg class="cara" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f2"/></svg><span class="rotulo" data-t="r2">Al día</span></div>
+<div class="pz p3"><svg class="canto k4" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f3"/></svg><svg class="canto k3" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f3"/></svg><svg class="canto k2" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f3"/></svg><svg class="canto k1" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f3"/></svg><svg class="cara" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f3"/></svg><span class="rotulo" data-t="r3">Bienvenida</span></div>
+<div class="pz p4"><svg class="canto k4" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f4"/></svg><svg class="canto k3" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f4"/></svg><svg class="canto k2" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f4"/></svg><svg class="canto k1" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f4"/></svg><svg class="cara" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f4"/></svg><span class="rotulo" data-t="r4">Tu app</span></div>
+<div class="pz p5"><svg class="canto k4" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f5"/></svg><svg class="canto k3" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f5"/></svg><svg class="canto k2" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f5"/></svg><svg class="canto k1" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f5"/></svg><svg class="cara" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f5"/></svg><span class="rotulo" data-t="r5">Ajustes</span></div>
+<div class="pz p6"><svg class="canto k4" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f6"/></svg><svg class="canto k3" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f6"/></svg><svg class="canto k2" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f6"/></svg><svg class="canto k1" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f6"/></svg><svg class="cara" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f6"/></svg><span class="rotulo" data-t="r6">Catálogo</span></div>
+<div class="pz p7"><svg class="canto k4" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f7"/></svg><svg class="canto k3" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f7"/></svg><svg class="canto k2" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f7"/></svg><svg class="canto k1" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f7"/></svg><svg class="cara" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f7"/></svg><span class="rotulo" data-t="r7">Datos</span></div>
+<div class="pz p8"><svg class="canto k4" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f8"/></svg><svg class="canto k3" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f8"/></svg><svg class="canto k2" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f8"/></svg><svg class="canto k1" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f8"/></svg><svg class="cara" viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f8"/></svg><span class="rotulo" data-t="r8">Seguridad</span></div>
+
+        <div class="destello"></div>
+      </div></div>
     </div>
   </div>
 </section>
 
-<section id="como" class="raya">
+<section id="como" class="como espacio">
   <div class="envoltura">
     <h2 data-t="h_como">Cómo funciona</h2>
-    <ol class="pasos">
-      <li><h3 data-t="p1">Cuentas tu idea</h3><p data-t="p1p">Una sola ronda de preguntas. Tu IA te recomienda las piezas que calzan, y las que toda app necesita van solas.</p></li>
-      <li><h3 data-t="p2">Revisas la ficha</h3><p data-t="p2p">Antes de crear nada ves todo: pantallas, configuración, permisos por plataforma, a qué sale a internet y lo que solo puedes hacer tú.</p></li>
-      <li><h3 data-t="p3">Enchufas y creces</h3><p data-t="p3p">Las piezas se copian a tu app y son tuyas. Cuando una mejora, la recibes sin perder tus cambios; cuando tú la mejoras, vuelve a todas.</p></li>
-    </ol>
+    <p class="nota clara" data-t="como_bajada">Cuatro pasos. Tú hablas; tu IA y las piezas hacen el resto.</p>
+    <div class="relato">
+      <div class="lamina" aria-hidden="true">
+        <div class="tablero" id="tablero" data-paso="4">
+<svg class="molde" viewBox="-25 -25 350 350" aria-hidden="true"><use href="#f0" x="0" y="0"/><use href="#f1" x="100" y="0"/><use href="#f2" x="200" y="0"/><use href="#f3" x="0" y="100"/><use href="#f4" x="100" y="100"/><use href="#f5" x="200" y="100"/><use href="#f6" x="0" y="200"/><use href="#f7" x="100" y="200"/><use href="#f8" x="200" y="200"/></svg>
+<div class="ficha f0"><svg viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f0"/></svg><span data-t="r0">IA</span></div>
+<div class="ficha f1"><svg viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f1"/></svg><span data-t="r1">Idiomas</span></div>
+<div class="ficha f2"><svg viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f2"/></svg><span data-t="r2">Al día</span></div>
+<div class="ficha f3"><svg viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f3"/></svg><span data-t="r3">Bienvenida</span></div>
+<div class="ficha f4"><svg viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f4"/></svg><span data-t="r4">Tu app</span></div>
+<div class="ficha f5"><svg viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f5"/></svg><span data-t="r5">Ajustes</span></div>
+<div class="ficha f6"><svg viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f6"/></svg><span data-t="r6">Catálogo</span></div>
+<div class="ficha f7"><svg viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f7"/></svg><span data-t="r7">Datos</span></div>
+<div class="ficha f8"><svg viewBox="-25 -25 150 150" aria-hidden="true"><use href="#f8"/></svg><span data-t="r8">Seguridad</span></div>
+
+          <p class="globo globo-idea" data-t="globo_idea">Quiero una app para ordenar mis recetas.</p>
+          <div class="ficha-mini">
+            <b data-t="fm_t">Ficha de tu app</b>
+            <span data-t="fm_1">4 pantallas</span>
+            <span data-t="fm_2">Permisos: ninguno</span>
+            <span data-t="fm_3">Internet: solo para actualizarse</span>
+          </div>
+          <p class="sello-al-dia" data-t="al_dia">Al día ✓</p>
+        </div>
+      </div>
+      <ol class="pasos-relato">
+        <li data-paso="1"><span class="num">1</span><h3 data-t="s1">Cuéntale tu idea a tu IA.</h3><p data-t="s1p">Con tus palabras, como se la contarías a alguien. Por ejemplo: «una app para ordenar mis recetas».</p></li>
+        <li data-paso="2"><span class="num">2</span><h3 data-t="s2">Mira la ficha antes de crear nada.</h3><p data-t="s2p">Ves qué pantallas tendrá, qué permisos pide y si sale a internet. Si algo no te gusta, lo cambias.</p></li>
+        <li data-paso="3"><span class="num">3</span><h3 data-t="s3">Las piezas se enchufan solas.</h3><p data-t="s3p">Idiomas, tu IA, actualizaciones… ya probadas en otras apps. Nada se escribe de cero.</p></li>
+        <li data-paso="4"><span class="num">4</span><h3 data-t="s4">Se mantienen al día solas.</h3><p data-t="s4p">Cuando una pieza mejora, tu app recibe el arreglo sin perder lo que tú cambiaste.</p></li>
+      </ol>
+    </div>
+    <details class="por-dentro">
+      <summary data-t="por_dentro">Por dentro, para quien programa</summary>
+      <dl>
+        <dt data-t="p1">Cuentas tu idea</dt><dd data-t="p1p">Una sola ronda de preguntas. Tu IA te recomienda las piezas que calzan, y las que toda app necesita van solas.</dd>
+        <dt data-t="p2">Revisas la ficha</dt><dd data-t="p2p">Antes de crear nada ves todo: pantallas, configuración, permisos por plataforma, a qué sale a internet y lo que solo puedes hacer tú.</dd>
+        <dt data-t="p3">Enchufas y creces</dt><dd data-t="p3p">Las piezas se copian a tu app y son tuyas. Cuando una mejora, la recibes sin perder tus cambios; cuando tú la mejoras, vuelve a todas.</dd>
+      </dl>
+    </details>
   </div>
 </section>
 
-<section id="proyectos" class="raya">
+<section id="empezar" class="raya">
   <div class="envoltura">
-    <h2 data-t="h_proy">Hechas con Pieza</h2>
-    <p class="nota" data-t="nota_proy">Repos públicos con el topic «hecho-con-pieza» en GitHub. Sin telemetría: solo aparecen los que eligen aparecer.</p>
-    <ul class="proyectos" id="lista-proyectos"></ul>
-    <p class="nota" id="actualizado"></p>
+    <h2 data-t="h_emp">Empezar</h2>
+    <p class="pregunta" id="q-ia" data-t="q_ia">¿Qué IA usas?</p>
+    <div class="selector solo-js" role="tablist" aria-labelledby="q-ia" id="selector-ia">
+      <button type="button" role="tab" id="t-claude" aria-controls="ia-claude" data-ia="claude">Claude Code</button>
+      <button type="button" role="tab" id="t-gemini" aria-controls="ia-gemini" data-ia="gemini">Gemini CLI</button>
+      <button type="button" role="tab" id="t-codex" aria-controls="ia-codex" data-ia="codex">Codex</button>
+      <button type="button" role="tab" id="t-claudeai" aria-controls="ia-claudeai" data-ia="claudeai">claude.ai</button>
+      <button type="button" role="tab" id="t-otra" aria-controls="ia-otra" data-ia="otra" data-t="otra">Otra</button>
+    </div>
+    <ol class="tres">
+      <li class="uno">
+        <span class="marcador" aria-hidden="true"><svg viewBox="-25 -25 150 150"><use href="#f0"/></svg><b>1</b></span>
+        <div class="paneles">
+          <div class="panel-ia" id="ia-claude" role="tabpanel" aria-labelledby="t-claude" tabindex="0">
+            <h3><span class="sin-js">Claude Code: </span><span data-t="paso_copia">Copia y pega esto en tu terminal</span></h3>
+            <div class="comando"><code id="cmd-claude">claude plugin marketplace add pieza-app/pieza &amp;&amp; claude plugin install pieza@pieza</code><button class="copiar" type="button" data-copiar="cmd-claude" data-t="copiar">Copiar</button></div>
+            <details class="detalles"><summary data-t="ver_det">Ver detalles</summary>
+              <p data-t="e_cc">Instala el plugin: trae el flujo para crear apps y el de revisar aportes.</p>
+              <p data-t="d_cc">Si ya estás dentro de Claude Code, escribe estos dos comandos:</p>
+              <pre><code>/plugin marketplace add pieza-app/pieza
+/plugin install pieza@pieza</code></pre>
+            </details>
+          </div>
+          <div class="panel-ia" id="ia-gemini" role="tabpanel" aria-labelledby="t-gemini" tabindex="0">
+            <h3><span class="sin-js">Gemini CLI: </span><span data-t="paso_copia">Copia y pega esto en tu terminal</span></h3>
+            <div class="comando"><code id="cmd-gemini">gemini extensions install https://github.com/pieza-app/pieza --auto-update</code><button class="copiar" type="button" data-copiar="cmd-gemini" data-t="copiar">Copiar</button></div>
+            <details class="detalles"><summary data-t="ver_det">Ver detalles</summary>
+              <p data-t="e_gm">Instala la extensión: las mismas skills y los comandos /pieza:crear y /pieza:revisar.</p>
+            </details>
+          </div>
+          <div class="panel-ia" id="ia-codex" role="tabpanel" aria-labelledby="t-codex" tabindex="0">
+            <h3><span class="sin-js">Codex: </span><span data-t="paso_copia">Copia y pega esto en tu terminal</span></h3>
+            <div class="comando"><code id="cmd-codex">git clone https://github.com/pieza-app/pieza &amp;&amp; python3 pieza/herramientas/pieza.py skills instalar codex</code><button class="copiar" type="button" data-copiar="cmd-codex" data-t="copiar">Copiar</button></div>
+            <details class="detalles"><summary data-t="ver_det">Ver detalles</summary>
+              <p data-t="e_cx">Instala las skills en ~/.agents/skills (las pone al día sin borrar tu configuración local).</p>
+            </details>
+          </div>
+          <div class="panel-ia" id="ia-claudeai" role="tabpanel" aria-labelledby="t-claudeai" tabindex="0">
+            <h3><span class="sin-js">claude.ai: </span><span data-t="paso_bajar">Descarga y súbelas a tu cuenta</span></h3>
+            <p class="descargas"><a class="boton" href="skills/lanzar-proyecto-open-source.zip" download data-t="z_crear">Crear apps (.zip)</a><a class="boton secundario" href="skills/revisar-aportes-open-source.zip" download data-t="z_revisar">Revisar aportes (.zip)</a></p>
+            <details class="detalles"><summary data-t="ver_det">Ver detalles</summary>
+              <p data-t="e_ai">Descarga las skills y súbelas en las capacidades de tu cuenta.</p>
+              <p class="mono-chico">lanzar-proyecto-open-source.zip · revisar-aportes-open-source.zip</p>
+            </details>
+          </div>
+          <div class="panel-ia" id="ia-otra" role="tabpanel" aria-labelledby="t-otra" tabindex="0">
+            <h3><span class="sin-js" data-t="otra_ia">Otra IA: </span><span data-t="paso_clonar">Clona y pídele que siga AGENTS.md</span></h3>
+            <div class="comando"><code id="cmd-otra">git clone https://github.com/pieza-app/pieza</code><button class="copiar" type="button" data-copiar="cmd-otra" data-t="copiar">Copiar</button></div>
+            <details class="detalles"><summary data-t="ver_det">Ver detalles</summary>
+              <p><span data-t="e_otra">¿Otra IA? Clona el repo y pídele que siga AGENTS.md. Equivalencias entre herramientas:</span> <a href="https://github.com/pieza-app/pieza/blob/main/docs/otras-ias.md">docs/otras-ias.md</a></p>
+            </details>
+          </div>
+        </div>
+      </li>
+      <li class="dos">
+        <span class="marcador" aria-hidden="true"><svg viewBox="-25 -25 150 150"><use href="#f1"/></svg><b>2</b></span>
+        <h3 data-t="paso_pide">Pídele: «creemos una app para…»</h3>
+        <p class="globo" data-t="globo_ej">Creemos una app para ordenar mis recetas.</p>
+      </li>
+      <li class="tres-p">
+        <span class="marcador" aria-hidden="true"><svg viewBox="-25 -25 150 150"><use href="#f2"/></svg><b>3</b></span>
+        <h3 data-t="paso_ficha">Mira la ficha y di que sí</h3>
+        <div class="ficha-ej">
+          <span data-t="fe_1">Pantallas: 4</span>
+          <span data-t="fe_2">Permisos: ninguno</span>
+          <span data-t="fe_3">Internet: solo actualizaciones</span>
+          <b data-t="fe_ok">Sí, créala</b>
+        </div>
+      </li>
+    </ol>
   </div>
 </section>
 
@@ -95,43 +216,60 @@
   <div class="envoltura">
     <h2 data-t="h_cat">Catálogo</h2>
     <p class="nota" data-t="nota_cat">Cada pieza dice qué pantallas suma, qué permisos pide en cada plataforma y a qué sale a internet. «En camino» = ya probada en una app, falta extraerla.</p>
+    <p class="nota" data-t="nota_com">Las piezas de la comunidad viven en el repo de quien las hizo. Las revisamos antes de marcarlas como revisadas.</p>
+    <div class="filtro solo-js" id="filtro-catalogo" role="group" aria-label="Filtrar piezas" data-t-aria="filtrar">
+      <button type="button" data-filtro="todas" aria-pressed="true" data-t="f_todas">Todas</button>
+      <button type="button" data-filtro="revisadas" aria-pressed="false" data-t="f_rev">Revisadas</button>
+      <button type="button" data-filtro="sin-revisar" aria-pressed="false" data-t="f_sin">Sin revisar</button>
+    </div>
     <div id="lista-catalogo"></div>
   </div>
 </section>
 
-<section id="empezar" class="raya">
+<section id="proyectos" class="raya">
   <div class="envoltura">
-    <h2 data-t="h_emp">Empezar</h2>
-    <div class="caminos">
-      <article>
-        <h3>Claude Code</h3>
-        <p data-t="e_cc">Instala el plugin: trae el flujo para crear apps y el de revisar aportes.</p>
-        <pre><code>/plugin marketplace add pieza-app/pieza
-/plugin install pieza@pieza</code></pre>
-        <p data-t="e_cc2">Después: «creemos una app para…».</p>
-      </article>
-      <article>
-        <h3>Gemini CLI</h3>
-        <p data-t="e_gm">Instala la extensión: las mismas skills y los comandos /pieza:crear y /pieza:revisar.</p>
-        <pre><code>gemini extensions install https://github.com/pieza-app/pieza --auto-update</code></pre>
-      </article>
-      <article>
-        <h3>Codex</h3>
-        <p data-t="e_cx">Instala las skills en ~/.agents/skills (las pone al día sin borrar tu configuración local).</p>
-        <pre><code>git clone https://github.com/pieza-app/pieza
-python3 pieza/herramientas/pieza.py skills instalar codex</code></pre>
-      </article>
-      <article>
-        <h3>claude.ai</h3>
-        <p data-t="e_ai">Descarga las skills y súbelas en las capacidades de tu cuenta.</p>
-        <p class="enlaces"><a href="skills/lanzar-proyecto-open-source.zip" download>lanzar-proyecto-open-source.zip</a><a href="skills/revisar-aportes-open-source.zip" download>revisar-aportes-open-source.zip</a></p>
-      </article>
+    <h2 data-t="h_proy">Hechas con Pieza</h2>
+    <p class="nota" data-t="nota_proy">Repos públicos con el topic «hecho-con-pieza» en GitHub. Sin telemetría: solo aparecen los que eligen aparecer.</p>
+    <p class="nota cuenta" id="n-aprobadas" aria-live="polite"></p>
+    <ul class="proyectos" id="lista-proyectos"></ul>
+    <p class="nota" id="actualizado"></p>
+    <div class="sello-caja">
+      <h3 class="sello-h" data-t="h_sello">¿Hiciste una app con Pieza?</h3>
+      <p><span data-t="sello_p">Ponle el topic hecho-con-pieza a su repo y aparece aquí.</span> <a href="https://github.com/pieza-app/pieza/blob/main/docs/comunidad.md#tu-app-en-la-página-hecho-con-pieza" data-t="sello_como">Cómo se hace</a></p>
+      <p data-t="sello_p2">Si quieres, suma el sello a tu README o tu página:</p>
+      <p><img src="sello.svg" alt="Hecho con Pieza" width="152" height="28"></p>
+      <pre><code>[![Hecho con Pieza](https://pieza-app.github.io/pieza/sello.svg)](https://pieza-app.github.io/pieza/)</code></pre>
     </div>
-    <p class="nota"><span data-t="e_otra">¿Otra IA? Clona el repo y pídele que siga AGENTS.md. Equivalencias entre herramientas:</span> <a href="https://github.com/pieza-app/pieza/blob/main/docs/otras-ias.md">docs/otras-ias.md</a></p>
-    <h3 class="sello-h" data-t="h_sello">¿Hiciste una app con Pieza?</h3>
-    <p data-t="sello_p">Ponle el topic <code>hecho-con-pieza</code> a su repo y aparece aquí. Si quieres, suma el sello a tu README o tu página:</p>
-    <p><img src="sello.svg" alt="Hecho con Pieza" width="152" height="28"></p>
-    <pre><code>[![Hecho con Pieza](https://pieza-app.github.io/pieza/sello.svg)](https://pieza-app.github.io/pieza/)</code></pre>
+  </div>
+</section>
+
+<section id="manifiesto" class="manifiesto espacio">
+  <div class="envoltura">
+    <p class="prompt" aria-hidden="true" data-t="prompt">pieza@tu-computador:~$ cat MANIFIESTO.md</p>
+    <h2 class="lema" data-t="lema">Construimos en abierto. Compartimos lo que funciona. Nadie es dueño de tu computador más que tú.</h2>
+    <p class="man-intro" data-t="man_intro">Pieza nació de una idea simple: si alguien ya resolvió algo bien, nadie más debería tener que resolverlo de nuevo. Cada app de esta familia dejó piezas para la siguiente. Ahora esas piezas son de todos.</p>
+    <h3 class="man-h" data-t="man_creemos">Lo que creemos</h3>
+    <ol class="ideas" id="ideas">
+      <li><b data-t="m1">Tu computador es tuyo.</b> <span data-t="m1p">Las apps viven ahí, con tus datos ahí. Nada de servidores que te miran, ni cuentas que te amarran, ni telemetría.</span></li>
+      <li><b data-t="m2">Tu IA es tuya.</b> <span data-t="m2p">Usamos la que ya tienes, con tu cuenta. Nunca la nuestra. Nunca entre tú y tus datos.</span></li>
+      <li><b data-t="m3">El código se comparte.</b> <span data-t="m3p">Todo es abierto (AGPL-3.0): puedes leerlo, cambiarlo y usarlo. Si lo mejoras y lo publicas, tu mejora también es de todos.</span></li>
+      <li><b data-t="m4">Sin fines de lucro.</b> <span data-t="m4p">Sin publicidad, sin planes pagados, sin «versión pro». Esto existe porque es útil, no para venderte algo.</span></li>
+      <li><b data-t="m5">Aprender de quien lo hace mejor.</b> <span data-t="m5p">Cada aporte se revisa buscando qué hizo mejor la otra persona. Lo que se aprende se anota y llega a todas las apps.</span></li>
+      <li><b data-t="m6">Crédito siempre.</b> <span data-t="m6p">Quien aporta aparece con su nombre en lo que hizo.</span></li>
+      <li><b data-t="m7">Seguro antes que rápido.</b> <span data-t="m7p">Lo que viene de afuera se valida. Lo que se instala como seguro, alguien lo leyó entero.</span></li>
+      <li><b data-t="m8">Para cualquier persona.</b> <span data-t="m8p">Si no se entiende sin manual, está mal hecho. El idioma se pregunta primero.</span></li>
+    </ol>
+    <div class="sumate" id="sumate">
+      <h3 data-t="h_sumate">Súmate</h3>
+      <p data-t="sumate_p">No necesitas permiso para empezar. Una pieza tuya puede ahorrarle semanas a alguien al otro lado del mundo.</p>
+      <ul class="caminos-sumate">
+        <li><a href="https://github.com/pieza-app/pieza/blob/main/docs/comunidad.md"><b data-t="su1">Publica una pieza</b><span data-t="su1p">En tu repo, con el topic pieza-comunidad.</span></a></li>
+        <li><a href="#empezar"><b data-t="su2">Haz una app</b><span data-t="su2p">Dile a tu IA «creemos una app para…» y ponle el topic hecho-con-pieza.</span></a></li>
+        <li><a href="https://github.com/pieza-app/pieza/discussions"><b data-t="su3">Conversa</b><span data-t="su3p">Ideas, preguntas y lo que aprendiste, en Discussions.</span></a></li>
+        <li><a href="https://github.com/pieza-app/pieza/blob/main/CONTRIBUTING.md"><b data-t="su4">Aporta</b><span data-t="su4p">Traduce, prueba, cuenta un error o mejora una pieza.</span></a></li>
+      </ul>
+      <p class="firma"><a href="https://github.com/pieza-app/pieza/blob/main/MANIFIESTO.md" data-t="man_completo">Leer el manifiesto completo</a> <span data-t="man_firma">Hecho en Chile, para cualquier lugar. Por gente que comparte lo que sabe.</span></p>
+    </div>
   </div>
 </section>
 
@@ -165,7 +303,7 @@ python3 pieza/herramientas/pieza.py skills instalar codex</code></pre>
 
 <footer class="pie">
   <div class="envoltura">
-    <p><span data-t="pie">Pieza · AGPL-3.0 · sin cookies ni seguimiento</span> · <a href="https://github.com/pieza-app/pieza">GitHub</a> · <a href="https://github.com/pieza-app/pieza/discussions" data-t="comunidad">Comunidad</a> · <a href="https://github.com/pieza-app/pieza/blob/main/CONTRIBUTING.md" data-t="aportar">Cómo aportar</a></p>
+    <p><span data-t="pie">Pieza · AGPL-3.0 · sin cookies ni seguimiento</span> · <a href="https://github.com/pieza-app/pieza">GitHub</a> · <a href="https://github.com/pieza-app/pieza/blob/main/MANIFIESTO.md" data-t="n_man">Manifiesto</a> · <a href="https://github.com/pieza-app/pieza/discussions" data-t="comunidad">Comunidad</a> · <a href="https://github.com/pieza-app/pieza/blob/main/CONTRIBUTING.md" data-t="aportar">Cómo aportar</a></p>
   </div>
 </footer>
 </body>
