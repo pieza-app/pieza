@@ -21,6 +21,8 @@ devolverlo a la base.
 
 - [El enchufe](docs/enchufe.md): cómo se conecta una pieza (contrato y reglas de seguridad).
 - [Catálogo y plan](docs/catalogo.md): qué hay y qué viene.
+- [Crear una app nueva](skills/lanzar-proyecto-open-source/SKILL.md): el flujo completo, con entrevista y ficha
+  (`pieza.py ficha ia transcribir --plataformas mac,windows,linux` muestra pantallas, configuración, permisos y red).
 - [Guía para contribuir](AGENTS.md).
 
 Sin dependencias: Python con su biblioteca estándar. Licencia AGPL-3.0.

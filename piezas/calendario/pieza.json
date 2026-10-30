@@ -1,0 +1,43 @@
+{
+ "formato": 1,
+ "id": "calendario",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Calendario",
+ "categoria": "conexiones",
+ "descripcion": "Leer las reuniones del calendario (EventKit en Mac, archivo .ics en el resto) para avisar y nombrar.",
+ "recomendar": {
+  "cuando": "La app depende de reuniones o eventos.",
+  "palabras": [
+   "reunión",
+   "calendario",
+   "agenda"
+  ]
+ },
+ "tomar_de": "minuta (calendarioICS, EventKit)",
+ "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "pantallas": [
+  {
+   "donde": "Ajustes",
+   "nombre": "Calendario",
+   "que": "conectar el calendario o un .ics"
+  }
+ ],
+ "permisos": {
+  "mac": [
+   {
+    "clave": "NSCalendarsFullAccessUsageDescription",
+    "por": "ver tus reuniones"
+   },
+   {
+    "clave": "NSRemindersFullAccessUsageDescription",
+    "por": "crear recordatorios (opcional)"
+   }
+  ]
+ }
+}

@@ -9,6 +9,10 @@
                                           Trae la versión nueva. Nunca pisa un archivo que la app cambió, salvo --forzar.
   pieza.py diferencias <app> <pieza>      Lo que la app cambió de una pieza (para devolverlo a la base si es mejor).
   pieza.py revisar                        Valida todos los pieza.json de la base (formato y reglas de seguridad).
+  pieza.py catalogo [--json]              Todas las piezas, listas y planeadas, con todo lo que declaran (lo lee la skill).
+  pieza.py ficha <pieza>… [--plataformas mac,windows,linux,ios,android] [--json]
+                                          La ficha de una app con esas piezas: requisitos, pantallas, config, permisos por
+                                          plataforma, red, acciones y tareas de David. Es lo que se le muestra antes de crear.
 
 Modelo «copiar y adueñarse» (como shadcn/ui): la pieza se copia dentro de la app y desde ahí es de la app. piezas.json guarda la
 versión y la huella de cada archivo copiado, así se sabe qué cambió la app y qué trae la base de nuevo.
@@ -27,6 +31,9 @@ ID = re.compile(r"^[a-z][a-z0-9-]{1,40}$")
 SCRIPT = re.compile(r"^\w+\.py$")
 VERSION = re.compile(r"^\d+\.\d+\.\d+$")
 TIPOS = {"texto", "enum", "bool", "entero", "rutaRelativa", "base64", "lista"}
+ESTADOS = {"lista", "planeada"}
+PLATAFORMAS = ("mac", "windows", "linux", "ios", "android")
+CATEGORIAS = {"base", "ia", "interfaz", "datos", "medios", "conexiones", "plataforma", "repo"}
 
 
 def leer(ruta, defecto=None):
@@ -91,6 +98,32 @@ def errores_pieza(pid, p, ids):
         e.append("«id» debe ser igual a la carpeta: minúsculas, números y guiones")
     if not VERSION.match(str(p.get("version", ""))):
         e.append("«version» debe ser X.Y.Z")
+    if p.get("estado", "lista") not in ESTADOS:
+        e.append("«estado» debe ser lista o planeada")
+    if p.get("estado") == "planeada" and (p.get("archivos") or not p.get("tomar_de")):
+        e.append("una pieza planeada no trae archivos y dice de dónde tomarla («tomar_de»)")
+    if p.get("categoria") not in CATEGORIAS:
+        e.append(f"«categoria» debe ser una de {sorted(CATEGORIAS)}")
+    if not isinstance(p.get("descripcion"), str) or not p["descripcion"]:
+        e.append("falta «descripcion»")
+    rec = p.get("recomendar")
+    if not isinstance(rec, dict) or not isinstance(rec.get("cuando"), str):
+        e.append("«recomendar» necesita {\"cuando\": \"…\"} (y opcional \"siempre\": true, \"palabras\": […])")
+    for x in p.get("pantallas", []):
+        if not (isinstance(x, dict) and {"donde", "nombre", "que"} <= set(x)):
+            e.append("cada pantalla es {donde, nombre, que}")
+    for plat, lista in p.get("permisos", {}).items():
+        if plat not in PLATAFORMAS:
+            e.append(f"permisos: plataforma desconocida «{plat}»")
+        for x in lista:
+            if not (isinstance(x, dict) and {"clave", "por"} <= set(x)):
+                e.append(f"permisos {plat}: cada uno es {{clave, por}}")
+    for d in p.get("red", []):
+        if not re.match(r"^[a-z0-9.-]+\.[a-z]{2,}$", d):
+            e.append(f"red: dominio raro «{d}»")
+    for plat in p.get("plataformas", PLATAFORMAS):
+        if plat not in PLATAFORMAS:
+            e.append(f"plataformas: «{plat}» desconocida")
     for r in p.get("requiere", []):
         if r not in ids:
             e.append(f"requiere «{r}», que no existe")
@@ -207,6 +240,8 @@ def agregar(pid, app):
         sys.exit("La app no tiene app.json. Créalo con: pieza.py iniciar <app> <id> <Nombre>")
     lock = candado(app)
     for p in con_requisitos(pid):
+        if pieza(p).get("estado") == "planeada":
+            sys.exit(f"«{p}» aún no está extraída. Se toma de: {pieza(p)['tomar_de']}. Extráela primero (ver AGENTS.md).")
         if p in lock["piezas"]:
             print(f"· {p} ya estaba")
             continue
@@ -255,6 +290,65 @@ def diferencias(app, pid):
         sys.stdout.writelines(difflib.unified_diff(base, local, f"base/{origen}", f"app/{destino}"))
 
 
+def ficha(ids, plataformas=PLATAFORMAS):
+    """Todo lo que implica una app con estas piezas, las de «siempre» para esas plataformas y sus requisitos, sin repetir."""
+    elegidas = list(ids)
+    for pid, p in todas().items():
+        if p.get("recomendar", {}).get("siempre") and pid not in elegidas and set(p.get("plataformas", PLATAFORMAS)) & set(plataformas):
+            elegidas.append(pid)
+    orden = []
+    for pid in elegidas:
+        for x in con_requisitos(pid):
+            if x not in orden:
+                orden.append(x)
+    f = {"piezas": [], "pantallas": [], "config": {}, "permisos": {k: [] for k in PLATAFORMAS}, "red": [], "acciones": [],
+         "tareas_david": [], "plataformas": list(plataformas), "faltan_en": [], "por_extraer": []}
+    for pid in orden:
+        p = pieza(pid)
+        motivo = "pedida" if pid in ids else ("siempre" if p.get("recomendar", {}).get("siempre") else "requisito")
+        f["piezas"].append({"id": pid, "nombre": p.get("nombre", pid), "version": p["version"], "estado": p.get("estado", "lista"),
+                            "motivo": motivo})
+        if p.get("estado") == "planeada":
+            f["por_extraer"].append({"id": pid, "tomar_de": p["tomar_de"]})
+        f["pantallas"] += [{**x, "pieza": pid} for x in p.get("pantallas", [])]
+        for k, v in p.get("config", {}).items():
+            f["config"].setdefault(k, v)
+        for plat, lista in p.get("permisos", {}).items():
+            for x in lista:
+                if x["clave"] not in [y["clave"] for y in f["permisos"][plat]]:
+                    f["permisos"][plat].append({**x, "pieza": pid})
+        f["red"] += [d for d in p.get("red", []) if d not in f["red"]]
+        f["acciones"] += [{"accion": k, "responde": v.get("responde"), "pieza": pid} for k, v in p.get("acciones", {}).items()]
+        f["tareas_david"] += [t for t in p.get("tareas_david", []) if t not in f["tareas_david"]]
+        if not pid.startswith("host-"):
+            falta = [x for x in plataformas if x not in p.get("plataformas", PLATAFORMAS)]
+            if falta:
+                f["faltan_en"].append({"pieza": pid, "plataformas": falta})
+    # Bienvenida primero (y su paso de idioma antes que todo), después la app, Ajustes y la web.
+    lugar = {"Bienvenida": 0, "Ajustes": 2, "Web": 3}
+    f["pantallas"].sort(key=lambda x: (lugar.get(x["donde"], 1), x["nombre"] != "Idioma", x["nombre"] == "Listo"))
+    return f
+
+
+def ficha_texto(f):
+    l = ["PLATAFORMAS", "  " + ", ".join(f["plataformas"])]
+    l += ["PIEZAS"] + [f"  {x['id']} {x['version']} ({x['estado']}, {x['motivo']})" for x in f["piezas"]]
+    if f["por_extraer"]:
+        l += ["POR EXTRAER ANTES"] + [f"  {x['id']}: tomar de {x['tomar_de']}" for x in f["por_extraer"]]
+    if f["faltan_en"]:
+        l += ["NO DISPONIBLES EN"] + [f"  {x['pieza']}: {', '.join(x['plataformas'])}" for x in f["faltan_en"]]
+    l += ["PANTALLAS"] + [f"  {x['donde']} → {x['nombre']}: {x['que']}" for x in f["pantallas"]]
+    l += ["CONFIG (app.json)"] + [f"  {k}: {v}" for k, v in f["config"].items()]
+    l += ["PERMISOS"]
+    for plat, lista in ((k, v) for k, v in f["permisos"].items() if k in f["plataformas"]):
+        l += [f"  {plat}: " + ("ninguno" if not lista else "; ".join(f"{x['clave']} ({x['por']})" for x in lista))]
+    l += ["RED (dominios a los que sale)", "  " + (", ".join(f["red"]) or "ninguno: funciona sin internet")]
+    l += ["ACCIONES"] + [f"  {x['accion']} → {x['responde']}" for x in f["acciones"]]
+    if f["tareas_david"]:
+        l += ["SOLO DAVID"] + [f"  {t}" for t in f["tareas_david"]]
+    return "\n".join(l)
+
+
 def main(a):
     if not a or a[0] in ("-h", "--help", "ayuda"):
         print(__doc__)
@@ -262,10 +356,33 @@ def main(a):
     orden, resto = a[0], a[1:]
     forzar = "--forzar" in resto
     resto = [x for x in resto if x != "--forzar"]
+    como_json = "--json" in resto
+    plats = PLATAFORMAS
+    if "--plataformas" in resto:
+        i = resto.index("--plataformas")
+        plats = tuple(x for x in resto[i + 1].split(",") if x in PLATAFORMAS) if i + 1 < len(resto) else PLATAFORMAS
+        resto = resto[:i] + resto[i + 2:]
+    resto = [x for x in resto if x != "--json"]
     if orden == "listar":
         for pid, p in todas().items():
             req = f"  (requiere {', '.join(p['requiere'])})" if p.get("requiere") else ""
-            print(f"{pid:12} {p['version']:8} {p['descripcion']}{req}")
+            est = "" if p.get("estado", "lista") == "lista" else " [planeada]"
+            print(f"{pid:18} {p['version']:8} {p['descripcion']}{req}{est}")
+    elif orden == "catalogo":
+        ps = todas()
+        if como_json:
+            print(json.dumps(ps, ensure_ascii=False, indent=1))
+        else:
+            for cat in sorted(CATEGORIAS):
+                grupo = {k: v for k, v in ps.items() if v.get("categoria") == cat}
+                if grupo:
+                    print(f"[{cat}]")
+                    for pid, p in grupo.items():
+                        siempre = " ★ siempre" if p.get("recomendar", {}).get("siempre") else ""
+                        print(f"  {pid} ({p.get('estado', 'lista')}){siempre}: {p['descripcion']}\n      cuándo: {p['recomendar']['cuando']}")
+    elif orden == "ficha" and resto:
+        f = ficha(resto, plats or PLATAFORMAS)
+        print(json.dumps(f, ensure_ascii=False, indent=1) if como_json else ficha_texto(f))
     elif orden == "revisar":
         return revisar()
     elif orden == "iniciar" and len(resto) == 3:

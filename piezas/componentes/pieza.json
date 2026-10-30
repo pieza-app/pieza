@@ -1,0 +1,31 @@
+{
+ "formato": 1,
+ "id": "componentes",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Componentes",
+ "categoria": "interfaz",
+ "descripcion": "Diálogo accesible, avisos (toast) con cola, Ajustes base y Acerca de, con tokens CSS comunes.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre."
+ },
+ "tomar_de": "esquema/ui (dialogo, toast, filas); unificar tokens CSS (--suave/--linea)",
+ "requiere": [
+  "i18n"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ],
+ "pantallas": [
+  {
+   "donde": "Ajustes",
+   "nombre": "Acerca de",
+   "que": "versión, licencia y enlaces: código, comunidad, cómo aportar"
+  }
+ ]
+}

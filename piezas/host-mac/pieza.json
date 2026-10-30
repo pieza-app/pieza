@@ -1,0 +1,27 @@
+{
+ "formato": 1,
+ "id": "host-mac",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "App de Mac",
+ "categoria": "plataforma",
+ "descripcion": "Host genérico en Swift (WKWebView): lee los pieza.json y enruta las acciones solo, con guardas y límite de tiempo.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre que haya app de Mac."
+ },
+ "tomar_de": "esquema app/Sources/Esquema + alcancia (secreto por stdin) + repasa (conEntrada con varios args)",
+ "requiere": [
+  "host-ui",
+  "nucleo"
+ ],
+ "plataformas": [
+  "mac"
+ ],
+ "permisos": {
+  "mac": []
+ },
+ "tareas_david": [
+  "Opcional: Apple Developer (USD 99/año) para firmar y que macOS no advierta"
+ ]
+}

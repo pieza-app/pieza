@@ -1,0 +1,30 @@
+{
+ "formato": 1,
+ "id": "celular",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Copia al celular",
+ "categoria": "datos",
+ "descripcion": "El computador es la fuente; el celular lee una copia cifrada en una carpeta de la nube de la persona.",
+ "recomendar": {
+  "cuando": "Hay app de celular y los datos viven en el computador."
+ },
+ "tomar_de": "alcancia Celular.swift + repasa (guardarCopia/traerCopia)",
+ "requiere": [
+  "cifrado"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ],
+ "pantallas": [
+  {
+   "donde": "Ajustes",
+   "nombre": "Celular",
+   "que": "elegir la carpeta compartida y la frase"
+  }
+ ]
+}

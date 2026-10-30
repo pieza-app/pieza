@@ -1,0 +1,21 @@
+{
+ "formato": 1,
+ "id": "cifrado",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Cifrado",
+ "categoria": "datos",
+ "descripcion": "Cifrar con una frase de la persona (PBKDF2 600k + AES-256-GCM) y nombres de archivo con HMAC.",
+ "recomendar": {
+  "cuando": "Datos personales salen del computador (respaldo, celular, nube)."
+ },
+ "tomar_de": "repasa/motor/cifrado.js + alcancia/ui/copia.js",
+ "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ]
+}

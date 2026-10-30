@@ -1,0 +1,22 @@
+{
+ "formato": 1,
+ "id": "host-ui",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Puente de la interfaz",
+ "categoria": "interfaz",
+ "descripcion": "host.enviar(accion, datos) y las respuestas window.<App>.*, igual en Mac, Electron, móvil y navegador (modo demo).",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre: es como la interfaz habla con la app."
+ },
+ "tomar_de": "esquema/ui/app.js (host + simular); unificar probarIA con {ia}",
+ "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ]
+}

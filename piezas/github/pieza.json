@@ -1,0 +1,25 @@
+{
+ "formato": 1,
+ "id": "github",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Repo listo para la comunidad",
+ "categoria": "repo",
+ "descripcion": "Plantillas de issues y PR, dependabot, workflows reutilizables de revisar y publicar, AGENTS.md, CONTRIBUTING.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre."
+ },
+ "tomar_de": "esquema/.github + guías",
+ "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ],
+ "tareas_david": [
+  "Crear la organización <app>-app en GitHub"
+ ]
+}

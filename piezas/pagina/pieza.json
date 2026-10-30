@@ -1,0 +1,37 @@
+{
+ "formato": 1,
+ "id": "pagina",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Página pública",
+ "categoria": "repo",
+ "descripcion": "GitHub Pages bilingüe con descarga según sistema, demo en el navegador, preguntas frecuentes y SEO.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre."
+ },
+ "tomar_de": "esquema/docs + herramientas/pagina_capturas.mjs",
+ "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ],
+ "pantallas": [
+  {
+   "donde": "Web",
+   "nombre": "Inicio",
+   "que": "qué es, descargar, cómo funciona, comparación, preguntas, comunidad"
+  },
+  {
+   "donde": "Web",
+   "nombre": "Demo",
+   "que": "la app en el navegador con datos ficticios"
+  }
+ ],
+ "tareas_david": [
+  "Verificar la página en Google Search Console"
+ ]
+}

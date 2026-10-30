@@ -56,6 +56,17 @@ enruten solos.
 | `config` | Claves que la pieza necesita en `app.json` (lista = valores posibles; `"bool"`, `"texto"`, `"numero"` = tipo). Se suman sin pisar. |
 | `acciones` | Las acciones tipo (a) que trae la pieza (abajo). |
 | `textos` | Frases en español → inglés. Se suman al `ui/idiomas/en.json` de la app si faltan. |
+| `estado` | `lista` (trae código) o `planeada` (aún por extraer: sin `archivos`, con `tomar_de`). |
+| `categoria` | `base`, `ia`, `interfaz`, `datos`, `medios`, `conexiones`, `plataforma` o `repo`. |
+| `recomendar` | `{"cuando": "…", "siempre": true?, "palabras": […]?}`: cuándo sugerirla al crear una app. `siempre` = va en toda app de esas plataformas. |
+| `plataformas` | Dónde funciona: `mac`, `windows`, `linux`, `ios`, `android`. |
+| `pantallas` | `[{donde, nombre, que}]`: lo que suma a la app (Bienvenida, Ajustes, Galería, Web…). |
+| `permisos` | Por plataforma, `[{clave, por}]`: la clave de Info.plist, el permiso de Android o el aviso del sistema, y para qué. |
+| `red` | Dominios a los que sale. Vacío = funciona sin internet. |
+| `tareas_david` | Lo que solo puede hacer una persona (crear una org, una cuenta de desarrollador, verificar un sitio). |
+
+Estos campos son los que lee el creador de proyectos: `pieza.py ficha <piezas> --plataformas …` los suma y muestra la app
+completa antes de crearla. Agregar una pieza (o un campo nuevo a una) la hace aparecer sola en el creador.
 
 ### Una acción
 

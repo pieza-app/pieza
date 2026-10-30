@@ -1,0 +1,44 @@
+{
+ "formato": 1,
+ "id": "transcribir",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Transcribir",
+ "categoria": "medios",
+ "descripcion": "Audio a texto en el computador con whisper: modelos verificados, vocabulario por archivo, filtro de alucinaciones.",
+ "recomendar": {
+  "cuando": "La app trabaja con voz, reuniones o videos.",
+  "palabras": [
+   "audio",
+   "voz",
+   "video",
+   "subtítulos",
+   "reunión"
+  ]
+ },
+ "tomar_de": "minuta (VAD, filtro con bucles) + corta (vocabulario por archivo) + Sources/Transcribir y ModeloWhisper una vez",
+ "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "pantallas": [
+  {
+   "donde": "Bienvenida",
+   "nombre": "Modelo de voz",
+   "que": "descargar el modelo la primera vez, con avance"
+  },
+  {
+   "donde": "Ajustes",
+   "nombre": "Voz",
+   "que": "idioma del audio y modelo"
+  }
+ ],
+ "red": [
+  "huggingface.co"
+ ],
+ "config": {
+  "idioma_audio": "texto"
+ }
+}

@@ -1,0 +1,36 @@
+{
+ "formato": 1,
+ "id": "bienvenida",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Bienvenida",
+ "categoria": "interfaz",
+ "descripcion": "Primer uso por pasos, con el idioma SIEMPRE primero; cada pieza puede sumar su paso.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre."
+ },
+ "tomar_de": "repasa/ui (lista de idiomas extensible, atajos 1/2) + esquema (avisos pendientes)",
+ "requiere": [
+  "i18n"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ],
+ "pantallas": [
+  {
+   "donde": "Bienvenida",
+   "nombre": "Idioma",
+   "que": "primer paso, antes de todo"
+  },
+  {
+   "donde": "Bienvenida",
+   "nombre": "Listo",
+   "que": "último paso, qué hacer primero"
+  }
+ ]
+}

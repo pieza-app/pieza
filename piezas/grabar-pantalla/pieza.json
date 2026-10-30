@@ -1,0 +1,63 @@
+{
+ "formato": 1,
+ "id": "grabar-pantalla",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Grabar pantalla",
+ "categoria": "medios",
+ "descripcion": "Pantalla + cámara + voz, con recorte, pausa y atajos globales.",
+ "recomendar": {
+  "cuando": "La app graba la pantalla o la cámara.",
+  "palabras": [
+   "grabar",
+   "pantalla",
+   "cámara",
+   "tutorial"
+  ]
+ },
+ "tomar_de": "graba Grabadora.swift, Atajos.swift, Recorte.swift",
+ "requiere": [
+  "microfono"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "pantallas": [
+  {
+   "donde": "Bienvenida",
+   "nombre": "Permisos de grabación",
+   "que": "pantalla, cámara y micrófono, con por qué"
+  },
+  {
+   "donde": "Barra",
+   "nombre": "Grabando",
+   "que": "pausa, terminar, tiempo"
+  }
+ ],
+ "permisos": {
+  "mac": [
+   {
+    "clave": "Grabación de pantalla (Privacidad y seguridad)",
+    "por": "macOS lo pide al primer uso; no va en Info.plist"
+   },
+   {
+    "clave": "NSCameraUsageDescription",
+    "por": "mostrar la cámara"
+   }
+  ],
+  "windows": [
+   {
+    "clave": "Privacidad → Cámara",
+    "por": "mostrar la cámara"
+   }
+  ],
+  "linux": [
+   {
+    "clave": "Portal de captura (PipeWire)",
+    "por": "Wayland pide elegir la pantalla"
+   }
+  ]
+ }
+}

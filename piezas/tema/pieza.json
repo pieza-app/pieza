@@ -1,0 +1,38 @@
+{
+ "formato": 1,
+ "id": "tema",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Tema claro y oscuro",
+ "categoria": "interfaz",
+ "descripcion": "Sistema, claro u oscuro, con light-dark() y sin repetir colores.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre."
+ },
+ "tomar_de": "esquema/ui/app.css (data-tema)",
+ "requiere": [
+  "componentes"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ],
+ "pantallas": [
+  {
+   "donde": "Ajustes",
+   "nombre": "Apariencia",
+   "que": "sistema, claro u oscuro"
+  }
+ ],
+ "config": {
+  "tema": [
+   "sistema",
+   "claro",
+   "oscuro"
+  ]
+ }
+}

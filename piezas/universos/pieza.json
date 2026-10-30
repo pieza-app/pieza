@@ -1,0 +1,42 @@
+{
+ "formato": 1,
+ "id": "universos",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Universos",
+ "categoria": "datos",
+ "descripcion": "Mundos temáticos que cambian textos, colores y juego de la app; se descargan, se votan y se crean con la IA.",
+ "recomendar": {
+  "cuando": "Quieres que la app sea entretenida y personalizable por temas.",
+  "palabras": [
+   "universos",
+   "juego",
+   "gamificar",
+   "temas"
+  ]
+ },
+ "tomar_de": "minuta bin/universo.py + galería de ui/app.js",
+ "requiere": [
+  "catalogo",
+  "tema"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ],
+ "pantallas": [
+  {
+   "donde": "Galería",
+   "nombre": "Universos",
+   "que": "elegir, previsualizar, votar y descargar"
+  },
+  {
+   "donde": "Ajustes",
+   "nombre": "Crear universo",
+   "que": "pedírselo a tu IA"
+  }
+ ]
+}

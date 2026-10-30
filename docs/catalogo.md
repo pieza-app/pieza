@@ -3,6 +3,10 @@
 Sale de comparar las seis apps (oct 2026): ~60 archivos repetidos, casi todos con una versión distinta por app. Cada fila dice de
 dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 
+> **La fuente de verdad son los `pieza.json`** (todas las piezas, listas y planeadas, ya tienen el suyo): `pieza.py catalogo`.
+> Este archivo solo guarda el **orden de extracción** y las brechas encontradas. Al extraer una pieza, cambia su `estado` a
+> `lista` y mueve aquí su fila.
+
 ## Listas
 
 | Pieza | Versión | Qué es | Tomada de |

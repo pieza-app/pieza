@@ -1,0 +1,31 @@
+{
+ "formato": 1,
+ "id": "i18n",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Idiomas",
+ "categoria": "interfaz",
+ "descripcion": "Traducciones con la frase en español como clave, plantillas {n}, escape seguro y traducir la página entera.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre: toda app sale en español e inglés y deja sumar idiomas."
+ },
+ "tomar_de": "minuta/ui/app.js (tr) + esquema (T que escapa, traducirDOM) + graba (prioridad config > URL > sistema); en.json unificado {codigo, nombre, bandera, textos}",
+ "requiere": [
+  "host-ui"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ],
+ "pantallas": [
+  {
+   "donde": "Ajustes",
+   "nombre": "Idioma",
+   "que": "cambiar el idioma de la app"
+  }
+ ]
+}

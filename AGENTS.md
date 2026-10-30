@@ -41,6 +41,14 @@ Las piezas se copian y la app es dueña de su copia. Si en una app se arregla o 
 `pieza.py diferencias <app> <pieza>` muestra el cambio. Si sirve para todas, se trae aquí, se sube la versión y las demás apps
 lo reciben con `pieza.py actualizar <app>` (que nunca pisa lo que una app cambió).
 
+## El creador de proyectos (la skill)
+
+`skills/lanzar-proyecto-open-source/SKILL.md` es la versión oficial del flujo para crear una app nueva; las skills instaladas son
+copias que, al usarse, comparan su «Versión del flujo» con esta y siguen la más nueva. El creador no tiene piezas escritas
+adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
+- **Pieza nueva o campo nuevo** (pantallas, permisos, red, tareas) → aparece solo en el creador. No hay que tocar la skill.
+- **Paso nuevo en el flujo** o aprendizaje → editar ese SKILL.md, subir «Versión del flujo» y anotarlo en `CHANGELOG.md`.
+
 ## Mapa
 
 | Ruta | Qué es |
@@ -49,6 +57,7 @@ lo reciben con `pieza.py actualizar <app>` (que nunca pisa lo que una app cambi�
 | `herramientas/pieza.py` | `listar`, `iniciar`, `agregar`, `estado`, `actualizar`, `diferencias`, `revisar` |
 | `docs/enchufe.md` | El contrato: `pieza.json`, `app.json`, `piezas.json`, reglas de seguridad, host genérico |
 | `docs/catalogo.md` | Qué piezas hay, cuáles faltan y en qué orden, y brechas encontradas en las apps |
+| `skills/lanzar-proyecto-open-source/` | El flujo oficial para crear una app nueva (la skill), con su versión |
 | `pruebas/` | `correr.sh` y `test_piezas.py` (una app ficticia con CLIs de IA falsos) |
 
 Licencia AGPL-3.0, como las apps.

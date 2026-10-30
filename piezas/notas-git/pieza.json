@@ -1,0 +1,41 @@
+{
+ "formato": 1,
+ "id": "notas-git",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Datos en tu git",
+ "categoria": "datos",
+ "descripcion": "Guarda los datos de la persona en un repo suyo de GitHub o GitLab, nunca en un servidor nuestro.",
+ "recomendar": {
+  "cuando": "Los datos deben tener historial y respaldo en la cuenta de la persona.",
+  "palabras": [
+   "notas",
+   "respaldo",
+   "historial",
+   "git"
+  ]
+ },
+ "tomar_de": "minuta (clonarNotas, crearRepoNotas)",
+ "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "pantallas": [
+  {
+   "donde": "Bienvenida",
+   "nombre": "Dónde guardar",
+   "que": "elegir o crear el repo de datos"
+  },
+  {
+   "donde": "Ajustes",
+   "nombre": "Datos",
+   "que": "cambiar el repo"
+  }
+ ],
+ "red": [
+  "github.com",
+  "gitlab.com"
+ ]
+}

@@ -2,28 +2,79 @@
  "formato": 1,
  "id": "ia",
  "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Tu IA",
+ "categoria": "ia",
  "descripcion": "La IA de la persona (Claude Code, Codex o Gemini) con su propia cuenta: sin herramientas, sin su memoria, el pedido nunca como argumento, material y revisión a fondo de solo lectura.",
+ "recomendar": {
+  "cuando": "La app usa IA para algo (resumir, generar, ordenar, responder) con la cuenta de la persona.",
+  "palabras": [
+   "ia",
+   "resumir",
+   "generar",
+   "asistente",
+   "chat",
+   "redactar",
+   "analizar"
+  ]
+ },
  "origen": "esquema/bin/ia.py + alcancia (pedido en archivo) + repasa (material) — corrige el reintento sin protecciones de graba y minuta",
- "requiere": ["nucleo"],
+ "requiere": [
+  "nucleo"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "pantallas": [
+  {
+   "donde": "Bienvenida",
+   "nombre": "Tu IA",
+   "que": "elegir Claude, ChatGPT o Gemini y probar que responde"
+  },
+  {
+   "donde": "Ajustes",
+   "nombre": "Tu IA",
+   "que": "cambiar de IA y volver a probar"
+  }
+ ],
+ "tareas_david": [],
  "archivos": {
   "python/ia.py": "bin/ia.py"
  },
  "config": {
-  "ia": ["claude", "codex", "gemini"]
+  "ia": [
+   "claude",
+   "codex",
+   "gemini"
+  ]
  },
  "acciones": {
   "probarIA": {
    "script": "ia.py",
-   "args": ["probar"],
+   "args": [
+    "probar"
+   ],
    "entrada": "archivo",
-   "datos": {"ia": {"tipo": "enum", "valores": ["claude", "codex", "gemini"]}},
+   "datos": {
+    "ia": {
+     "tipo": "enum",
+     "valores": [
+      "claude",
+      "codex",
+      "gemini"
+     ]
+    }
+   },
    "responde": "iaProbada",
    "limite": 120
   },
   "listaIA": {
    "script": "ia.py",
-   "args": ["lista"],
+   "args": [
+    "lista"
+   ],
    "entrada": null,
    "datos": {},
    "responde": "iaLista",

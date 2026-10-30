@@ -1,0 +1,59 @@
+{
+ "formato": 1,
+ "id": "microfono",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Micrófono",
+ "categoria": "medios",
+ "descripcion": "Grabar o escuchar el micrófono (y el audio del sistema en Mac) con permiso explicado.",
+ "recomendar": {
+  "cuando": "La app graba o escucha voz."
+ },
+ "tomar_de": "minuta Audio.swift / Dictado.swift",
+ "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ],
+ "pantallas": [
+  {
+   "donde": "Bienvenida",
+   "nombre": "Permiso de micrófono",
+   "que": "explicar para qué antes de pedirlo"
+  }
+ ],
+ "permisos": {
+  "mac": [
+   {
+    "clave": "NSMicrophoneUsageDescription",
+    "por": "grabar la voz"
+   },
+   {
+    "clave": "NSAudioCaptureUsageDescription",
+    "por": "grabar el audio del sistema (reuniones)"
+   }
+  ],
+  "windows": [
+   {
+    "clave": "Privacidad → Micrófono",
+    "por": "Windows pregunta la primera vez"
+   }
+  ],
+  "linux": [],
+  "ios": [
+   {
+    "clave": "NSMicrophoneUsageDescription",
+    "por": "grabar la voz"
+   }
+  ],
+  "android": [
+   {
+    "clave": "RECORD_AUDIO",
+    "por": "grabar la voz"
+   }
+  ]
+ }
+}

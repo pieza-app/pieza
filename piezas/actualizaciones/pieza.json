@@ -1,0 +1,35 @@
+{
+ "formato": 1,
+ "id": "actualizaciones",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Actualizaciones",
+ "categoria": "plataforma",
+ "descripcion": "Avisa dentro de la app, descarga solo de los Releases del repo, verifica sha256 y actualiza en un clic sin tocar los datos.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre en escritorio."
+ },
+ "tomar_de": "esquema Actualizaciones.swift + escritorio/src/actualizaciones.js (esDescargaNuestra, comillas)",
+ "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "pantallas": [
+  {
+   "donde": "Ajustes",
+   "nombre": "Actualizaciones",
+   "que": "buscar, ver el avance «Paso n de 3» y «Estás en la última versión»"
+  }
+ ],
+ "red": [
+  "github.com",
+  "api.github.com",
+  "objects.githubusercontent.com"
+ ],
+ "tareas_david": [
+  "Publicar versiones como Releases con los archivos y su .sha256 (lo hace el workflow publicar)"
+ ]
+}

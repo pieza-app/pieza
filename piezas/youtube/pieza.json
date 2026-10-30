@@ -1,0 +1,48 @@
+{
+ "formato": 1,
+ "id": "youtube",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Subir a YouTube",
+ "categoria": "conexiones",
+ "descripcion": "Conectar el canal de la persona con OAuth y subir videos directo.",
+ "recomendar": {
+  "cuando": "La app produce videos para publicar.",
+  "palabras": [
+   "youtube",
+   "publicar",
+   "subir",
+   "canal"
+  ]
+ },
+ "tomar_de": "graba bin/youtube.py",
+ "requiere": [
+  "red"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "pantallas": [
+  {
+   "donde": "Ajustes",
+   "nombre": "YouTube",
+   "que": "conectar y desconectar el canal"
+  },
+  {
+   "donde": "Exportar",
+   "nombre": "Subir a YouTube",
+   "que": "título, privacidad y subir"
+  }
+ ],
+ "red": [
+  "accounts.google.com",
+  "oauth2.googleapis.com",
+  "www.googleapis.com"
+ ],
+ "tareas_david": [
+  "Proyecto en Google Cloud con YouTube Data API y cliente OAuth de escritorio",
+  "Verificación de la app en Google si se abre a más de 100 personas"
+ ]
+}

@@ -2,10 +2,21 @@
  "formato": 1,
  "id": "nucleo",
  "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Núcleo",
+ "categoria": "base",
  "descripcion": "Lo que todo script necesita: app.json, carpeta de datos, config validada, escritura atómica y el contrato «el último argumento es la salida».",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre: es la base de cualquier script de la app."
+ },
  "origen": "esquema/bin/comun.py + lo mejor de alcancia/bin/datos.py y repasa/bin/datos.py",
  "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
  "archivos": {
   "python/nucleo.py": "bin/nucleo.py"
  },

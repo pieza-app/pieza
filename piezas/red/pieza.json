@@ -1,0 +1,19 @@
+{
+ "formato": 1,
+ "id": "red",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Red segura",
+ "categoria": "conexiones",
+ "descripcion": "HTTPS sin redirecciones, solo a dominios permitidos, credenciales nunca en errores.",
+ "recomendar": {
+  "cuando": "Algún script de la app sale a internet (APIs, descargas)."
+ },
+ "tomar_de": "alcancia/bin/red.py",
+ "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ]
+}

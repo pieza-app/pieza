@@ -1,0 +1,31 @@
+{
+ "formato": 1,
+ "id": "host-movil",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "App de celular",
+ "categoria": "plataforma",
+ "descripcion": "Capacitor con la misma interfaz; las acciones corren en un motor JS.",
+ "recomendar": {
+  "cuando": "La persona necesita la app en el celular."
+ },
+ "tomar_de": "repasa/movil + alcancia/movil",
+ "requiere": [
+  "host-ui"
+ ],
+ "plataformas": [
+  "ios",
+  "android"
+ ],
+ "permisos": {
+  "android": [
+   {
+    "clave": "INTERNET",
+    "por": "solo si alguna pieza sale a la red"
+   }
+  ]
+ },
+ "tareas_david": [
+  "Instalaciones de prueba primero; para tiendas: Apple Developer y Google Play Console (USD 25 una vez)"
+ ]
+}

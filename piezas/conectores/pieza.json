@@ -1,0 +1,46 @@
+{
+ "formato": 1,
+ "id": "conectores",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Conectores de servicios",
+ "categoria": "conexiones",
+ "descripcion": "Contrato para conectar servicios externos (bancos, billeteras, APIs) con credencial en el llavero y por la entrada estándar.",
+ "recomendar": {
+  "cuando": "La app trae datos de servicios de la persona (banco, billetera, tienda).",
+  "palabras": [
+   "banco",
+   "conectar",
+   "api",
+   "importar"
+  ]
+ },
+ "tomar_de": "alcancia bin/conectores/, sincronizar.leer_credencial, Conexiones.swift",
+ "requiere": [
+  "red",
+  "nucleo"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "pantallas": [
+  {
+   "donde": "Ajustes",
+   "nombre": "Conexiones",
+   "que": "conectar, probar, reparar y quitar cada servicio"
+  }
+ ],
+ "permisos": {
+  "mac": [
+   {
+    "clave": "Llavero",
+    "por": "guardar la credencial (sin aviso extra)"
+   }
+  ]
+ },
+ "tareas_david": [
+  "Por cada servicio: cuenta de desarrollador o API propia de la persona (ej. Mercado Pago)"
+ ]
+}

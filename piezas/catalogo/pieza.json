@@ -1,0 +1,43 @@
+{
+ "formato": 1,
+ "id": "catalogo",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Catálogo de la comunidad",
+ "categoria": "datos",
+ "descripcion": "Contenido descargable (plantillas, temas, efectos…) desde un repo de solo datos, validado y con sha256 obligatorio.",
+ "recomendar": {
+  "cuando": "La gente puede crear y compartir contenido para la app (plantillas, temas, universos, efectos).",
+  "palabras": [
+   "plantillas",
+   "temas",
+   "comunidad",
+   "descargar",
+   "galería"
+  ]
+ },
+ "tomar_de": "esquema bin/plantillas.py + Catalogo.swift + escritorio/src/catalogo.js; corta (origen, categoría = carpeta)",
+ "requiere": [
+  "host-ui"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ],
+ "pantallas": [
+  {
+   "donde": "Galería",
+   "nombre": "Comunidad",
+   "que": "ver, previsualizar, descargar y quitar contenido"
+  }
+ ],
+ "red": [
+  "raw.githubusercontent.com"
+ ],
+ "tareas_david": [
+  "Crear el repo <org>/<app>-catalogo (solo datos JSON)"
+ ]
+}

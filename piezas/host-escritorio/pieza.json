@@ -1,0 +1,25 @@
+{
+ "formato": 1,
+ "id": "host-escritorio",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "App de Windows y Linux",
+ "categoria": "plataforma",
+ "descripcion": "Host genérico en Electron con la misma API que el de Mac.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre que haya app de Windows o Linux."
+ },
+ "tomar_de": "esquema escritorio/src",
+ "requiere": [
+  "host-ui",
+  "nucleo"
+ ],
+ "plataformas": [
+  "windows",
+  "linux"
+ ],
+ "tareas_david": [
+  "Opcional: certificado de firma para Windows"
+ ]
+}

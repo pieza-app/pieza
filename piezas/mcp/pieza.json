@@ -1,0 +1,33 @@
+{
+ "formato": 1,
+ "id": "mcp",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Hablar con tu IA (MCP)",
+ "categoria": "ia",
+ "descripcion": "Servidor MCP local para que la persona converse con sus datos desde su IA, y alta en Claude, Codex, Gemini y Claude Desktop.",
+ "recomendar": {
+  "cuando": "La persona querría preguntarle cosas a su IA sobre sus datos de la app.",
+  "palabras": [
+   "preguntar",
+   "conversar",
+   "chat"
+  ]
+ },
+ "tomar_de": "alcancia bin/mcp_servidor.py + bin/mcp_conectar.py",
+ "requiere": [
+  "nucleo"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "pantallas": [
+  {
+   "donde": "Ajustes",
+   "nombre": "Conectar a tu IA",
+   "que": "conectar, ver estado y quitar"
+  }
+ ]
+}

@@ -1,0 +1,33 @@
+{
+ "formato": 1,
+ "id": "comentarios",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Enviar comentarios",
+ "categoria": "interfaz",
+ "descripcion": "Formulario que abre un issue en GitHub prellenado con versión, sistema e IA. Nunca obligatorio.",
+ "recomendar": {
+  "cuando": "La app es abierta y quieres ideas y errores de la gente sin que tengan que ir a GitHub."
+ },
+ "tomar_de": "minuta/ui (enviarComentario)",
+ "requiere": [
+  "componentes"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ],
+ "pantallas": [
+  {
+   "donde": "Ajustes",
+   "nombre": "Enviar comentarios",
+   "que": "contar un error o una idea"
+  }
+ ],
+ "red": [
+  "github.com"
+ ]
+}

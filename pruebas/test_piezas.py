@@ -166,10 +166,26 @@ class Herramienta(AppDePrueba):
         self.assertIn("mejora propia", open(ruta).read())
         self.assertIn("+# mejora propia", correr(PIEZA, "diferencias", self.app, "ia").stdout)
 
+    def test_planeada_no_se_agrega(self):
+        r = correr(PIEZA, "agregar", "transcribir", self.app)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("aún no está extraída", r.stderr)
+
+    def test_ficha_suma_todo(self):
+        r = correr(PIEZA, "ficha", "microfono", "--plataformas", "mac,android", "--json")
+        f = json.loads(r.stdout)
+        ids = [x["id"] for x in f["piezas"]]
+        self.assertIn("nucleo", ids)            # siempre, por estar en mac
+        self.assertIn("host-mac", ids)
+        self.assertNotIn("host-escritorio", ids)  # no se pidió Windows ni Linux
+        self.assertEqual([x["clave"] for x in f["permisos"]["android"]], ["RECORD_AUDIO"])
+        self.assertTrue(any(x["pieza"] == "nucleo" and x["plataformas"] == ["android"] for x in f["faltan_en"]))
+        self.assertEqual(f["pantallas"][0]["nombre"], "Idioma")
+
     def test_regla_de_oro_texto_nunca_en_args(self):
         sys.path.insert(0, os.path.join(BASE, "herramientas"))
         import pieza
-        mala = {"id": "mala", "version": "1.0.0", "archivos": {},
+        mala = {"id": "mala", "version": "1.0.0", "archivos": {}, "categoria": "base", "descripcion": "x", "recomendar": {"cuando": "x"},
                 "acciones": {"x": {"script": "x.py", "scriptDeLaApp": True, "args": ["$pedido"], "limite": 10,
                                    "datos": {"pedido": {"tipo": "texto", "max": 100}}}}}
         errores = " ".join(pieza.errores_pieza("mala", mala, {}))

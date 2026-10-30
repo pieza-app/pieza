@@ -1,0 +1,20 @@
+{
+ "formato": 1,
+ "id": "empaquetado",
+ "version": "0.0.0",
+ "estado": "planeada",
+ "nombre": "Empaquetado",
+ "categoria": "repo",
+ "descripcion": "build.sh, empaquetar, Python portátil fijado, instaladores de un comando y Info.plist/package.json generados desde app.json.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre."
+ },
+ "tomar_de": "esquema (build.sh, herramientas/empaquetar.sh, escritorio/herramientas)",
+ "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ]
+}
