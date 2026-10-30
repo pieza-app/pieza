@@ -1,0 +1,125 @@
+{
+ "formato": 1,
+ "topic": "hecho-con-pieza",
+ "proyectos": [
+  {
+   "repo": "alcancia-app/alcancia",
+   "nombre": "alcancia",
+   "descripcion": "Control de gastos gratis y de código abierto: lee la cartola de cualquier banco, tu IA ordena y aconseja, tus datos en tu computador.",
+   "url": "https://github.com/alcancia-app/alcancia",
+   "pagina": "https://alcancia-app.github.io/alcancia/",
+   "commit": "0c060c90a36f14f9ca61606b0b5d19f5c446d6cd",
+   "icono": "docs/favicon.svg",
+   "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#2b1d16\"/><circle cx=\"30\" cy=\"13.5\" r=\"7\" fill=\"#f2b632\"/><rect x=\"27.5\" y=\"10.5\" width=\"5\" height=\"6\" rx=\"1.2\" fill=\"#d99a1e\"/><path d=\"M42 22.5 47.5 15l1.5 10z\" fill=\"#cf6a3e\"/><ellipse cx=\"30\" cy=\"38\" rx=\"20\" ry=\"15\" fill=\"#d9774b\"/><rect x=\"23\" y=\"23.6\" width=\"14\" height=\"3.4\" rx=\"1.7\" fill=\"#2b1d16\"/><ellipse cx=\"50.5\" cy=\"39\" rx=\"4.6\" ry=\"5.4\" fill=\"#c2603a\"/><circle cx=\"49.6\" cy=\"37.4\" r=\"1\" fill=\"#2b1d16\"/><circle cx=\"49.6\" cy=\"40.8\" r=\"1\" fill=\"#2b1d16\"/><circle cx=\"41.5\" cy=\"33.5\" r=\"1.9\" fill=\"#2b1d16\"/><rect x=\"17\" y=\"49\" width=\"6\" height=\"7\" rx=\"2\" fill=\"#c2603a\"/><rect x=\"34\" y=\"49\" width=\"6\" height=\"7\" rx=\"2\" fill=\"#c2603a\"/><path d=\"M10.5 36c-3 0-4.5-2-3.5-4\" fill=\"none\" stroke=\"#c2603a\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg>\n",
+   "encontrado": "2026-10-30",
+   "actualizado": "2026-10-30T20:07:21Z",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30",
+    "nota": "App de la familia Pieza, revisada por quien mantiene Pieza."
+   }
+  },
+  {
+   "repo": "corta-app/corta",
+   "nombre": "corta",
+   "descripcion": "Editor gratis y de código abierto para Shorts, Reels y TikTok: editas el texto y se edita el video. Subtítulos animados, sin silencios y tu propia IA.",
+   "url": "https://github.com/corta-app/corta",
+   "pagina": "https://corta-app.github.io/corta/",
+   "commit": "7f572e602c0839848084d122740c3d1fc6337acd",
+   "icono": "docs/favicon.svg",
+   "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#111214\"/><path d=\"M22 15.5 49 32 22 48.5z\" fill=\"#c6f432\"/><path d=\"M14 44 50 20\" stroke=\"#111214\" stroke-width=\"7\" stroke-linecap=\"round\"/><circle cx=\"14\" cy=\"44\" r=\"4.6\" fill=\"none\" stroke=\"#f4f4f0\" stroke-width=\"2.6\"/><circle cx=\"50\" cy=\"20\" r=\"4.6\" fill=\"none\" stroke=\"#f4f4f0\" stroke-width=\"2.6\"/></svg>\n",
+   "encontrado": "2026-10-30",
+   "actualizado": "2026-10-30T20:07:15Z",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30",
+    "nota": "App de la familia Pieza, revisada por quien mantiene Pieza."
+   }
+  },
+  {
+   "repo": "esquema-app/esquema",
+   "nombre": "esquema",
+   "descripcion": "Diagramas (flujo, secuencia, arquitectura, BPMN y más) y documentación con tu propia IA. Compatible con Mermaid y 40–100× más rápido. Gratis y abierto.",
+   "url": "https://github.com/esquema-app/esquema",
+   "pagina": "https://esquema-app.github.io/esquema/",
+   "commit": "ee3de3cc3fc8dee243d0fbcb9bd11666433e70e6",
+   "icono": "docs/favicon.svg",
+   "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#2f5fd0\"/><g fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"21\" y=\"10\" width=\"22\" height=\"14\" rx=\"3\"/><path d=\"M32 24v8M18 32h28M18 32v6M46 32v6\"/><circle cx=\"18\" cy=\"46\" r=\"7\"/><path d=\"M39 39h14v14H39z\"/></g></svg>\n",
+   "encontrado": "2026-10-30",
+   "actualizado": "2026-10-30T20:07:28Z",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30",
+    "nota": "App de la familia Pieza, revisada por quien mantiene Pieza."
+   }
+  },
+  {
+   "repo": "graba-app/graba",
+   "nombre": "graba",
+   "descripcion": "Graba tu pantalla con tu cámara y tu IA te deja notas, guion para YouTube, capítulos y subtítulos. Gratis, open source y privado.",
+   "url": "https://github.com/graba-app/graba",
+   "pagina": "https://graba-app.github.io/graba/",
+   "commit": "dcd4545d9dc33901d4a9b9aa8b88c99b64d90296",
+   "icono": "docs/favicon.svg",
+   "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#17151c\"/><rect x=\"12\" y=\"15\" width=\"40\" height=\"28\" rx=\"5\" fill=\"none\" stroke=\"#b9b0ff\" stroke-width=\"4\"/><circle cx=\"21\" cy=\"44\" r=\"10\" fill=\"#6d5dfc\" stroke=\"#17151c\" stroke-width=\"3\"/><circle cx=\"44\" cy=\"22\" r=\"3.2\" fill=\"#ff5d5d\"/></svg>\n",
+   "encontrado": "2026-10-30",
+   "actualizado": "2026-10-30T20:53:00Z",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30",
+    "nota": "App de la familia Pieza, revisada por quien mantiene Pieza."
+   }
+  },
+  {
+   "repo": "minuta-app/minuta",
+   "nombre": "minuta",
+   "descripcion": "Notas de reuniones con IA y coach de comunicación: transcribe en tu computador, usa tu propia IA (Claude, ChatGPT o Gemini) y guarda todo en tu Git. Mac, Windows y Linux. Gratis y abierto.",
+   "url": "https://github.com/minuta-app/minuta",
+   "pagina": "https://minuta-app.github.io/minuta/",
+   "commit": "5d3ad2e7e50cc9c04982e6e84820bfd784761f65",
+   "icono": "docs/favicon.svg",
+   "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#14131b\"/><circle cx=\"32\" cy=\"32\" r=\"19\" fill=\"none\" stroke=\"#ff6b4a\" stroke-opacity=\".35\" stroke-width=\"7\"/><circle cx=\"32\" cy=\"32\" r=\"11\" fill=\"#ff6b4a\"/></svg>\n",
+   "encontrado": "2026-10-30",
+   "actualizado": "2026-10-30T20:53:03Z",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30",
+    "nota": "App de la familia Pieza, revisada por quien mantiene Pieza."
+   }
+  },
+  {
+   "repo": "pieza-app/pieza",
+   "nombre": "pieza",
+   "descripcion": "Framework abierto para apps que viven en tu computador: piezas probadas que se enchufan en vez de escribirse de cero.",
+   "url": "https://github.com/pieza-app/pieza",
+   "pagina": "https://pieza-app.github.io/pieza/",
+   "commit": "40e0ebaf3c850d01e39d8b53610aba04ab20f6df",
+   "icono": "docs/favicon.svg",
+   "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
+   "encontrado": "2026-10-30",
+   "actualizado": "2026-10-30T21:10:05Z",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30",
+    "nota": "App de la familia Pieza, revisada por quien mantiene Pieza."
+   }
+  },
+  {
+   "repo": "repasa-app/repasa",
+   "nombre": "repasa",
+   "descripcion": "Estudia desde la foto del cuaderno: preguntas, repaso espaciado y la IA de tu familia. Gratis, abierto y en tu computador.",
+   "url": "https://github.com/repasa-app/repasa",
+   "pagina": "https://repasa-app.github.io/repasa/",
+   "commit": "d644b4388e83341e70ee6d7b838567ca26ca05e5",
+   "icono": "docs/favicon.svg",
+   "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#2f5bea\"/><path d=\"M14 18c6-3 12-3 18 1v30c-6-4-12-4-18-1z\" fill=\"#fffefa\"/><path d=\"M50 18c-6-3-12-3-18 1v30c6-4 12-4 18-1z\" fill=\"#e8eeff\"/><path d=\"M36 33l5 5 9-11\" fill=\"none\" stroke=\"#ffd84d\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>\n",
+   "encontrado": "2026-10-30",
+   "actualizado": "2026-10-30T20:07:25Z",
+   "revision": {
+    "estado": "revisado",
+    "fecha": "2026-10-30",
+    "nota": "App de la familia Pieza, revisada por quien mantiene Pieza."
+   }
+  }
+ ]
+}
