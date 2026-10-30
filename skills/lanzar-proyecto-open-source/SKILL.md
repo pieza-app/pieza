@@ -5,7 +5,7 @@ description: "Lanzar un proyecto open source completo desde una idea: entrevista
 
 # Lanzar un proyecto open source con Pieza
 
-Versión del flujo: 5
+Versión del flujo: 6
 
 Quien mantiene el proyecto dice "creemos una aplicación para…" y espera el paquete completo, no preguntas una por una. Este flujo
 sale de lanzar Minuta, Graba, Corta, Alcancía, Repasa y Esquema. Trabaja por fases, con lista de tareas visible, y entrega algo usable al final de cada fase.
@@ -47,7 +47,9 @@ Todo junto, en una sola pregunta (ver «Preguntar todo junto»; si no responde, 
 - **Qué piezas sumar.** Con la frase de la persona, elige del catálogo las que calzan (`recomendar.cuando` y `recomendar.palabras`) y
   pregúntalas en una o dos preguntas `multiSelect` agrupadas por categoría, la recomendada primero con «(Recomendada)» y en la
   descripción una línea de por qué. Las de `siempre` no se preguntan: se avisa que van. Las `planeadas` se pueden elegir: se dice
-  que hay que extraerlas primero (de dónde, `tomar_de`) y que el proyecto lo hará.
+  que hay que extraerlas primero (de dónde, `tomar_de`) y que el proyecto lo hará. Las **de la comunidad**
+  (`comunidad/catalogo.json`) se ofrecen con su estado: «Revisada ✓» como cualquier otra; «Sin revisar», solo si la persona lo
+  pide, avisándole que nadie ha leído su código (`pieza.py agregar <id> <app> --sin-revisar`).
 
 ## 2. Ficha del proyecto (mostrarla y confirmar antes de crear nada)
 `python3 herramientas/pieza.py ficha <piezas elegidas> --plataformas <elegidas>` y arma con eso la ficha completa, en un doc que

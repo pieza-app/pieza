@@ -1,5 +1,7 @@
 # Cómo aportar a Pieza
 
+> Antes de empezar, lee el [manifiesto](MANIFIESTO.md): compartir lo que funciona, sin fines de lucro, tu computador y tu IA son tuyos.
+
 Pieza es la base de una familia de apps abiertas que viven en tu computador (Minuta, Graba, Corta, Alcancía, Repasa, Esquema…).
 Guarda **piezas**: código probado que se enchufa en cualquier app en vez de escribirlo de cero, y los **flujos** (skills) para crear
 una app y revisar aportes. Hay lugar para cualquiera, programes o no. *(English below.)*

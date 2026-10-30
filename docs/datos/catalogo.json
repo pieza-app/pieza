@@ -28,7 +28,8 @@
    ],
    "requiere": [],
    "siempre": true,
-   "cuando": "Siempre en escritorio."
+   "cuando": "Siempre en escritorio.",
+   "fuente": "oficial"
   },
   {
    "id": "bienvenida",
@@ -60,7 +61,8 @@
     "i18n"
    ],
    "siempre": true,
-   "cuando": "Siempre."
+   "cuando": "Siempre.",
+   "fuente": "oficial"
   },
   {
    "id": "calendario",
@@ -95,7 +97,8 @@
    },
    "requiere": [],
    "siempre": false,
-   "cuando": "La app depende de reuniones o eventos."
+   "cuando": "La app depende de reuniones o eventos.",
+   "fuente": "oficial"
   },
   {
    "id": "catalogo",
@@ -125,7 +128,8 @@
     "host-ui"
    ],
    "siempre": false,
-   "cuando": "La gente puede crear y compartir contenido para la app (plantillas, temas, universos, efectos)."
+   "cuando": "La gente puede crear y compartir contenido para la app (plantillas, temas, universos, efectos).",
+   "fuente": "oficial"
   },
   {
    "id": "celular",
@@ -152,7 +156,8 @@
     "cifrado"
    ],
    "siempre": false,
-   "cuando": "Hay app de celular y los datos viven en el computador."
+   "cuando": "Hay app de celular y los datos viven en el computador.",
+   "fuente": "oficial"
   },
   {
    "id": "cifrado",
@@ -170,7 +175,8 @@
    ],
    "requiere": [],
    "siempre": false,
-   "cuando": "Datos personales salen del computador (respaldo, celular, nube)."
+   "cuando": "Datos personales salen del computador (respaldo, celular, nube).",
+   "fuente": "oficial"
   },
   {
    "id": "comentarios",
@@ -200,7 +206,8 @@
     "componentes"
    ],
    "siempre": false,
-   "cuando": "La app es abierta y quieres ideas y errores de la gente sin que tengan que ir a GitHub."
+   "cuando": "La app es abierta y quieres ideas y errores de la gente sin que tengan que ir a GitHub.",
+   "fuente": "oficial"
   },
   {
    "id": "componentes",
@@ -227,7 +234,8 @@
     "i18n"
    ],
    "siempre": true,
-   "cuando": "Siempre."
+   "cuando": "Siempre.",
+   "fuente": "oficial"
   },
   {
    "id": "conectores",
@@ -261,7 +269,8 @@
     "nucleo"
    ],
    "siempre": false,
-   "cuando": "La app trae datos de servicios de la persona (banco, billetera, tienda)."
+   "cuando": "La app trae datos de servicios de la persona (banco, billetera, tienda).",
+   "fuente": "oficial"
   },
   {
    "id": "empaquetado",
@@ -277,7 +286,8 @@
    ],
    "requiere": [],
    "siempre": true,
-   "cuando": "Siempre."
+   "cuando": "Siempre.",
+   "fuente": "oficial"
   },
   {
    "id": "github",
@@ -295,7 +305,8 @@
    ],
    "requiere": [],
    "siempre": true,
-   "cuando": "Siempre."
+   "cuando": "Siempre.",
+   "fuente": "oficial"
   },
   {
    "id": "grabar-pantalla",
@@ -349,7 +360,8 @@
     "microfono"
    ],
    "siempre": false,
-   "cuando": "La app graba la pantalla o la cámara."
+   "cuando": "La app graba la pantalla o la cámara.",
+   "fuente": "oficial"
   },
   {
    "id": "host-escritorio",
@@ -367,7 +379,8 @@
     "nucleo"
    ],
    "siempre": true,
-   "cuando": "Siempre que haya app de Windows o Linux."
+   "cuando": "Siempre que haya app de Windows o Linux.",
+   "fuente": "oficial"
   },
   {
    "id": "host-mac",
@@ -387,7 +400,8 @@
     "nucleo"
    ],
    "siempre": true,
-   "cuando": "Siempre que haya app de Mac."
+   "cuando": "Siempre que haya app de Mac.",
+   "fuente": "oficial"
   },
   {
    "id": "host-movil",
@@ -412,7 +426,8 @@
     "host-ui"
    ],
    "siempre": false,
-   "cuando": "La persona necesita la app en el celular."
+   "cuando": "La persona necesita la app en el celular.",
+   "fuente": "oficial"
   },
   {
    "id": "host-ui",
@@ -430,7 +445,8 @@
    ],
    "requiere": [],
    "siempre": true,
-   "cuando": "Siempre: es como la interfaz habla con la app."
+   "cuando": "Siempre: es como la interfaz habla con la app.",
+   "fuente": "oficial"
   },
   {
    "id": "i18n",
@@ -457,7 +473,8 @@
     "host-ui"
    ],
    "siempre": true,
-   "cuando": "Siempre: toda app sale en español e inglés y deja sumar idiomas."
+   "cuando": "Siempre: toda app sale en español e inglés y deja sumar idiomas.",
+   "fuente": "oficial"
   },
   {
    "id": "ia",
@@ -499,7 +516,8 @@
     }
    ],
    "siempre": false,
-   "cuando": "La app usa IA para algo (resumir, generar, ordenar, responder) con la cuenta de la persona."
+   "cuando": "La app usa IA para algo (resumir, generar, ordenar, responder) con la cuenta de la persona.",
+   "fuente": "oficial"
   },
   {
    "id": "mcp",
@@ -524,7 +542,8 @@
     "nucleo"
    ],
    "siempre": false,
-   "cuando": "La persona querría preguntarle cosas a su IA sobre sus datos de la app."
+   "cuando": "La persona querría preguntarle cosas a su IA sobre sus datos de la app.",
+   "fuente": "oficial"
   },
   {
    "id": "microfono",
@@ -580,7 +599,8 @@
    },
    "requiere": [],
    "siempre": false,
-   "cuando": "La app graba o escucha voz."
+   "cuando": "La app graba o escucha voz.",
+   "fuente": "oficial"
   },
   {
    "id": "notas-git",
@@ -612,7 +632,8 @@
    ],
    "requiere": [],
    "siempre": false,
-   "cuando": "Los datos deben tener historial y respaldo en la cuenta de la persona."
+   "cuando": "Los datos deben tener historial y respaldo en la cuenta de la persona.",
+   "fuente": "oficial"
   },
   {
    "id": "notificaciones",
@@ -657,7 +678,8 @@
    },
    "requiere": [],
    "siempre": false,
-   "cuando": "La app tiene que recordarle algo a la persona aunque esté cerrada."
+   "cuando": "La app tiene que recordarle algo a la persona aunque esté cerrada.",
+   "fuente": "oficial"
   },
   {
    "id": "nucleo",
@@ -680,7 +702,8 @@
     }
    ],
    "siempre": true,
-   "cuando": "Siempre: es la base de cualquier script de la app."
+   "cuando": "Siempre: es la base de cualquier script de la app.",
+   "fuente": "oficial"
   },
   {
    "id": "pagina",
@@ -710,7 +733,8 @@
    ],
    "requiere": [],
    "siempre": true,
-   "cuando": "Siempre."
+   "cuando": "Siempre.",
+   "fuente": "oficial"
   },
   {
    "id": "privacidad",
@@ -728,7 +752,8 @@
    ],
    "requiere": [],
    "siempre": true,
-   "cuando": "Siempre: el repo es público."
+   "cuando": "Siempre: el repo es público.",
+   "fuente": "oficial"
   },
   {
    "id": "red",
@@ -744,7 +769,8 @@
    ],
    "requiere": [],
    "siempre": false,
-   "cuando": "Algún script de la app sale a internet (APIs, descargas)."
+   "cuando": "Algún script de la app sale a internet (APIs, descargas).",
+   "fuente": "oficial"
   },
   {
    "id": "tema",
@@ -771,7 +797,8 @@
     "componentes"
    ],
    "siempre": true,
-   "cuando": "Siempre."
+   "cuando": "Siempre.",
+   "fuente": "oficial"
   },
   {
    "id": "transcribir",
@@ -802,7 +829,8 @@
    ],
    "requiere": [],
    "siempre": false,
-   "cuando": "La app trabaja con voz, reuniones o videos."
+   "cuando": "La app trabaja con voz, reuniones o videos.",
+   "fuente": "oficial"
   },
   {
    "id": "universos",
@@ -835,7 +863,8 @@
     "tema"
    ],
    "siempre": false,
-   "cuando": "Quieres que la app sea entretenida y personalizable por temas."
+   "cuando": "Quieres que la app sea entretenida y personalizable por temas.",
+   "fuente": "oficial"
   },
   {
    "id": "youtube",
@@ -870,7 +899,8 @@
     "red"
    ],
    "siempre": false,
-   "cuando": "La app produce videos para publicar."
+   "cuando": "La app produce videos para publicar.",
+   "fuente": "oficial"
   }
  ]
 }

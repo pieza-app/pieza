@@ -4,7 +4,9 @@
 
 <p align="center"><b>Framework abierto para apps que viven en tu computador.</b><br>
 <a href="https://pieza-app.github.io/pieza/">Página</a> · <a href="https://pieza-app.github.io/pieza/#empezar">Empezar</a> ·
-<a href="https://github.com/pieza-app/pieza/discussions">Comunidad</a> · <a href="CONTRIBUTING.md">Cómo aportar</a></p>
+<a href="MANIFIESTO.md">Manifiesto</a> · <a href="https://github.com/pieza-app/pieza/discussions">Comunidad</a> · <a href="CONTRIBUTING.md">Cómo aportar</a></p>
+
+<p align="center"><i>Construimos en abierto. Compartimos lo que funciona. Nadie es dueño de tu computador más que tú.</i></p>
 
 Piezas probadas para armar apps abiertas que viven en tu computador. Cada pieza resuelve una cosa (tu IA, el idioma, el
 catálogo, las actualizaciones…) y se enchufa en cualquier app de la familia con un comando, en vez de escribirla de cero.
@@ -44,6 +46,10 @@ devolverlo a la base.
 
 **Al día solo.** Cada pieza dice qué tipo de cambio trae (arreglo, mejora, rompe, seguridad). Las apps reciben un PR semanal con
 lo que se puede actualizar solo y un issue con los pasos para lo demás ([cómo](docs/enchufe.md#versiones-y-actualizaciones)).
+
+**El catálogo crece con la comunidad.** Publica una pieza en tu repo con el topic `pieza-comunidad` y aparece en la página
+como «Sin revisar»; revisada, se instala como segura ([cómo](docs/comunidad.md)). Sin fines de lucro, sin cuentas, sin
+telemetría: [lee el manifiesto](MANIFIESTO.md) y súmate.
 
 **¿Hiciste una app con Pieza?** Ponle el topic `hecho-con-pieza` a su repo y aparece en la [página](https://pieza-app.github.io/pieza/).
 Y si quieres, el sello: [![Hecho con Pieza](https://pieza-app.github.io/pieza/sello.svg)](https://pieza-app.github.io/pieza/)

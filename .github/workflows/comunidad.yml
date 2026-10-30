@@ -1,0 +1,38 @@
+# Catálogo de la comunidad: una vez al día busca repos públicos con el topic «pieza-comunidad», valida su pieza.json y sus
+# archivos con las mismas reglas que una pieza oficial y deja comunidad/catalogo.json al día (lo nuevo entra «sin revisar»).
+# Nunca corre código de esos repos: solo baja archivos, los valida y guarda sus huellas. Quien mantiene Pieza revisa con
+# `python3 herramientas/comunidad.py revisar <id> aprobar|rechazar` (skill revisar-aportes-open-source).
+name: comunidad
+on:
+  schedule:
+    - cron: "23 9 * * *"
+  workflow_dispatch:
+permissions: {}
+concurrency: comunidad
+jobs:
+  buscar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # Con credenciales: este job empuja el catálogo actualizado a main. No corre código de ningún PR ni de los repos que lee.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - name: Buscar piezas de la comunidad
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 herramientas/comunidad.py buscar | tee "$RUNNER_TEMP/resumen.txt"
+      - name: Guardar el catálogo
+        run: |
+          set -euo pipefail
+          if [ -n "$(git status --porcelain -- comunidad/catalogo.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add comunidad/catalogo.json
+            git commit -m "Comunidad: catálogo al día" -m "$(cat "$RUNNER_TEMP/resumen.txt")"
+            git push
+          fi

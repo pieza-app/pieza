@@ -5,7 +5,7 @@ description: "Revisar pull requests y propuestas de la comunidad en los repos op
 
 # Revisar aportes de la comunidad
 
-Versión del flujo: 4
+Versión del flujo: 5
 
 La comunidad hace el trabajo; nosotros verificamos. Revisar debe ser barato: leer el diff, mirar las pruebas y aplicar la lista.
 No reescribas el aporte: si falta algo, se pide con un comentario amable, **en el idioma en que escribió la persona**. Si el repo tiene `.claude/agents/*revisor*.md` o un
@@ -61,6 +61,10 @@ Si el repo tiene `piezas.json`, cruza los archivos del diff con los de cada piez
 - **En Pieza misma** (pieza-app/pieza): `bash pruebas/correr.sh` valida todos los `pieza.json` (la regla de oro: lo que escribe la
   persona nunca va como argumento de un proceso) y corre las pruebas. Una pieza nueva necesita `recomendar`, `pantallas`,
   `permisos` y `red` completos y honestos: son lo que el creador de proyectos muestra antes de crear una app.
+- **Una pieza de la comunidad** (en `comunidad/catalogo.json` de Pieza, estado «sin-revisar»): baja su repo en el `commit` del
+  catálogo y revísalo entero como un PR, con la misma lista. El veredicto se deja con
+  `python3 herramientas/comunidad.py revisar <id> aprobar|rechazar "por qué"` (lo fija a ese commit y a sus huellas) y un commit
+  de `comunidad/catalogo.json`; avisa a quien la publicó en su idioma.
 Revisa también estas brechas que ya aparecieron en las apps (un aporte no puede traerlas de vuelta): el puente acepta mensajes solo
 del marco principal y del origen de la app; las actualizaciones solo bajan de los Releases del propio repo, con sha256; lo del
 catálogo exige sha256; la IA nunca corre sin sus protecciones (ni «reintento sin protecciones» para CLIs viejos), sin las variables

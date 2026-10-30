@@ -269,3 +269,126 @@ class Herramienta(AppDePrueba):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Comunidad(unittest.TestCase):
+    """El catálogo que crece solo: se encuentra, se valida, se revisa y solo lo revisado se instala sin preguntar."""
+
+    def setUp(self):
+        sys.path.insert(0, os.path.join(BASE, "herramientas"))
+        import comunidad
+        import pieza
+        self.c, self.p = comunidad, pieza
+        self.tmp = tempfile.TemporaryDirectory()
+        self.antes = comunidad.CATALOGO
+        comunidad.CATALOGO = os.path.join(self.tmp.name, "catalogo.json")
+        self.repos = {}  # repo → {commit, archivos}
+        prueba = self
+
+        class RedFalsa:
+            def json(self, url):
+                if "/search/repositories" in url:
+                    return {"items": [{"full_name": r, "default_branch": "main"} for r in prueba.repos]}
+                repo = url.split("/repos/")[1].split("/commits/")[0]
+                return {"sha": prueba.repos[repo]["commit"]}
+
+            def archivo(self, repo, commit, ruta):
+                r = prueba.repos[repo]
+                if commit not in r["versiones"]:
+                    raise ValueError("commit desconocido")
+                return r["versiones"][commit][ruta].encode()
+
+        self.red = RedFalsa()
+        comunidad.Red = RedFalsa
+
+    def tearDown(self):
+        self.c.CATALOGO = self.antes
+        self.p._EXTRA.clear()
+        self.p._FUENTE.clear()
+        self.tmp.cleanup()
+
+    def publicar(self, repo, commit, codigo="print('hola')\n", **cambios):
+        pj = {"formato": 1, "id": "saludo", "version": "1.0.0", "estado": "lista", "nombre": "Saludo", "categoria": "interfaz",
+              "descripcion": "Saluda.", "recomendar": {"cuando": "Para saludar."}, "requiere": ["nucleo"],
+              "archivos": {"python/saludo.py": "bin/saludo.py"},
+              "cambios": [{"version": "1.0.0", "tipo": "inicial", "resumen": "Primera."}], **cambios}
+        r = self.repos.setdefault(repo, {"versiones": {}})
+        r["commit"] = commit
+        r["versiones"][commit] = {"pieza.json": json.dumps(pj), "python/saludo.py": codigo}
+
+    def entrada(self):
+        return self.c.entrada("saludo")
+
+    def test_se_encuentra_sin_revisar_y_se_revisa(self):
+        self.publicar("ana/saludo", "a" * 40)
+        self.assertIn("+ saludo", " ".join(self.c.buscar(self.red, hoy="2026-10-30")))
+        self.assertEqual(self.entrada()["revision"]["estado"], "sin-revisar")
+        self.c.revisar("saludo", "aprobar", hoy="2026-10-31")
+        self.assertEqual(self.entrada()["revision"]["estado"], "revisada")
+        # Un commit nuevo con los mismos archivos sigue revisado; si cambia el código, vuelve a «sin revisar».
+        self.publicar("ana/saludo", "b" * 40)
+        self.c.buscar(self.red)
+        self.assertEqual(self.entrada()["revision"]["estado"], "revisada")
+        self.publicar("ana/saludo", "c" * 40, codigo="import os; os.system('algo')\n")
+        self.c.buscar(self.red)
+        self.assertEqual(self.entrada()["revision"]["estado"], "sin-revisar")
+
+    def test_reglas_de_seguridad_y_ids(self):
+        self.publicar("ana/malo", "d" * 40, acciones={"x": {"script": "saludo.py", "args": ["$t"], "limite": 9,
+                                                            "datos": {"t": {"tipo": "texto", "max": 9}}}})
+        self.publicar("ana/oficial", "e" * 40, id="ia")
+        resumen = " ".join(self.c.buscar(self.red))
+        self.assertIn("enum o entero", resumen)
+        self.assertIn("es de una pieza oficial", resumen)
+        self.assertEqual(self.c.leer()["piezas"], [])
+
+    def test_instalar_solo_lo_revisado_o_con_permiso(self):
+        app = os.path.join(self.tmp.name, "app")
+        os.makedirs(app)
+        self.p.escribir(os.path.join(app, "app.json"), {"nombre": "Prueba", "id": "prueba", "config": {}})
+        cache = os.path.join(self.tmp.name, "cache")
+        self.publicar("ana/saludo", "a" * 40)
+        self.c.buscar(self.red)
+        with self.assertRaises(SystemExit) as e:
+            self.c.descargar("saludo", red=self.red, cache=cache)
+        self.assertIn("--sin-revisar", str(e.exception))
+        carpeta, fuente = self.c.descargar("saludo", sin_revisar=True, red=self.red, cache=cache)
+        self.assertEqual(fuente["revision"], "sin-revisar")
+        self.c.revisar("saludo", "aprobar")
+        # Lo revisado se baja del commit revisado, aunque el repo haya cambiado después, y se compara con su huella.
+        self.publicar("ana/saludo", "f" * 40, codigo="otra cosa\n")
+        carpeta, fuente = self.c.descargar("saludo", red=self.red, cache=cache)
+        self.assertEqual((fuente["revision"], fuente["commit"]), ("revisada", "a" * 40))
+        with open(os.path.join(carpeta, "python", "saludo.py")) as f:
+            self.assertEqual(f.read(), "print('hola')\n")
+        # Si alguien cambia lo que hay en ese commit (o la red miente), no se instala nada.
+        self.repos["ana/saludo"]["versiones"]["a" * 40]["python/saludo.py"] = "trampa\n"
+        with self.assertRaises(SystemExit) as e:
+            self.c.descargar("saludo", red=self.red, cache=os.path.join(self.tmp.name, "cache2"))
+        self.assertIn("no coincide", str(e.exception))
+
+    def test_agregar_a_una_app(self):
+        app = os.path.join(self.tmp.name, "app")
+        os.makedirs(app)
+        self.p.escribir(os.path.join(app, "app.json"), {"nombre": "Prueba", "id": "prueba", "config": {}})
+        self.publicar("ana/saludo", "a" * 40)
+        self.c.buscar(self.red)
+        self.c.revisar("saludo", "aprobar")
+        antes = self.c.descargar
+        self.c.descargar = lambda pid, sin_revisar=False: antes(pid, sin_revisar, red=self.red, cache=os.path.join(self.tmp.name, "c"))
+        try:
+            self.p.agregar("saludo", app)
+        finally:
+            self.c.descargar = antes
+        lock = self.p.candado(app)["piezas"]
+        self.assertEqual(sorted(lock), ["nucleo", "saludo"])
+        self.assertEqual(lock["saludo"]["fuente"], {"repo": "ana/saludo", "commit": "a" * 40, "revision": "revisada"})
+        self.assertTrue(os.path.isfile(os.path.join(app, "bin", "saludo.py")))
+
+    def test_rechazada_nunca_se_instala(self):
+        self.publicar("ana/saludo", "a" * 40)
+        self.c.buscar(self.red)
+        self.c.revisar("saludo", "rechazar", "lee archivos de más")
+        with self.assertRaises(SystemExit) as e:
+            self.c.descargar("saludo", sin_revisar=True, red=self.red, cache=self.tmp.name)
+        self.assertIn("rechazada", str(e.exception))

@@ -3,7 +3,10 @@
 
   pieza.py listar                         Las piezas disponibles.
   pieza.py iniciar <app> <id> <Nombre>    Crea app.json en una app que aún no lo tiene.
-  pieza.py agregar <pieza> <app>          Copia la pieza (y lo que requiere) a la app y la anota en piezas.json.
+  pieza.py agregar <pieza> <app> [--sin-revisar]
+                                          Copia la pieza (y lo que requiere) a la app y la anota en piezas.json. Oficial o de la
+                                          comunidad: las de la comunidad revisadas se verifican con su huella; las que aún no se
+                                          revisan solo con --sin-revisar (bajo tu responsabilidad).
   pieza.py estado <app> [--json]          Qué piezas tiene la app, qué versiones nuevas hay, de qué tipo (arreglo, mejora,
                                           rompe, seguridad), qué archivos cambió la app y qué se puede actualizar solo.
   pieza.py actualizar <app> [pieza] [--automatico] [--forzar]
@@ -103,8 +106,16 @@ def version_num(v):
     return tuple(int(x) for x in v.split("."))
 
 
+_EXTRA = {}  # piezas de la comunidad ya bajadas y verificadas: id → carpeta
+_FUENTE = {}  # y de dónde salieron: {repo, commit, revision}
+
+
+def carpeta_de(pid):
+    return _EXTRA.get(pid, os.path.join(PIEZAS, pid))
+
+
 def pieza(pid):
-    p = leer(os.path.join(PIEZAS, pid, "pieza.json"))
+    p = leer(os.path.join(carpeta_de(pid), "pieza.json"))
     if not p:
         sys.exit(f"No existe la pieza «{pid}». Mira: pieza.py listar")
     return p
@@ -135,7 +146,7 @@ def destino_seguro(app, relativa):
 
 # ── Revisar ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-def errores_pieza(pid, p, ids):
+def errores_pieza(pid, p, ids, carpeta="local"):
     e = []
     if p.get("id") != pid or not ID.match(pid):
         e.append("«id» debe ser igual a la carpeta: minúsculas, números y guiones")
@@ -197,7 +208,7 @@ def errores_pieza(pid, p, ids):
         if r not in ids:
             e.append(f"requiere «{r}», que no existe")
     for origen, destino in p.get("archivos", {}).items():
-        if not os.path.isfile(os.path.join(PIEZAS, pid, origen)):
+        if carpeta is not None and not os.path.isfile(os.path.join(carpeta_de(pid), origen)):
             e.append(f"falta el archivo {origen}")
         if os.path.isabs(destino) or ".." in destino.split("/"):
             e.append(f"destino inválido {destino}")
@@ -295,7 +306,7 @@ def copiar(pid, app, forzar=False, lock=None):
                 copiados[destino] = anterior or ""
                 continue
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        shutil.copy2(os.path.join(PIEZAS, pid, origen), dst)
+        shutil.copy2(os.path.join(carpeta_de(pid), origen), dst)
         copiados[destino] = huella(dst)
     # Config: suma las claves que la pieza necesita a app.json (sin tocar las que ya existen).
     ruta_app = os.path.join(app, "app.json")
@@ -317,13 +328,19 @@ def copiar(pid, app, forzar=False, lock=None):
     # Si algún archivo quedó sin actualizar (la app lo cambió), la versión anotada no avanza: estado sigue avisando.
     version = p["version"] if not saltados else antes.get("version", "0.0.0")
     lock["piezas"][pid] = {"version": version, "archivos": copiados}
+    if pid in _FUENTE:
+        lock["piezas"][pid]["fuente"] = _FUENTE[pid]
     escribir(os.path.join(app, "piezas.json"), lock)
     return saltados
 
 
-def agregar(pid, app):
+def agregar(pid, app, sin_revisar=False):
     if not os.path.isfile(os.path.join(app, "app.json")):
         sys.exit("La app no tiene app.json. Créalo con: pieza.py iniciar <app> <id> <Nombre>")
+    if not os.path.isfile(os.path.join(PIEZAS, pid, "pieza.json")):
+        # No es oficial: se busca en el catálogo de la comunidad. Solo lo revisado se instala sin preguntar.
+        import comunidad
+        _EXTRA[pid], _FUENTE[pid] = comunidad.descargar(pid, sin_revisar=sin_revisar)
     lock = candado(app)
     for p in con_requisitos(pid):
         if pieza(p).get("estado") == "planeada":
@@ -587,8 +604,9 @@ def main(a):
         (skills_estado if resto[0] == "estado" else skills_instalar)(resto[1])
     elif orden == "iniciar" and len(resto) == 3:
         iniciar(*resto)
-    elif orden == "agregar" and len(resto) == 2:
-        agregar(resto[0], os.path.abspath(resto[1]))
+    elif orden == "agregar" and len([x for x in resto if x != "--sin-revisar"]) == 2:
+        libres = [x for x in resto if x != "--sin-revisar"]
+        agregar(libres[0], os.path.abspath(libres[1]), "--sin-revisar" in resto)
     elif orden == "estado" and len(resto) == 1:
         estado(os.path.abspath(resto[0]), como_json)
     elif orden == "aviso" and len(resto) == 1:

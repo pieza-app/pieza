@@ -45,7 +45,21 @@ def catalogo():
         d["siempre"] = bool(p.get("recomendar", {}).get("siempre"))
         d["cuando"] = p.get("recomendar", {}).get("cuando", "")
         piezas.append(d)
-    listas = sum(1 for x in piezas if x.get("estado", "lista") == "lista")
+    for d in piezas:
+        d["fuente"] = "oficial"
+    # Las de la comunidad (las rechazadas no se muestran): con su repo y su estado de revisión.
+    com = pieza.leer(os.path.join(BASE, "comunidad", "catalogo.json"), {"piezas": []})
+    for e in com.get("piezas", []):
+        rev = e.get("revision", {})
+        if rev.get("estado") == "rechazada":
+            continue
+        p = e.get("pieza", {})
+        d = {"id": e["id"], **{k: p[k] for k in campos if k in p}, "fuente": "comunidad", "repo": e["repo"],
+             "revision": {"estado": rev.get("estado", "sin-revisar"), **({"fecha": rev["fecha"]} if rev.get("fecha") else {})}}
+        d["siempre"] = False
+        d["cuando"] = p.get("recomendar", {}).get("cuando", "")
+        piezas.append(d)
+    listas = sum(1 for x in piezas if x.get("estado", "lista") == "lista" and x["fuente"] == "oficial")
     return escribir("catalogo.json", {"total": len(piezas), "listas": listas, "piezas": piezas})
 
 
