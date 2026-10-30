@@ -54,7 +54,7 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 | Ruta | Qué es |
 |---|---|
 | `piezas/<id>/` | Cada pieza: `pieza.json` + código + README |
-| `herramientas/pieza.py` | `listar`, `iniciar`, `agregar`, `estado`, `actualizar`, `diferencias`, `revisar` |
+| `herramientas/pieza.py` | `listar`, `catalogo`, `ficha`, `iniciar`, `agregar`, `estado`, `actualizar`, `diferencias`, `revisar` |
 | `docs/enchufe.md` | El contrato: `pieza.json`, `app.json`, `piezas.json`, reglas de seguridad, host genérico |
 | `docs/catalogo.md` | Qué piezas hay, cuáles faltan y en qué orden, y brechas encontradas en las apps |
 | `skills/lanzar-proyecto-open-source/` | El flujo oficial para crear una app nueva (la skill), con su versión |
