@@ -63,7 +63,7 @@ enruten solos.
 | `pantallas` | `[{donde, nombre, que}]`: lo que suma a la app (Bienvenida, Ajustes, Galería, Web…). |
 | `permisos` | Por plataforma, `[{clave, por}]`: la clave de Info.plist, el permiso de Android o el aviso del sistema, y para qué. |
 | `red` | Dominios a los que sale. Vacío = funciona sin internet. |
-| `tareas_david` | Lo que solo puede hacer una persona (crear una org, una cuenta de desarrollador, verificar un sitio). |
+| `tareas_persona` | Lo que solo puede hacer una persona (crear una org, una cuenta de desarrollador, verificar un sitio). |
 
 | `compatible` | `{"nucleo": ">=0.1.0 <1.0.0"}`: con qué versiones de lo que requiere funciona. `pieza.py` no deja combinar versiones que no se llevan. |
 | `cambios` | De la más nueva a la más vieja: `{version, tipo, resumen, seguridad?, migrar?}`. Es lo que se le avisa a cada app. |

@@ -41,7 +41,7 @@
   "oauth2.googleapis.com",
   "www.googleapis.com"
  ],
- "tareas_david": [
+ "tareas_persona": [
   "Proyecto en Google Cloud con YouTube Data API y cliente OAuth de escritorio",
   "Verificación de la app en Google si se abre a más de 100 personas"
  ]

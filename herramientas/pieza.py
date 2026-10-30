@@ -446,7 +446,7 @@ def ficha(ids, plataformas=PLATAFORMAS):
             if x not in orden:
                 orden.append(x)
     f = {"piezas": [], "pantallas": [], "config": {}, "permisos": {k: [] for k in PLATAFORMAS}, "red": [], "acciones": [],
-         "tareas_david": [], "plataformas": list(plataformas), "faltan_en": [], "por_extraer": []}
+         "tareas_persona": [], "plataformas": list(plataformas), "faltan_en": [], "por_extraer": []}
     for pid in orden:
         p = pieza(pid)
         motivo = "pedida" if pid in ids else ("siempre" if p.get("recomendar", {}).get("siempre") else "requisito")
@@ -465,7 +465,7 @@ def ficha(ids, plataformas=PLATAFORMAS):
         if p.get("red_nota"):
             f.setdefault("red_notas", []).append({"pieza": pid, "nota": p["red_nota"]})
         f["acciones"] += [{"accion": k, "responde": v.get("responde"), "pieza": pid} for k, v in p.get("acciones", {}).items()]
-        f["tareas_david"] += [t for t in p.get("tareas_david", []) if t not in f["tareas_david"]]
+        f["tareas_persona"] += [t for t in p.get("tareas_persona", []) if t not in f["tareas_persona"]]
         if not pid.startswith("host-"):
             falta = [x for x in plataformas if x not in p.get("plataformas", PLATAFORMAS)]
             if falta:
@@ -491,8 +491,8 @@ def ficha_texto(f):
     l += ["RED (dominios a los que sale)", "  " + (", ".join(f["red"]) or "ninguno")]
     l += [f"  {x['pieza']}: {x['nota']}" for x in f.get("red_notas", [])]
     l += ["ACCIONES"] + [f"  {x['accion']} → {x['responde']}" for x in f["acciones"]]
-    if f["tareas_david"]:
-        l += ["SOLO DAVID"] + [f"  {t}" for t in f["tareas_david"]]
+    if f["tareas_persona"]:
+        l += ["SOLO LA PERSONA"] + [f"  {t}" for t in f["tareas_persona"]]
     return "\n".join(l)
 
 

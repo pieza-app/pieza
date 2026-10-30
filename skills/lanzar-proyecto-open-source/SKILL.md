@@ -54,7 +54,7 @@ La persona confirma o ajusta; recién ahí crea la lista de tareas con las fases
 
 ## 3. Lo que solo puede hacer la persona (pídeselo al inicio, en un solo mensaje)
 - Crear la organización en GitHub (no hay API para eso): github.com/account/organizations/new, plan Free.
-- Lo de `tareas_david` de la ficha (repo de catálogo, cuentas de desarrollador, proyecto de Google Cloud…).
+- Lo de `tareas_persona` de la ficha (repo de catálogo, cuentas de desarrollador, proyecto de Google Cloud…).
 - Más adelante: verificar Google Search Console (fase 9) y pagar firmas de código si las quiere (Apple Developer USD 99/año).
 Nunca ingreses contraseñas ni códigos de verificación: eso lo hace ella.
 

@@ -29,7 +29,7 @@
   "api.github.com",
   "objects.githubusercontent.com"
  ],
- "tareas_david": [
+ "tareas_persona": [
   "Publicar versiones como Releases con los archivos y su .sha256 (lo hace el workflow publicar)"
  ]
 }
