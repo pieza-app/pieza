@@ -2,7 +2,8 @@
 """pieza — enchufa piezas de esta base en una app. Solo biblioteca estándar.
 
   pieza.py listar                         Las piezas disponibles.
-  pieza.py iniciar <app> <id> <Nombre>    Crea app.json en una app que aún no lo tiene.
+  pieza.py iniciar <app> <id> <Nombre> [--plataformas=mac,windows,linux]
+                                          Crea app.json en una app que aún no lo tiene.
   pieza.py agregar <pieza> <app> [--sin-revisar]
                                           Copia la pieza (y lo que requiere) a la app y la anota en piezas.json. Oficial o de la
                                           comunidad: las de la comunidad revisadas se verifican con su huella; las que aún no se
@@ -348,15 +349,28 @@ def candado(app):
     return leer(os.path.join(app, "piezas.json"), {"formato": 1, "piezas": {}})
 
 
-def iniciar(app, aid, nombre):
+def iniciar(app, aid, nombre, plataformas=None):
     ruta = os.path.join(app, "app.json")
     if os.path.exists(ruta):
         sys.exit("Esta app ya tiene app.json.")
-    if not re.match(r"^[a-z][a-z0-9]{1,30}$", aid):
+    if not re.match(r"^[a-z][a-z0-9]{0,30}$", aid):  # la misma regla que nucleo.app()
         sys.exit("El id va en minúsculas, solo letras y números (ej. esquema).")
-    escribir(ruta, {"nombre": nombre, "id": aid, "datos": "sistema", "icono": "docs/favicon.svg",
+    plataformas = plataformas or list(PLATAFORMAS)
+    if any(x not in PLATAFORMAS for x in plataformas):
+        sys.exit(f"Plataformas: {', '.join(PLATAFORMAS)}.")
+    escribir(ruta, {"nombre": nombre, "id": aid, "datos": "sistema", "icono": "docs/favicon.svg", "plataformas": plataformas,
                     "config": {"idioma_ui": ["es", "en"], "tema": ["sistema", "claro", "oscuro"], "bienvenida": "bool"}})
     print(f"+ {ruta}")
+    # Muchas apps tienen un .gitignore de lista blanca («/*» y luego «!…»): ahí app.json y piezas.json quedarían fuera sin aviso.
+    gi = os.path.join(app, ".gitignore")
+    if os.path.isfile(gi):
+        lineas = [l.strip() for l in open(gi, encoding="utf-8")]
+        if "/*" in lineas or "*" in lineas:
+            faltan = [x for x in ("!/app.json", "!/piezas.json") if x not in lineas and x.replace("/", "", 1) not in lineas]
+            if faltan:
+                with open(gi, "a", encoding="utf-8") as f:
+                    f.write("\n# Pieza: la descripción de la app y las piezas que usa\n" + "\n".join(faltan) + "\n")
+                print(f"~ {gi}: agregué {', '.join(faltan)} (es una lista blanca)")
     # «Pieza al día»: avisa cada semana si hay versiones nuevas de las piezas (PR solo o issue con los pasos).
     flujo = os.path.join(app, ".github", "workflows", "pieza-al-dia.yml")
     if not os.path.exists(flujo):
@@ -731,8 +745,9 @@ def main(a):
         return revisar()
     elif orden == "skills" and len(resto) == 2 and resto[0] in ("estado", "instalar"):
         (skills_estado if resto[0] == "estado" else skills_instalar)(resto[1])
-    elif orden == "iniciar" and len(resto) == 3:
-        iniciar(*resto)
+    elif orden == "iniciar" and len([x for x in resto if not x.startswith("--plataformas=")]) == 3:
+        plats = next((x.split("=", 1)[1].split(",") for x in resto if x.startswith("--plataformas=")), None)
+        iniciar(*[x for x in resto if not x.startswith("--plataformas=")], plataformas=plats)
     elif orden == "agregar" and len([x for x in resto if x != "--sin-revisar"]) == 2:
         libres = [x for x in resto if x != "--sin-revisar"]
         agregar(libres[0], os.path.abspath(libres[1]), "--sin-revisar" in resto)

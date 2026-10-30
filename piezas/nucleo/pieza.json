@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "nucleo",
- "version": "0.2.0",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "Núcleo",
  "icono": "icono.svg",
@@ -26,6 +26,11 @@
  "acciones": {},
  "textos": {},
  "cambios": [
+  {
+   "version": "0.3.0",
+   "tipo": "mejora",
+   "resumen": "Claves de config que la interfaz nunca puede cambiar (\"interfaz\": false en app.json) y escribir_atomico con modo DOCUMENTO para archivos de la persona (lo pidió Esquema al migrar)."
+  },
   {
    "version": "0.2.0",
    "tipo": "arreglo",

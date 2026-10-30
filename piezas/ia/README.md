@@ -33,3 +33,14 @@ Las apps hoy tienen su propio `bin/ia.py`, así que `pieza.py agregar ia` no lo 
 2. `pieza.py actualizar <app> ia --forzar`.
 3. Ajustar quien llama: `preguntar()` ahora devuelve el error como `{codigo, valores}` (antes, un texto). Donde se mostraba el
    texto, usar `ia.frase(error)`, o mandar el código a la interfaz para traducirlo. `ejecutar_ia` pasó a llamarse `ejecutar`.
+
+## Pasar una app a esta pieza (lo que aprendimos con Esquema)
+
+- **El host llama `probar` con un archivo de entrada**, no con la IA como argumento: `ia.py probar <entrada.json> <salida.json>`
+  con `{"ia": "claude"}`. En Swift, `Procesador.conEntrada("ia.py", "probar", ["ia": ia])`; en Electron, lo mismo con el JSON de
+  entrada. Cambia esas dos llamadas al adoptar la pieza.
+- **Errores:** `preguntar` devuelve `(texto, None)` o `(None, {"codigo", "valores"})`. El patrón recomendado para un script es
+  responder `{"ok": false, "error": ia.frase(error), "codigo": error["codigo"]}`: la interfaz muestra `error` (ya en español, se
+  traduce con su `T`) y puede decidir por `codigo` (por ejemplo, ofrecer instalar la IA).
+- Lo propio de la app (frases de su asistente, instrucciones fijas como «responde solo con…») va en sus módulos, no en esta copia:
+  así `pieza.py actualizar` puede traer las versiones nuevas sin chocar.

@@ -61,6 +61,12 @@ test("i18n: T traduce, escapa los valores y nunca vuelve a reemplazar lo que tra
   assert.equal(i.frase("Guardar", {}, "img onerror=x"), "<span data-sin-traducir>Save</span>");
 });
 
+test("i18n: «<nombre>.md» no es HTML, una etiqueta de verdad sí", () => {
+  const r = PiezaI18n.validarPaquete({ codigo: "en", nombre: "English", textos: {
+    "Se guarda en flujos/<nombre>.md": "Saved in flows/<name>.md", "Mal": "<script>x</script>", "Mal2": "<a href=x>y</a>" } });
+  assert.deepEqual([...r.paquete.textos.keys()], ["Se guarda en flujos/<nombre>.md"]);
+});
+
 test("i18n: lo que falta se anota para las pruebas de la app", () => {
   const faltantes = new Set();
   const i = i18nEn({ faltantes });
@@ -101,10 +107,11 @@ test("i18n: cargar pide solo idiomas/<codigo>.json, valida y si falla queda en e
   assert.deepEqual(pedidos, ["idiomas/en.json", "idiomas/pt.json"]);
 });
 
-test("i18n: elegir sigue lo elegido > config > URL > sistema", () => {
+test("i18n: elegir sigue lo elegido > URL > config > sistema", () => {
   const i = PiezaI18n.crear();
   assert.equal(i.elegir({ elegido: "en", config: "es", url: "es", sistema: "es" }), "en");
-  assert.equal(i.elegir({ config: "en", url: "es", sistema: "es" }), "en");
+  assert.equal(i.elegir({ config: "en", url: "es", sistema: "es" }), "es");  // la URL fuerza (vista previa y pruebas)
+  assert.equal(i.elegir({ config: "en", url: null, sistema: "es" }), "en");
   assert.equal(i.elegir({ config: null, url: "en", sistema: "es" }), "en");
   assert.equal(i.elegir({ config: "fr", url: null, sistema: "en" }), "en");
   assert.equal(i.idiomaDelSistema(["es-CL"]), "es");
