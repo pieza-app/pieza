@@ -70,6 +70,10 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 | `.agents/skills/` | Enlaces a `skills/` para que Codex las vea dentro del repo (`pieza.py skills instalar codex` las deja en `~/.agents/skills`) |
 | `docs/otras-ias.md` | Cómo usar Pieza en Claude Code, Gemini CLI, Codex u otra IA, y la tabla de equivalencias |
 | `skills/` | Los flujos oficiales (las skills), cada uno con su «Versión del flujo»: `lanzar-proyecto-open-source` (crear una app) y `revisar-aportes-open-source` (revisar PRs, con sus aprendizajes) |
-| `pruebas/` | `correr.sh` y `test_piezas.py` (una app ficticia con CLIs de IA falsos) |
+| `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md` | Cómo aportar (sin programar, con o sin IA, proponer una pieza, aportar a un flujo, cómo revisamos), código de conducta y cómo reportar una falla en privado (qué cubre: `pieza.py`, plantillas, «Pieza al día», las piezas) |
+| `.github/` | `workflows/` (`revisar.yml`, `pagina.yml`: actions fijadas por SHA, permisos mínimos, `persist-credentials: false`), `ISSUE_TEMPLATE/` (error, idea, pieza, probar; seguridad y Discussions en `config.yml`), `pull_request_template.md` (checklist) y `dependabot.yml` (solo actions, con `cooldown`) |
+| `herramientas/revisar_privacidad.sh` | Busca datos personales antes de cada commit (`.terminos-privados`, local y nunca versionado); `--generico` corre en `pruebas/correr.sh` |
+| `.claude/agents/` | `pieza-revisor` (revisar PRs: regla de oro, ficha honesta, versión y cambios, brechas conocidas; nunca junta sin aprobación) y `pieza-privacidad` (antes de cada commit) |
+| `pruebas/` | `correr.sh` (valida los `pieza.json`, la versión de cada flujo, que toda action esté fijada por SHA y que la plantilla «Pieza al día» use las mismas versiones, la privacidad y `test_piezas.py`: una app ficticia con CLIs de IA falsos) |
 
 Licencia AGPL-3.0, como las apps.
