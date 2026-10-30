@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Empaquetado",
+ "icono": "icono.svg",
  "categoria": "repo",
  "descripcion": "build.sh, empaquetar, Python portátil fijado, instaladores de un comando y Info.plist/package.json generados desde app.json.",
  "recomendar": {

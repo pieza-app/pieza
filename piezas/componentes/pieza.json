@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Componentes",
+ "icono": "icono.svg",
  "categoria": "interfaz",
  "descripcion": "Diálogo accesible, avisos (toast) con cola, Ajustes base y Acerca de, con tokens CSS comunes.",
  "recomendar": {

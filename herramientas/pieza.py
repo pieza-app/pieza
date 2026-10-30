@@ -160,6 +160,15 @@ def errores_pieza(pid, p, ids, carpeta="local"):
         e.append(f"«categoria» debe ser una de {sorted(CATEGORIAS)}")
     if not isinstance(p.get("descripcion"), str) or not p["descripcion"]:
         e.append("falta «descripcion»")
+    if not isinstance(p.get("icono"), str) or not p["icono"].endswith(".svg") or ".." in p["icono"] or p["icono"].startswith("/"):
+        e.append("«icono» es obligatorio: un .svg dentro de la pieza (24×24, currentColor), p. ej. \"icono.svg\"")
+    elif carpeta is not None:
+        ruta = os.path.join(carpeta_de(pid), p["icono"])
+        if not os.path.isfile(ruta):
+            e.append(f"falta el ícono {p['icono']}")
+        else:
+            import icono
+            e += [f"ícono: {x}" for x in icono.errores(open(ruta, encoding="utf-8").read(), solo_current=True)]
     rec = p.get("recomendar")
     if not isinstance(rec, dict) or not isinstance(rec.get("cuando"), str):
         e.append("«recomendar» necesita {\"cuando\": \"…\"} (y opcional \"siempre\": true, \"palabras\": […])")
@@ -265,7 +274,7 @@ def iniciar(app, aid, nombre):
         sys.exit("Esta app ya tiene app.json.")
     if not re.match(r"^[a-z][a-z0-9]{1,30}$", aid):
         sys.exit("El id va en minúsculas, solo letras y números (ej. esquema).")
-    escribir(ruta, {"nombre": nombre, "id": aid, "datos": "sistema",
+    escribir(ruta, {"nombre": nombre, "id": aid, "datos": "sistema", "icono": "docs/favicon.svg",
                     "config": {"idioma_ui": ["es", "en"], "tema": ["sistema", "claro", "oscuro"], "bienvenida": "bool"}})
     print(f"+ {ruta}")
     # «Pieza al día»: avisa cada semana si hay versiones nuevas de las piezas (PR solo o issue con los pasos).
@@ -282,7 +291,8 @@ def iniciar(app, aid, nombre):
     os.makedirs(os.path.dirname(ajustes_ruta), exist_ok=True)
     escribir(ajustes_ruta, ajustes)
     print(f"+ {ajustes_ruta}")
-    print("Falta (con permiso de quien mantiene): el topic «hecho-con-pieza» en el repo y el sello en el README y la página.")
+    print("Falta (con permiso de quien mantiene): el topic «hecho-con-pieza» en el repo, el sello en el README y la página, y el"
+          " ícono en docs/favicon.svg (solo formas, ≤ 8 KB): así la app aparece con su ícono en la página de Pieza.")
 
 
 def _textos_en(app):

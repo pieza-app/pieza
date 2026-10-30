@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Grabar pantalla",
+ "icono": "icono.svg",
  "categoria": "medios",
  "descripcion": "Pantalla + cámara + voz, con recorte, pausa y atajos globales.",
  "recomendar": {

@@ -4,6 +4,7 @@
  "version": "0.1.0",
  "estado": "lista",
  "nombre": "Núcleo",
+ "icono": "icono.svg",
  "categoria": "base",
  "descripcion": "Lo que todo script necesita: app.json, carpeta de datos, config validada, escritura atómica y el contrato «el último argumento es la salida».",
  "recomendar": {

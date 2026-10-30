@@ -33,6 +33,7 @@ enruten solos.
  "id": "ia",
  "version": "0.1.0",
  "nombre": "Tu IA",
+ "icono": "icono.svg",
  "descripcion": "Una línea: qué resuelve.",
  "origen": "De qué app salió y qué mejoras sumó de las otras.",
  "requiere": ["nucleo"],
@@ -51,6 +52,7 @@ enruten solos.
 
 | Campo | Para qué |
 |---|---|
+| `icono` | **Obligatorio.** Un `.svg` dentro de la pieza (ver «El ícono»). Es lo que la gente ve en el catálogo, la página y el creador. |
 | `archivos` | Origen en la pieza → destino en la app. `pieza.py agregar` los copia y anota su huella. |
 | `requiere` | Otras piezas que se agregan antes, solas. |
 | `config` | Claves que la pieza necesita en `app.json` (lista = valores posibles; `"bool"`, `"texto"`, `"numero"` = tipo). Se suman sin pisar. |
@@ -98,6 +100,19 @@ completa antes de crearla. Agregar una pieza (o un campo nuevo a una) la hace ap
 4. **El entorno del script** no hereda nada raro; el de la IA, además, sin las variables `<ID>_*` de la app.
 5. **Todo tiene límite de tiempo.**
 
+## El ícono (toda pieza, oficial o de la comunidad)
+
+Cada pieza trae `icono.svg`: un dibujo de línea que se entiende sin leer el nombre (una llave para el cifrado, una nube para la
+red). Así el catálogo se recorre mirando, no leyendo.
+
+- **Formato:** `viewBox="0 0 24 24"`, trazo de 2 (`stroke-width="2"`), puntas y uniones redondeadas, `fill="none"`.
+- **Color:** solo `currentColor` (o `none`): la página, la app y el creador lo pintan con su color, en claro y oscuro.
+- **Seguro:** solo formas (`svg`, `g`, `path`, `circle`, `ellipse`, `rect`, `line`, `polyline`, `polygon`, `title`), hasta 8 KB,
+  sin `<script>`, `<style>`, `<image>`, `<use>`, `<a>`, `href`, `style` ni `on…`, sin DOCTYPE ni entidades.
+  `herramientas/icono.py` lo revisa (en `pieza.py revisar`, en el catálogo de la comunidad y al armar la página): si no pasa,
+  la pieza no entra.
+- **Mira los que hay** en `piezas/*/icono.svg` para mantener el mismo trazo. Un ícono no lleva texto ni logos de marcas.
+
 ## `app.json` (en la raíz de cada app)
 
 ```json
@@ -106,7 +121,9 @@ completa antes de crearla. Agregar una pieza (o un campo nuevo a una) la hace ap
 ```
 
 Es la única descripción de la app que leen las piezas: de aquí sale el prefijo de las variables (`ESQUEMA_DATOS`,
-`ESQUEMA_RECURSOS`), dónde se guardan los datos y qué claves de config se aceptan. Más adelante también saldrán de aquí
+`ESQUEMA_RECURSOS`), dónde se guardan los datos y qué claves de config se aceptan. `"icono": "docs/favicon.svg"` (opcional)
+dice cuál es el ícono de la app para la lista de proyectos de la página de Pieza; sin él se busca `docs/favicon.svg`,
+`favicon.svg` y `ui/favicon.svg`. Un ícono de app puede tener sus colores, pero pasa por las mismas reglas de seguridad. Más adelante también saldrán de aquí
 `Info.plist`, `package.json`, el instalador y los íconos (ver «Plan»).
 
 ## `piezas.json` (en la raíz de cada app, lo escribe `pieza.py`)

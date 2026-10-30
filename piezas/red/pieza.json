@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Red segura",
+ "icono": "icono.svg",
  "categoria": "conexiones",
  "descripcion": "HTTPS sin redirecciones, solo a dominios permitidos, credenciales nunca en errores.",
  "recomendar": {

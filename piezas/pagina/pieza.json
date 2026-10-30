@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Página pública",
+ "icono": "icono.svg",
  "categoria": "repo",
  "descripcion": "GitHub Pages bilingüe con descarga según sistema, demo en el navegador, preguntas frecuentes y SEO.",
  "recomendar": {

@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Bienvenida",
+ "icono": "icono.svg",
  "categoria": "interfaz",
  "descripcion": "Primer uso por pasos, con el idioma SIEMPRE primero; cada pieza puede sumar su paso.",
  "recomendar": {

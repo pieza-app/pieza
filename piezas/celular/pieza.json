@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Copia al celular",
+ "icono": "icono.svg",
  "categoria": "datos",
  "descripcion": "El computador es la fuente; el celular lee una copia cifrada en una carpeta de la nube de la persona.",
  "recomendar": {

@@ -5,7 +5,7 @@ description: "Lanzar un proyecto open source completo desde una idea: entrevista
 
 # Lanzar un proyecto open source con Pieza
 
-Versión del flujo: 6
+Versión del flujo: 7
 
 Quien mantiene el proyecto dice "creemos una aplicación para…" y espera el paquete completo, no preguntas una por una. Este flujo
 sale de lanzar Minuta, Graba, Corta, Alcancía, Repasa y Esquema. Trabaja por fases, con lista de tareas visible, y entrega algo usable al final de cada fase.
@@ -85,7 +85,9 @@ Nunca ingreses contraseñas ni códigos de verificación: eso lo hace ella.
   con la sesión de GitHub de la persona. Para subir imágenes: `fetch` desde `raw.githubusercontent.com` (permitido por la CSP de
   github.com; github.io no) → `new File` → `DataTransfer` → `input.files` + evento `change`. Formularios: leer el form con DOMParser y
   enviarlo con `fetch` + `FormData`.
-- Topic **`hecho-con-pieza`** en el repo de la app (con permiso de la persona): así aparece en la página de Pieza.
+- Topic **`hecho-con-pieza`** en el repo de la app (con permiso de la persona): así aparece en la página de Pieza, con su ícono
+  (el de `"icono"` en `app.json` o `docs/favicon.svg`) y «Sin revisar» hasta que quien mantiene Pieza lo apruebe. Dile a la
+  persona que, si quiere el sello «Aprobada por la comunidad ✓», lo pida en Discussions de Pieza.
 
 ## 5. Repos y estructura
 - Los repos de la ficha (fase 2).
@@ -126,7 +128,9 @@ En todo el diseño y la construcción aplica la skill **diseno-y-calidad-de-prod
   **dentro de la app** con barra de progreso y "Estás en la última versión"; nunca alertas del sistema.
 
 ## 8. Identidad visual
-- Logo simple en SVG (favicon), PNG 512×512 para la org (fondo lleno, la figura dentro del círculo), `apple-touch-icon.png` 180×180.
+- Logo simple en SVG (favicon), que sea **solo formas** (sin `<style>`, `<image>`, `<use>`, `href` ni scripts, ≤ 8 KB): así la
+  página de Pieza lo puede mostrar en la lista de proyectos. Ponlo en `app.json` como `"icono": "docs/favicon.svg"`.
+- PNG 512×512 para la org (fondo lleno, la figura dentro del círculo), `apple-touch-icon.png` 180×180.
 - Imagen para compartir 1200×630 (`docs/img/compartir.png`) con nombre, frase y captura con datos ficticios.
 - Org: avatar, nombre visible, descripción, URL, portada (`.github/profile/README.md` centrado con logo, frase y enlaces: Descargar ·
   Código · Comunidad · Cómo aportar), repos fijados y ocultar "tareas sugeridas". Social preview en cada repo.
@@ -174,7 +178,8 @@ Verifica (pruebas en verde, página en vivo con `curl` desde el Mac, capturas a 
 instalar algo que cierre una app, borra temporales y capturas, y cuenta en pocas líneas qué quedó y qué falta que haga la persona.
 
 ## Al terminar: que el flujo aprenda (así esta skill escala sola)
-- Código que sirvió y lo usarán dos apps o más → **pieza nueva en Pieza** (o mejora de una, con `pieza.py diferencias`).
+- Código que sirvió y lo usarán dos apps o más → **pieza nueva en Pieza** (o mejora de una, con `pieza.py diferencias`), con su
+  `icono.svg` (24×24, de línea, `currentColor`; reglas en `docs/enchufe.md`).
 - Un paso nuevo, un error que costó o una mejor forma de hacer algo → edita **este archivo en pieza-app/pieza**
   (`skills/lanzar-proyecto-open-source/SKILL.md`), sube «Versión del flujo» y anótalo en el `CHANGELOG.md` de Pieza.
 - Si tienes permiso de escritura en pieza-app/pieza, abre un PR; si no, un PR desde tu fork: así aporta todo el que use el flujo.

@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Transcribir",
+ "icono": "icono.svg",
  "categoria": "medios",
  "descripcion": "Audio a texto en el computador con whisper: modelos verificados, vocabulario por archivo, filtro de alucinaciones.",
  "recomendar": {

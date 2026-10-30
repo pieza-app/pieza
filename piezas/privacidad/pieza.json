@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Revisión de privacidad",
+ "icono": "icono.svg",
  "categoria": "repo",
  "descripcion": "Antes de cada commit busca nombres, correos y rutas reales (lista local nunca versionada).",
  "recomendar": {

@@ -4,11 +4,17 @@
   comunidad.py buscar                        Busca repos públicos con el topic «pieza-comunidad», valida su pieza.json y sus
                                              archivos, y los suma (o actualiza) en comunidad/catalogo.json como «sin revisar».
                                              Lo corre el workflow «comunidad» una vez al día.
-  comunidad.py listar                        Lo que hay, con su estado de revisión.
+  comunidad.py proyectos                     Busca los repos públicos con el topic «hecho-con-pieza» (apps hechas con Pieza), lee
+                                             su ícono (validado) y los deja en comunidad/proyectos.json; los nuevos, «sin revisar».
+  comunidad.py listar                        Lo que hay (piezas y proyectos), con su estado de revisión.
   comunidad.py revisar <id> aprobar|rechazar [nota]
                                              Quien mantiene Pieza marca el commit actual como revisado (o rechazado). Lo revisado
                                              queda fijado a ese commit y a la huella de cada archivo: es lo único que se instala
                                              como seguro.
+  comunidad.py proyecto <dueño/repo> aprobar|rechazar [nota]
+                                             Marca un proyecto como aprobado por la comunidad (o lo saca de la página). Se aprueba
+                                             el proyecto, no un commit: si cambia su ícono, sigue aprobado (el ícono siempre se
+                                             vuelve a validar).
 
 Seguridad: todo se baja de raw.githubusercontent.com en un commit fijo (nunca de una rama), sin seguir redirecciones, con
 tamaño máximo, y se compara con su sha256. Si el autor cambia algo, vuelve a «sin revisar» hasta que alguien lo mire. Una pieza
@@ -26,17 +32,23 @@ import urllib.request
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(BASE, "herramientas"))
 import pieza as P  # noqa: E402
+import icono as I  # noqa: E402
 
 CATALOGO = os.path.join(BASE, "comunidad", "catalogo.json")
+PROYECTOS = os.path.join(BASE, "comunidad", "proyectos.json")
 TOPIC = "pieza-comunidad"
+TOPIC_PROYECTOS = "hecho-con-pieza"
+#: Dónde se busca el ícono de un proyecto si su app.json no dice «icono».
+ICONOS_PROYECTO = ("docs/favicon.svg", "favicon.svg", "ui/favicon.svg", "docs/img/icono.svg", "icono.svg")
 MAXIMO_ARCHIVO = 512 * 1024
 MAXIMO_ARCHIVOS = 40
 REPO = re.compile(r"^[\w.-]+/[\w.-]+$")
 COMMIT = re.compile(r"^[0-9a-f]{40}$")
 #: Lo que se copia del pieza.json al catálogo (lo que necesitan la página, la ficha y el creador).
-CAMPOS = ("id", "version", "estado", "nombre", "categoria", "descripcion", "recomendar", "requiere", "compatible", "plataformas",
+CAMPOS = ("id", "version", "estado", "nombre", "icono", "categoria", "descripcion", "recomendar", "requiere", "compatible", "plataformas",
           "pantallas", "permisos", "red", "red_nota", "tareas_persona", "archivos", "config", "acciones", "textos", "cambios")
 ESTADOS = ("sin-revisar", "revisada", "rechazada")
+ESTADOS_PROYECTO = ("sin-revisar", "revisado", "rechazado")
 
 
 # ── Red ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -118,6 +130,15 @@ def validar_remota(repo, commit, red, oficiales, ocupados):
     # Las mismas reglas que una pieza oficial (regla de oro, permisos, red, cambios…), sin mirar el disco.
     errores += [e for e in P.errores_pieza(pid, p, oficiales, carpeta=None) if not e.startswith("falta el archivo")]
     huellas = {"pieza.json": sha(crudo)}
+    svg = ""
+    if isinstance(p.get("icono"), str) and ruta_segura(p["icono"]) and p["icono"].endswith(".svg"):
+        try:
+            datos = red.archivo(repo, commit, p["icono"])
+            svg = datos.decode("utf-8")
+            errores += [f"ícono: {x}" for x in I.errores(svg, solo_current=True)]
+            huellas[p["icono"]] = sha(datos)
+        except Exception as e:  # noqa: BLE001
+            errores.append(f"no pude leer el ícono {p['icono']}: {e}")
     for origen in archivos:
         if not ruta_segura(origen):
             errores.append(f"ruta rara en archivos: {origen!r}")
@@ -126,7 +147,9 @@ def validar_remota(repo, commit, red, oficiales, ocupados):
             huellas[origen] = sha(red.archivo(repo, commit, origen))
         except Exception as e:  # noqa: BLE001
             errores.append(f"no pude bajar {origen}: {e}")
-    return {k: p[k] for k in CAMPOS if k in p}, huellas, errores
+    salida = {k: p[k] for k in CAMPOS if k in p}
+    salida["icono_svg"] = svg
+    return salida, huellas, errores
 
 
 def buscar(red=None, hoy=None):
@@ -230,16 +253,125 @@ def descargar(pid, sin_revisar=False, red=None, cache=None):
     return carpeta, {"repo": e["repo"], "commit": commit, "revision": rev.get("estado", "sin-revisar")}
 
 
+# ── Proyectos hechos con Pieza ───────────────────────────────────────────────────────────────────────────────────────────────
+
+def leer_proyectos():
+    return P.leer(PROYECTOS, {"formato": 1, "topic": TOPIC_PROYECTOS, "proyectos": []})
+
+
+def guardar_proyectos(reg):
+    os.makedirs(os.path.dirname(PROYECTOS), exist_ok=True)
+    reg["proyectos"].sort(key=lambda e: e["repo"].lower())
+    P.escribir(PROYECTOS, reg)
+
+
+def texto(v, maximo):
+    """Texto de afuera: solo string, sin caracteres de control y acotado. La página lo pone con textContent, nunca como HTML."""
+    return re.sub(r"[\x00-\x1f\x7f]", " ", v).strip()[:maximo] if isinstance(v, str) else ""
+
+
+def https(v):
+    v = texto(v, 300)
+    p = urllib.parse.urlsplit(v)
+    return v if p.scheme == "https" and p.netloc and not p.username else ""
+
+
+def icono_proyecto(repo, commit, red):
+    """(svg, ruta) del ícono del proyecto: el que dice su app.json («icono») o el primero de ICONOS_PROYECTO que pase la
+    validación. ("", "") si no tiene uno válido: la página muestra una pieza genérica."""
+    rutas = []
+    try:
+        app = json.loads(red.archivo(repo, commit, "app.json"))
+        if isinstance(app, dict) and isinstance(app.get("icono"), str) and app["icono"].endswith(".svg") and ruta_segura(app["icono"]):
+            rutas.append(app["icono"])
+    except Exception:  # noqa: BLE001
+        pass
+    for ruta in rutas + [r for r in ICONOS_PROYECTO if r not in rutas]:
+        try:
+            svg = red.archivo(repo, commit, ruta).decode("utf-8")
+        except Exception:  # noqa: BLE001
+            continue
+        if not I.errores(svg):
+            return svg, ruta
+    return "", ""
+
+
+def buscar_proyectos(red=None, hoy=None):
+    """Recorre los repos con el topic «hecho-con-pieza» y deja comunidad/proyectos.json al día. Devuelve lo que cambió."""
+    red = red or Red()
+    hoy = hoy or datetime.date.today().isoformat()
+    reg = leer_proyectos()
+    previos = {e["repo"]: e for e in reg["proyectos"]}
+    repos, pagina = [], 1
+    while len(repos) < 1000:
+        q = urllib.parse.urlencode({"q": f"topic:{TOPIC_PROYECTOS} is:public fork:false archived:false", "sort": "updated",
+                                    "per_page": 100, "page": pagina})
+        items = red.json(f"https://api.github.com/search/repositories?{q}").get("items") or []
+        repos += [r for r in items if isinstance(r.get("full_name"), str) and REPO.match(r["full_name"])]
+        if len(items) < 100:
+            break
+        pagina += 1
+    nuevos, resumen = [], []
+    for r in repos:
+        repo = r["full_name"]
+        anterior = previos.get(repo, {})
+        rama = urllib.parse.quote(str(r.get("default_branch") or "main"))
+        try:
+            commit = red.json(f"https://api.github.com/repos/{repo}/commits/{rama}").get("sha", "")
+        except Exception:  # noqa: BLE001
+            commit = ""
+        svg, ruta = (anterior.get("icono_svg", ""), anterior.get("icono", ""))
+        if COMMIT.match(commit) and commit != anterior.get("commit"):
+            svg, ruta = icono_proyecto(repo, commit, red)
+        entrada = {"repo": repo, "nombre": texto(r.get("name"), 80) or repo.split("/")[1],
+                   "descripcion": texto(r.get("description"), 280), "url": f"https://github.com/{repo}",
+                   "pagina": https(r.get("homepage")), "commit": commit if COMMIT.match(commit) else anterior.get("commit", ""),
+                   "icono": ruta, "icono_svg": svg, "encontrado": anterior.get("encontrado", hoy),
+                   "actualizado": texto(r.get("pushed_at"), 25),
+                   "revision": anterior.get("revision", {"estado": "sin-revisar"})}
+        if not anterior:
+            resumen.append(f"+ {repo} → sin revisar")
+        elif {k: v for k, v in entrada.items() if k != "actualizado"} != {k: v for k, v in anterior.items() if k != "actualizado"}:
+            resumen.append(f"↑ {repo}")
+        nuevos.append(entrada)
+    for repo in set(previos) - {e["repo"] for e in nuevos}:
+        resumen.append(f"− {repo}: ya no tiene el topic o no existe")
+    if nuevos != reg["proyectos"]:
+        reg["proyectos"] = nuevos
+        guardar_proyectos(reg)
+    return resumen
+
+
+def revisar_proyecto(repo, veredicto, nota="", hoy=None):
+    reg = leer_proyectos()
+    e = next((x for x in reg["proyectos"] if x["repo"].lower() == repo.lower()), None)
+    if not e:
+        sys.exit(f"No hay un proyecto «{repo}». Corre primero: comunidad.py proyectos")
+    estado = {"aprobar": "revisado", "rechazar": "rechazado"}.get(veredicto)
+    if not estado:
+        sys.exit("El veredicto es aprobar o rechazar.")
+    e["revision"] = {"estado": estado, "fecha": hoy or datetime.date.today().isoformat(), "nota": texto(nota, 300)}
+    guardar_proyectos(reg)
+    print(f"{e['repo']}: {estado}")
+
+
 def listar():
     for e in leer()["piezas"]:
         marca = {"revisada": "✓ revisada", "rechazada": "✗ rechazada"}.get(e["revision"].get("estado"), "· sin revisar")
         print(f"{e['id']:20} {marca:14} {e['repo']}@{e['commit'][:7]}  {e['pieza'].get('descripcion', '')[:80]}")
+    for e in leer_proyectos()["proyectos"]:
+        marca = {"revisado": "✓ aprobado", "rechazado": "✗ rechazado"}.get(e["revision"].get("estado"), "· sin revisar")
+        print(f"{e['repo']:34} {marca:14} {'ícono ✓' if e.get('icono_svg') else 'sin ícono'}  {e.get('descripcion', '')[:60]}")
 
 
 if __name__ == "__main__":
     a = sys.argv[1:]
     if a[:1] == ["buscar"]:
         print("\n".join(buscar()) or "Sin cambios.")
+    elif a[:1] == ["proyectos"]:
+        print("\n".join(buscar_proyectos()) or "Sin cambios.")
+    elif len(a) >= 3 and a[0] == "proyecto":
+        revisar_proyecto(a[1], a[2], " ".join(a[3:]))
     elif a[:1] == ["listar"]:
         listar()
     elif len(a) >= 3 and a[0] == "revisar":

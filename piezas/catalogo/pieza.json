@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Catálogo de la comunidad",
+ "icono": "icono.svg",
  "categoria": "datos",
  "descripcion": "Contenido descargable (plantillas, temas, efectos…) desde un repo de solo datos, validado y con sha256 obligatorio.",
  "recomendar": {

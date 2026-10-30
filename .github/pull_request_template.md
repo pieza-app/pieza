@@ -6,7 +6,8 @@
 
 - [ ] `bash pruebas/correr.sh` pasa (valida todos los `pieza.json`, corre las pruebas, revisa workflows y privacidad)
 - [ ] Si toqué una pieza: su `pieza.json` está completo y honesto (`pantallas`, `permisos`, `red`, `recomendar`, `requiere`,
-      `compatible`) y cada acción tiene `limite`; nada de lo que escribe la persona va en `args`
+      `compatible`), trae su `icono.svg` (24×24, `currentColor`, solo formas) y cada acción tiene `limite`; nada de lo que
+      escribe la persona va en `args`
 - [ ] Si cambia lo que la app recibe: subí `version` y anoté en `cambios` el `tipo` (`arreglo`, `mejora` o `rompe` con `migrar`;
       `seguridad: true` si corresponde)
 - [ ] Agregué o ajusté pruebas en `pruebas/test_piezas.py` (con datos ficticios)

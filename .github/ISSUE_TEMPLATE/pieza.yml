@@ -26,6 +26,12 @@ body:
       label: ¿Qué apps la necesitan y dónde está hoy? / Which apps need it and where does it live today?
       description: Si ya existe en una app, la ruta del archivo (de esa versión partimos). Una pieza nace cuando la usan dos apps o más.
     validations: { required: true }
+  - type: input
+    id: icono
+    attributes:
+      label: ¿Qué ícono la representa? / What icon represents it?
+      description: Un objeto simple que se entienda sin leer el nombre (una llave, una nube, un calendario…). Lo dibujamos de línea, 24×24. / A simple object, drawn as a 24×24 line icon.
+      placeholder: "un calendario con un visto"
   - type: checkboxes
     id: plataformas
     attributes:

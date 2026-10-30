@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Conectores de servicios",
+ "icono": "icono.svg",
  "categoria": "conexiones",
  "descripcion": "Contrato para conectar servicios externos (bancos, billeteras, APIs) con credencial en el llavero y por la entrada estándar.",
  "recomendar": {

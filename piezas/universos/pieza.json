@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Universos",
+ "icono": "icono.svg",
  "categoria": "datos",
  "descripcion": "Mundos temáticos que cambian textos, colores y juego de la app; se descargan, se votan y se crean con la IA.",
  "recomendar": {

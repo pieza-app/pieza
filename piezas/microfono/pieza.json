@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Micrófono",
+ "icono": "icono.svg",
  "categoria": "medios",
  "descripcion": "Grabar o escuchar el micrófono (y el audio del sistema en Mac) con permiso explicado.",
  "recomendar": {

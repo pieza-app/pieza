@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "App de Mac",
+ "icono": "icono.svg",
  "categoria": "plataforma",
  "descripcion": "Host genérico en Swift (WKWebView): lee los pieza.json y enruta las acciones solo, con guardas y límite de tiempo.",
  "recomendar": {

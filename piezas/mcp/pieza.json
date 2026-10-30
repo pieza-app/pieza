@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Hablar con tu IA (MCP)",
+ "icono": "icono.svg",
  "categoria": "ia",
  "descripcion": "Servidor MCP local para que la persona converse con sus datos desde su IA, y alta en Claude, Codex, Gemini y Claude Desktop.",
  "recomendar": {

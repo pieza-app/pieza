@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Datos en tu git",
+ "icono": "icono.svg",
  "categoria": "datos",
  "descripcion": "Guarda los datos de la persona en un repo suyo de GitHub o GitLab, nunca en un servidor nuestro.",
  "recomendar": {

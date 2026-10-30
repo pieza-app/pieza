@@ -8,7 +8,10 @@ una app y revisar aportes. Hay lugar para cualquiera, programes o no. *(English 
 
 ## Sin programar
 - **Haz una app con Pieza y cuéntanos cómo te fue:** qué pieza te faltó, qué paso del flujo te confundió, qué permiso o qué salida a
-  internet no estaba bien contada en la ficha. Ese relato vale oro.
+  internet no estaba bien contada en la ficha. Ese relato vale oro. Ponle el topic `hecho-con-pieza` y aparece sola en la
+  página, con su ícono ([cómo](docs/comunidad.md#tu-app-en-la-página-hecho-con-pieza)).
+- **Dibuja íconos:** cada pieza tiene uno (`piezas/<id>/icono.svg`) para que el catálogo se entienda mirando. Si uno no se
+  entiende, propón uno mejor (reglas en [`docs/enchufe.md`](docs/enchufe.md#el-ícono-toda-pieza-oficial-o-de-la-comunidad)).
 - **Prueba una pieza en tu sistema** (sobre todo Windows y Linux): los issues con la etiqueta
   [`probar`](https://github.com/pieza-app/pieza/labels/probar) piden justo eso. Usa solo datos ficticios.
 - **Propón una pieza** que necesitaste en dos apps o más, con el formulario
@@ -48,8 +51,9 @@ mira [`docs/catalogo.md`](docs/catalogo.md) y `python3 herramientas/pieza.py cat
 
 1. **Parte de la mejor versión que ya exista** en las apps y súmale lo que otras resolvieron mejor. Dilo en `origen`.
 2. Carpeta `piezas/<id>/` con su código (`python/`, `ui/`, `mac/`, `escritorio/`), un `README.md` corto (qué resuelve, API,
-   ejemplo) y su `pieza.json` **completo y honesto** (formato en [`docs/enchufe.md`](docs/enchufe.md)):
-   - `descripcion`, `categoria`, `plataformas`, `requiere` y `compatible`.
+   ejemplo), su **`icono.svg`** (obligatorio: 24×24, de línea, trazo 2, `currentColor`, solo formas; que se entienda sin leer el
+   nombre; [reglas](docs/enchufe.md#el-ícono-toda-pieza-oficial-o-de-la-comunidad)) y su `pieza.json` **completo y honesto** (formato en [`docs/enchufe.md`](docs/enchufe.md)):
+   - `descripcion`, `icono` (`"icono.svg"`), `categoria`, `plataformas`, `requiere` y `compatible`.
    - `recomendar` (cuándo sugerirla al crear una app), `pantallas` (lo que suma a la app), `permisos` (por plataforma, con para
      qué) y `red` (cada dominio al que sale; vacío = funciona sin internet; `red_nota` si sale algo de la persona, como su IA).
      **Es lo que el creador de proyectos le muestra a alguien antes de crear su app**: un permiso o un dominio que falte es un error.
@@ -106,13 +110,15 @@ Al participar aceptas el [código de conducta](CODE_OF_CONDUCT.md).
 ## Contributing (English)
 - **No code needed:** build an app with Pieza and tell us how it went, test a piece on your system (label `probar`, fictional data
   only), propose a piece in words with the [“Propose a piece”](https://github.com/pieza-app/pieza/issues/new?template=pieza.yml)
-  form, chat in [Discussions](https://github.com/pieza-app/pieza/discussions), report bugs or ideas, and improve the English texts.
+  form, chat in [Discussions](https://github.com/pieza-app/pieza/discussions), report bugs or ideas, improve the English texts or
+  draw a better icon for a piece. Built an app with Pieza? Add the `hecho-con-pieza` topic and it shows up on the page with its icon.
 - **Code (with or without AI):** read [`AGENTS.md`](AGENTS.md) and [`docs/enchufe.md`](docs/enchufe.md), fork, branch, run
   `bash pruebas/correr.sh` and open a pull request. Claude Code: `/plugin marketplace add pieza-app/pieza` and
   `/plugin install pieza@pieza`. Gemini CLI: `gemini extensions install https://github.com/pieza-app/pieza`. Codex: skills in
   `.agents/skills`. Any other AI: follow `AGENTS.md`. Code and comments are in Spanish; Python standard library only; whatever a
   person types never goes as a process argument; never commit real data.
-- **New pieces:** only when two or more apps need it. A complete and honest `pieza.json` (permissions, network, screens), tests,
+- **New pieces:** only when two or more apps need it. A complete and honest `pieza.json` (permissions, network, screens), an
+  `icono.svg` (24×24 line icon, `currentColor`, shapes only — see `docs/enchufe.md`), tests,
   and a bumped `version` with a `cambios` entry (`arreglo`, `mejora` or `rompe` with `migrar` steps; `seguridad: true` if relevant).
 - **Flows (skills):** edit `skills/<flow>/SKILL.md` here, bump “Versión del flujo” and note it in `CHANGELOG.md`.
 - **Review:** everything goes through a pull request and a maintainer merges it, only with their approval. Contributions are

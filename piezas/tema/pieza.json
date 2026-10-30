@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Tema claro y oscuro",
+ "icono": "icono.svg",
  "categoria": "interfaz",
  "descripcion": "Sistema, claro u oscuro, con light-dark() y sin repetir colores.",
  "recomendar": {

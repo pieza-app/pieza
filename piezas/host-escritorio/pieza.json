@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "App de Windows y Linux",
+ "icono": "icono.svg",
  "categoria": "plataforma",
  "descripcion": "Host genérico en Electron con la misma API que el de Mac.",
  "recomendar": {

@@ -18,6 +18,7 @@ menos tokens: elegir piezas, no reescribirlas.
 ## Cómo se hace una pieza
 
 1. Carpeta `piezas/<id>/` con `pieza.json` (formato en `docs/enchufe.md`), su código (`python/`, `ui/`, `mac/`, `escritorio/`),
+   su `icono.svg` (obligatorio: 24×24, de línea, trazo 2, `currentColor`, solo formas; `herramientas/icono.py` lo valida),
    un `README.md` corto (qué resuelve, API, ejemplo) y lo que necesite en `pruebas/test_piezas.py`.
 2. **Partir de la mejor versión** que ya exista en las apps y sumarle lo que otras resolvieron mejor. Decir de dónde salió en
    `origen`.
@@ -65,7 +66,9 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 | `herramientas/pieza.py` | `listar`, `catalogo`, `ficha`, `iniciar`, `agregar`, `estado`, `actualizar`, `aviso`, `diferencias`, `revisar`, `skills estado/instalar` |
 | `docs/enchufe.md` | El contrato: `pieza.json`, `app.json`, `piezas.json`, reglas de seguridad, host genérico |
 | `docs/catalogo.md` | Qué piezas hay, cuáles faltan y en qué orden, y brechas encontradas en las apps |
-| `comunidad/catalogo.json`, `herramientas/comunidad.py`, `.github/workflows/comunidad.yml` | El catálogo de la comunidad: piezas en repos de otras personas (topic `pieza-comunidad`), validadas cada día y con su estado de revisión fijado a un commit y a la huella de cada archivo. Guía en `docs/comunidad.md` |
+| `comunidad/catalogo.json`, `herramientas/comunidad.py`, `.github/workflows/comunidad.yml` | El catálogo de la comunidad: piezas en repos de otras personas (topic `pieza-comunidad`), validadas cada día (ícono incluido) y con su estado de revisión fijado a un commit y a la huella de cada archivo. Guía en `docs/comunidad.md` |
+| `comunidad/proyectos.json` | Las apps hechas con Pieza (topic `hecho-con-pieza`) con su ícono validado y su revisión (`comunidad.py proyecto <dueño/repo> aprobar\|rechazar`). La página las muestra; las rechazadas no |
+| `herramientas/icono.py` | Valida un ícono SVG que viene de afuera (solo formas, sin scripts ni enlaces, ≤ 8 KB). Lo usan `pieza.py revisar`, `comunidad.py` y `pagina.py` |
 | `plantillas/pieza-al-dia.yml` | El workflow que `iniciar` agrega a cada app para que se entere de las versiones nuevas |
 | `docs/` | La página pública (`index.html`, `pagina.js`, `pagina.css`, `sello.svg`) y los datos que arma `herramientas/pagina.py` |
 | `.claude-plugin/` | El plugin de Claude Code (las skills de `skills/`) y su marketplace |

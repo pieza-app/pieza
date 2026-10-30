@@ -282,13 +282,17 @@ class Comunidad(unittest.TestCase):
         self.tmp = tempfile.TemporaryDirectory()
         self.antes = comunidad.CATALOGO
         comunidad.CATALOGO = os.path.join(self.tmp.name, "catalogo.json")
+        self.antes_p = comunidad.PROYECTOS
+        comunidad.PROYECTOS = os.path.join(self.tmp.name, "proyectos.json")
         self.repos = {}  # repo → {commit, archivos}
         prueba = self
 
         class RedFalsa:
             def json(self, url):
                 if "/search/repositories" in url:
-                    return {"items": [{"full_name": r, "default_branch": "main"} for r in prueba.repos]}
+                    return {"items": [{"full_name": r, "default_branch": "main", "name": r.split("/")[1],
+                                       "description": "Una app\x00 de prueba", "homepage": "javascript:alert(1)"}
+                                      for r in prueba.repos]}
                 repo = url.split("/repos/")[1].split("/commits/")[0]
                 return {"sha": prueba.repos[repo]["commit"]}
 
@@ -296,6 +300,8 @@ class Comunidad(unittest.TestCase):
                 r = prueba.repos[repo]
                 if commit not in r["versiones"]:
                     raise ValueError("commit desconocido")
+                if ruta not in r["versiones"][commit]:
+                    raise ValueError("404")
                 return r["versiones"][commit][ruta].encode()
 
         self.red = RedFalsa()
@@ -303,18 +309,22 @@ class Comunidad(unittest.TestCase):
 
     def tearDown(self):
         self.c.CATALOGO = self.antes
+        self.c.PROYECTOS = self.antes_p
         self.p._EXTRA.clear()
         self.p._FUENTE.clear()
         self.tmp.cleanup()
 
-    def publicar(self, repo, commit, codigo="print('hola')\n", **cambios):
-        pj = {"formato": 1, "id": "saludo", "version": "1.0.0", "estado": "lista", "nombre": "Saludo", "categoria": "interfaz",
+    ICONO = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="9"/></svg>'
+
+    def publicar(self, repo, commit, codigo="print('hola')\n", icono=None, **cambios):
+        pj = {"formato": 1, "id": "saludo", "version": "1.0.0", "estado": "lista", "nombre": "Saludo", "icono": "icono.svg",
+              "categoria": "interfaz",
               "descripcion": "Saluda.", "recomendar": {"cuando": "Para saludar."}, "requiere": ["nucleo"],
               "archivos": {"python/saludo.py": "bin/saludo.py"},
               "cambios": [{"version": "1.0.0", "tipo": "inicial", "resumen": "Primera."}], **cambios}
         r = self.repos.setdefault(repo, {"versiones": {}})
         r["commit"] = commit
-        r["versiones"][commit] = {"pieza.json": json.dumps(pj), "python/saludo.py": codigo}
+        r["versiones"][commit] = {"pieza.json": json.dumps(pj), "python/saludo.py": codigo, "icono.svg": icono or self.ICONO}
 
     def entrada(self):
         return self.c.entrada("saludo")
@@ -341,6 +351,73 @@ class Comunidad(unittest.TestCase):
         self.assertIn("enum o entero", resumen)
         self.assertIn("es de una pieza oficial", resumen)
         self.assertEqual(self.c.leer()["piezas"], [])
+
+    def test_icono_obligatorio_y_seguro(self):
+        self.publicar("ana/saludo", "a" * 40)
+        self.c.buscar(self.red)
+        e = self.entrada()
+        self.assertIn("<circle", e["pieza"]["icono_svg"])
+        self.assertIn("icono.svg", e["huellas"])  # cambiar el ícono también vuelve a «sin revisar»
+        self.publicar("ana/raro", "b" * 40, id="raro", icono='<svg viewBox="0 0 24 24"><script>alert(1)</script></svg>')
+        self.publicar("ana/sin", "c" * 40, id="sin")
+        del self.repos["ana/sin"]["versiones"]["c" * 40]["icono.svg"]
+        self.publicar("ana/rojo", "d" * 40, id="rojo", icono='<svg viewBox="0 0 24 24"><path d="M1 1" stroke="red"/></svg>')
+        resumen = " ".join(self.c.buscar(self.red))
+        self.assertIn("<script>", resumen)
+        self.assertIn("no pude leer el ícono", resumen)
+        self.assertIn("currentColor", resumen)
+        self.assertEqual([x["id"] for x in self.c.leer()["piezas"]], ["saludo"])
+
+    def test_icono_validador(self):
+        import icono
+        for malo in ('<svg viewBox="0 0 24 24"><image href="https://x"/></svg>',
+                     '<svg viewBox="0 0 24 24" onload="x"/>',
+                     '<svg viewBox="0 0 24 24"><style>*{}</style></svg>',
+                     '<!DOCTYPE svg [<!ENTITY a "b">]><svg viewBox="0 0 24 24"/>',
+                     '<svg viewBox="0 0 24 24"><path d="M1" fill="url(javascript:x)"/></svg>',
+                     '<svg><path d="M1"/></svg>', "x" * 9000, "no es svg"):
+            self.assertTrue(icono.errores(malo), malo[:40])
+        self.assertEqual(icono.errores('<svg viewBox="0 0 64 64"><rect width="64" height="64" fill="#1f1b2e"/></svg>'), [])
+        for pid in self.p.todas():
+            ruta = os.path.join(self.p.carpeta_de(pid), "icono.svg")
+            self.assertEqual(icono.errores(open(ruta).read(), solo_current=True), [], pid)
+
+    def test_proyectos_con_icono_y_revision(self):
+        import pagina
+        svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#123456"/></svg>'
+        self.repos["ana/notas"] = {"commit": "a" * 40, "versiones": {"a" * 40: {"app.json": '{"icono": "arte/logo.svg"}',
+                                                                               "arte/logo.svg": svg}}}
+        self.repos["ana/fea"] = {"commit": "b" * 40, "versiones": {"b" * 40: {"docs/favicon.svg": "<svg><script/></svg>",
+                                                                             "favicon.svg": svg}}}
+        self.repos["pieza-app/pieza"] = {"commit": "c" * 40, "versiones": {"c" * 40: {}}}
+        resumen = " ".join(self.c.buscar_proyectos(self.red, hoy="2026-10-30"))
+        self.assertIn("+ ana/notas", resumen)
+        reg = {e["repo"]: e for e in self.c.leer_proyectos()["proyectos"]}
+        self.assertEqual(reg["ana/notas"]["icono"], "arte/logo.svg")
+        self.assertEqual(reg["ana/fea"]["icono"], "favicon.svg")  # el inseguro se salta
+        self.assertEqual(reg["pieza-app/pieza"]["icono_svg"], "")
+        self.assertEqual(reg["ana/notas"]["pagina"], "")  # solo https
+        self.assertNotIn("\x00", reg["ana/notas"]["descripcion"])
+        self.assertEqual(reg["ana/notas"]["revision"]["estado"], "sin-revisar")
+        self.c.revisar_proyecto("ana/notas", "aprobar", hoy="2026-10-31")
+        self.c.revisar_proyecto("ana/fea", "rechazar", "No es una app hecha con Pieza")
+        # Volver a buscar no borra la revisión.
+        self.c.buscar_proyectos(self.red)
+        reg = {e["repo"]: e for e in self.c.leer_proyectos()["proyectos"]}
+        self.assertEqual(reg["ana/notas"]["revision"]["estado"], "revisado")
+        # La página: sin los rechazados, la familia primero, íconos copiados.
+        antes = (pagina.DATOS, pagina.ICONOS)
+        pagina.DATOS, pagina.ICONOS = os.path.join(self.tmp.name, "datos"), os.path.join(self.tmp.name, "iconos")
+        try:
+            with open(pagina.proyectos()) as f:
+                d = json.load(f)
+        finally:
+            pagina.DATOS, pagina.ICONOS = antes
+        self.assertEqual([x["repo"] for x in d["proyectos"]], ["pieza-app/pieza", "ana/notas"])
+        self.assertEqual((d["total"], d["aprobados"]), (2, 1))
+        self.assertEqual(d["proyectos"][1]["icono"], "iconos/proyectos/ana--notas.svg")
+        self.assertEqual(d["proyectos"][0]["icono"], "")
+        self.assertTrue(os.path.isfile(os.path.join(self.tmp.name, "iconos", "proyectos", "ana--notas.svg")))
 
     def test_instalar_solo_lo_revisado_o_con_permiso(self):
         app = os.path.join(self.tmp.name, "app")

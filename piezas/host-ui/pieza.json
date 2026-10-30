@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Puente de la interfaz",
+ "icono": "icono.svg",
  "categoria": "interfaz",
  "descripcion": "host.enviar(accion, datos) y las respuestas window.<App>.*, igual en Mac, Electron, móvil y navegador (modo demo).",
  "recomendar": {

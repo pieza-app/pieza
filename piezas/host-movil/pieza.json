@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "App de celular",
+ "icono": "icono.svg",
  "categoria": "plataforma",
  "descripcion": "Capacitor con la misma interfaz; las acciones corren en un motor JS.",
  "recomendar": {

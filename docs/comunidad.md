@@ -6,7 +6,9 @@ mantiene Pieza la revisa, pasa a **«Revisada ✓»** y desde ahí se instala co
 
 ## Publicar una pieza
 
-1. Un repo público con un `pieza.json` en la raíz y el código que nombra en `archivos` (formato en [enchufe.md](enchufe.md)).
+1. Un repo público con un `pieza.json` en la raíz, su **`icono.svg`** y el código que nombra en `archivos` (formato en
+   [enchufe.md](enchufe.md)). El ícono es obligatorio: 24×24, de línea, en `currentColor`, solo formas ([reglas del
+   ícono](enchufe.md#el-ícono-toda-pieza-oficial-o-de-la-comunidad)); si no pasa la validación, la pieza no entra.
    Mismas reglas que una pieza oficial: `estado: "lista"`, `recomendar`, `pantallas`, `permisos` y `red` honestos, `cambios`
    desde la primera versión y la **regla de oro** (lo que escribe la persona nunca va como argumento de un proceso).
 2. Puede requerir piezas oficiales (por ejemplo `nucleo` o `ia`), no otras de la comunidad, y su `id` no puede ser el de una
@@ -27,7 +29,8 @@ cópiala a `piezas/<id>/` en tu fork y corre lo mismo.
 | **Rechazada** | Se revisó y no es segura. No se muestra. | Nunca. |
 
 Si el autor cambia el código después de una revisión, la pieza vuelve a «Sin revisar» (la versión revisada sigue siendo la que
-se instala como segura hasta que se revise la nueva). Si cambia algo que no es código ni `pieza.json`, la revisión se mantiene.
+se instala como segura hasta que se revise la nueva). Lo mismo si cambia el ícono. Si cambia algo que no es código,
+`pieza.json` ni el ícono, la revisión se mantiene.
 
 ## Revisar (quien mantiene Pieza)
 
@@ -40,3 +43,22 @@ python3 herramientas/comunidad.py revisar <id> rechazar "por qué"
 ```
 
 Fija la revisión a ese commit y a la huella de cada archivo. Haz commit de `comunidad/catalogo.json`: la página se actualiza sola.
+
+## Tu app en la página («Hecho con Pieza»)
+
+Si hiciste una app con Pieza, aparece sola en la [página](https://pieza-app.github.io/pieza/#proyectos), con su ícono:
+
+1. Ponle el topic **`hecho-con-pieza`** al repo (público).
+2. Su ícono: el que diga `"icono"` en su `app.json` o, si no, `docs/favicon.svg`, `favicon.svg` o `ui/favicon.svg`. Puede tener
+   sus colores, pero solo formas y hasta 8 KB (las mismas reglas de seguridad que el ícono de una pieza). Sin uno válido se
+   muestra una pieza genérica.
+3. Una vez al día el workflow `comunidad` la encuentra (`comunidad/proyectos.json`) y la página la muestra como **«Sin
+   revisar»**. Cuando quien mantiene Pieza la mira, pasa a **«Aprobada por la comunidad ✓»**.
+
+Aprobar un proyecto dice que **es una app hecha con Pieza, que cumple el manifiesto y que no engaña** (no es una revisión
+línea por línea de todo su código, como la de una pieza). Se aprueba el proyecto, no un commit. Uno rechazado no aparece.
+
+```bash
+python3 herramientas/comunidad.py proyecto <dueño/repo> aprobar
+python3 herramientas/comunidad.py proyecto <dueño/repo> rechazar "por qué"
+```

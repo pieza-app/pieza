@@ -5,7 +5,7 @@ description: "Revisar pull requests y propuestas de la comunidad en los repos op
 
 # Revisar aportes de la comunidad
 
-Versión del flujo: 5
+Versión del flujo: 6
 
 La comunidad hace el trabajo; nosotros verificamos. Revisar debe ser barato: leer el diff, mirar las pruebas y aplicar la lista.
 No reescribas el aporte: si falta algo, se pide con un comentario amable, **en el idioma en que escribió la persona**. Si el repo tiene `.claude/agents/*revisor*.md` o un
@@ -64,7 +64,17 @@ Si el repo tiene `piezas.json`, cruza los archivos del diff con los de cada piez
 - **Una pieza de la comunidad** (en `comunidad/catalogo.json` de Pieza, estado «sin-revisar»): baja su repo en el `commit` del
   catálogo y revísalo entero como un PR, con la misma lista. El veredicto se deja con
   `python3 herramientas/comunidad.py revisar <id> aprobar|rechazar "por qué"` (lo fija a ese commit y a sus huellas) y un commit
-  de `comunidad/catalogo.json`; avisa a quien la publicó en su idioma.
+  de `comunidad/catalogo.json`; avisa a quien la publicó en su idioma. Mira también su `icono.svg`: que se entienda sin leer
+  el nombre y que no sea un logo de una marca (lo técnico ya lo validó `herramientas/icono.py`).
+- **Una pieza nueva u otra que cambia su ícono:** `icono.svg` de 24×24, de línea, trazo 2, `currentColor`, sin texto; que se
+  entienda mirando y siga el estilo de `piezas/*/icono.svg`. `pieza.py revisar` rechaza lo inseguro; lo que entiende una persona
+  lo decides tú.
+- **Un proyecto hecho con Pieza** (en `comunidad/proyectos.json`, «sin-revisar»: un repo con el topic `hecho-con-pieza`): abre el
+  repo y su página y responde tres cosas: ¿es de verdad una app hecha con Pieza (tiene `app.json`/`piezas.json` o usa sus
+  flujos)?, ¿cumple el manifiesto (datos de la persona en su computador, sin telemetría escondida, sin engañar)? y ¿su ícono y su
+  descripción son apropiados? No es una revisión línea por línea: eso es para las piezas. Veredicto con
+  `python3 herramientas/comunidad.py proyecto <dueño/repo> aprobar|rechazar "por qué"` y un commit de `comunidad/proyectos.json`;
+  la página lo muestra como «Aprobada por la comunidad ✓» (o lo saca). Avisa a quien lo publicó en su idioma.
 Revisa también estas brechas que ya aparecieron en las apps (un aporte no puede traerlas de vuelta): el puente acepta mensajes solo
 del marco principal y del origen de la app; las actualizaciones solo bajan de los Releases del propio repo, con sha256; lo del
 catálogo exige sha256; la IA nunca corre sin sus protecciones (ni «reintento sin protecciones» para CLIs viejos), sin las variables

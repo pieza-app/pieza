@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Idiomas",
+ "icono": "icono.svg",
  "categoria": "interfaz",
  "descripcion": "Traducciones con la frase en español como clave, plantillas {n}, escape seguro y traducir la página entera.",
  "recomendar": {

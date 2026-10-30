@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Cifrado",
+ "icono": "icono.svg",
  "categoria": "datos",
  "descripcion": "Cifrar con una frase de la persona (PBKDF2 600k + AES-256-GCM) y nombres de archivo con HMAC.",
  "recomendar": {

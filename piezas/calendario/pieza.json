@@ -4,6 +4,7 @@
  "version": "0.0.0",
  "estado": "planeada",
  "nombre": "Calendario",
+ "icono": "icono.svg",
  "categoria": "conexiones",
  "descripcion": "Leer las reuniones del calendario (EventKit en Mac, archivo .ics en el resto) para avisar y nombrar.",
  "recomendar": {

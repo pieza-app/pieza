@@ -2,23 +2,25 @@
 """Arma los datos de la página pública (docs/datos/). Solo biblioteca estándar.
 
   pagina.py catalogo      docs/datos/catalogo.json desde los pieza.json (lo que la página muestra del catálogo).
-  pagina.py proyectos     docs/datos/proyectos.json: los repos públicos con el topic «hecho-con-pieza», desde la búsqueda de GitHub.
+  pagina.py proyectos     docs/datos/proyectos.json desde comunidad/proyectos.json (lo arma `comunidad.py proyectos` cada día):
+                          los repos públicos con el topic «hecho-con-pieza», con su ícono y su estado de revisión.
   pagina.py skills        docs/skills/<skill>.zip: cada skill lista para subir a claude.ai.
   pagina.py todo          Todo lo anterior.
 
-Sin telemetría: solo cuentan los repos públicos que eligieron aparecer poniéndose el topic. Usa GITHUB_TOKEN si existe (más
-consultas por hora); sin él también funciona.
+Sin telemetría: solo cuentan los repos públicos que eligieron aparecer poniéndose el topic. No sale a internet: lee lo que el
+workflow «comunidad» ya bajó y validó. Los íconos se vuelven a validar (herramientas/icono.py) y se copian a docs/iconos/.
 """
 import datetime
 import json
 import os
 import re
 import sys
-import urllib.parse
-import urllib.request
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATOS = os.path.join(BASE, "docs", "datos")
+ICONOS = os.path.join(BASE, "docs", "iconos")
+sys.path.insert(0, os.path.join(BASE, "herramientas"))
+import icono as I  # noqa: E402
 TOPIC = "hecho-con-pieza"
 #: La familia: apps de quienes mantienen Pieza (se marcan aparte en la página, igual cuentan).
 FAMILIA = {"minuta-app", "graba-app", "corta-app", "alcancia-app", "repasa-app", "esquema-app", "pieza-app"}
@@ -35,8 +37,18 @@ def escribir(nombre, valor):
     return ruta
 
 
+def guardar_icono(tipo, nombre, svg, solo_current):
+    """Escribe docs/iconos/<tipo>/<nombre>.svg si el ícono es válido y devuelve su ruta para la página ("" si no)."""
+    if not svg or I.errores(svg, solo_current=solo_current) or not re.match(r"^[\w.-]+$", nombre):
+        return ""
+    carpeta = os.path.join(ICONOS, tipo)
+    os.makedirs(carpeta, exist_ok=True)
+    with open(os.path.join(carpeta, nombre + ".svg"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(svg.strip() + "\n")
+    return f"iconos/{tipo}/{nombre}.svg"
+
+
 def catalogo():
-    sys.path.insert(0, os.path.join(BASE, "herramientas"))
     import pieza
     campos = ("nombre", "categoria", "estado", "version", "descripcion", "plataformas", "pantallas", "permisos", "red", "red_nota", "requiere", "compatible", "cambios")
     piezas = []
@@ -44,6 +56,8 @@ def catalogo():
         d = {"id": pid, **{k: p[k] for k in campos if k in p}}
         d["siempre"] = bool(p.get("recomendar", {}).get("siempre"))
         d["cuando"] = p.get("recomendar", {}).get("cuando", "")
+        ruta = os.path.join(pieza.carpeta_de(pid), p.get("icono") or "icono.svg")
+        d["icono"] = guardar_icono("piezas", pid, open(ruta, encoding="utf-8").read() if os.path.isfile(ruta) else "", True)
         piezas.append(d)
     for d in piezas:
         d["fuente"] = "oficial"
@@ -58,6 +72,7 @@ def catalogo():
              "revision": {"estado": rev.get("estado", "sin-revisar"), **({"fecha": rev["fecha"]} if rev.get("fecha") else {})}}
         d["siempre"] = False
         d["cuando"] = p.get("recomendar", {}).get("cuando", "")
+        d["icono"] = guardar_icono("piezas", "comunidad--" + e["id"], p.get("icono_svg", ""), True)
         piezas.append(d)
     listas = sum(1 for x in piezas if x.get("estado", "lista") == "lista" and x["fuente"] == "oficial")
     return escribir("catalogo.json", {"total": len(piezas), "listas": listas, "piezas": piezas})
@@ -83,55 +98,29 @@ def skills():
     return hechos
 
 
-def texto(v, maximo):
-    """Texto de afuera: solo string, sin caracteres de control y acotado. La página lo pone con textContent, nunca como HTML."""
-    if not isinstance(v, str):
-        return ""
-    return re.sub(r"[\x00-\x1f\x7f]", " ", v).strip()[:maximo]
-
-
-def https(v):
-    v = texto(v, 300)
-    p = urllib.parse.urlsplit(v)
-    return v if p.scheme == "https" and p.netloc and not p.username else ""
-
-
-def limpiar_repo(r):
-    nombre = texto(r.get("full_name"), 140)
-    if not re.match(r"^[\w.-]+/[\w.-]+$", nombre):
-        return None
-    return {"nombre": nombre, "descripcion": texto(r.get("description"), 280), "url": f"https://github.com/{nombre}",
-            "pagina": https(r.get("homepage")), "actualizado": texto(r.get("pushed_at"), 25),
-            "familia": nombre.split("/")[0].lower() in FAMILIA}
-
-
-def buscar(pedir=None):
-    """Todos los repos con el topic (de a 100). `pedir(url)` devuelve el JSON; se puede reemplazar en las pruebas."""
-    pedir = pedir or _pedir
-    repos, pagina = [], 1
-    while len(repos) < MAXIMO:
-        q = urllib.parse.urlencode({"q": f"topic:{TOPIC} is:public fork:false archived:false", "sort": "updated", "per_page": 100, "page": pagina})
-        d = pedir(f"https://api.github.com/search/repositories?{q}")
-        items = d.get("items") or []
-        repos += [x for x in map(limpiar_repo, items) if x]
-        if len(items) < 100:
-            break
-        pagina += 1
-    return repos
-
-
-def _pedir(url):
-    pedido = urllib.request.Request(url, headers={"Accept": "application/vnd.github+json", "User-Agent": "pieza-pagina"})
-    if os.environ.get("GITHUB_TOKEN"):
-        pedido.add_header("Authorization", "Bearer " + os.environ["GITHUB_TOKEN"])
-    with urllib.request.urlopen(pedido, timeout=30) as r:
-        return json.load(r)
-
-
-def proyectos(pedir=None):
-    repos = buscar(pedir)
+def proyectos():
+    """Los proyectos del registro (sin los rechazados): la familia primero, después los aprobados y al final los sin revisar."""
+    sys.path.insert(0, os.path.join(BASE, "herramientas"))
+    import comunidad
+    reg = comunidad.leer_proyectos()
+    lista = []
+    for e in reg.get("proyectos", []):
+        estado = e.get("revision", {}).get("estado", "sin-revisar")
+        if estado == "rechazado" or not re.match(r"^[\w.-]+/[\w.-]+$", e.get("repo", "")):
+            continue
+        dueno = e["repo"].split("/")[0].lower()
+        lista.append({"nombre": comunidad.texto(e.get("nombre"), 80), "repo": e["repo"],
+                      "descripcion": comunidad.texto(e.get("descripcion"), 280), "url": f"https://github.com/{e['repo']}",
+                      "pagina": comunidad.https(e.get("pagina")), "actualizado": comunidad.texto(e.get("actualizado"), 25),
+                      "familia": dueno in FAMILIA,
+                      "icono": guardar_icono("proyectos", e["repo"].replace("/", "--"), e.get("icono_svg", ""), False),
+                      "revision": {"estado": estado, **({"fecha": e["revision"]["fecha"]} if e.get("revision", {}).get("fecha") else {})}})
+    orden = {"revisado": 0, "sin-revisar": 1}
+    lista.sort(key=lambda x: (not x["familia"], orden.get(x["revision"]["estado"], 2), x["nombre"].lower()))
     ahora = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%MZ")
-    return escribir("proyectos.json", {"topic": TOPIC, "total": len(repos), "actualizado": ahora, "proyectos": repos})
+    return escribir("proyectos.json", {"topic": TOPIC, "total": len(lista),
+                                       "aprobados": sum(1 for x in lista if x["revision"]["estado"] == "revisado"),
+                                       "actualizado": ahora, "proyectos": lista})
 
 
 if __name__ == "__main__":
