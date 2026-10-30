@@ -1,0 +1,180 @@
+"""Pruebas de la base: las piezas de Python y la herramienta pieza.py. Solo biblioteca estándar: python3 -m unittest pruebas/test_piezas.py"""
+import json
+import os
+import stat
+import subprocess
+import sys
+import tempfile
+import textwrap
+import unittest
+
+BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PIEZA = os.path.join(BASE, "herramientas", "pieza.py")
+SECRETO = "pedido-secreto-de-ana-perez"
+
+
+def correr(*args, cwd=None, env=None):
+    return subprocess.run([sys.executable, *args], capture_output=True, text=True, cwd=cwd, env=env)
+
+
+class AppDePrueba(unittest.TestCase):
+    """Una app ficticia («Prueba») con las piezas copiadas por pieza.py, y CLIs de IA falsos que anotan cómo los llamaron."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.app = os.path.join(self.tmp.name, "prueba")
+        os.makedirs(os.path.join(self.app, "ui", "idiomas"))
+        with open(os.path.join(self.app, "ui", "idiomas", "en.json"), "w") as f:
+            json.dump({"codigo": "en", "nombre": "English", "textos": {"Hola": "Hello"}}, f)
+        self.assertEqual(correr(PIEZA, "iniciar", self.app, "prueba", "Prueba").returncode, 0)
+        r = correr(PIEZA, "agregar", "ia", self.app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.bin = os.path.join(self.tmp.name, "clis")
+        os.makedirs(self.bin)
+        self.registro = os.path.join(self.tmp.name, "registro.json")
+        falso = textwrap.dedent(f"""\
+            #!{sys.executable}
+            import json, os, sys
+            entrada = "" if sys.stdin is None or sys.stdin.isatty() else sys.stdin.read()
+            if "--help" in sys.argv:
+                print("--safe-mode"); sys.exit(0)
+            archivos = {{n: open(n).read() for n in os.listdir(".") if n.endswith(".md")}}
+            json.dump({{"argv": sys.argv, "stdin": entrada, "cwd": os.getcwd(), "archivos": archivos,
+                       "env": {{k: v for k, v in os.environ.items() if k.startswith(("PRUEBA_", "CLAUDE_CODE"))}}}},
+                      open({self.registro!r}, "w"))
+            if "-o" in sys.argv:
+                open(sys.argv[sys.argv.index("-o") + 1], "w").write("listo")
+            else:
+                print("listo")
+            """)
+        for nombre in ("claude", "codex", "agy"):
+            ruta = os.path.join(self.bin, nombre)
+            with open(ruta, "w") as f:
+                f.write(falso)
+            os.chmod(ruta, 0o755)
+        self.env = {"PATH": self.bin + os.pathsep + "/usr/bin:/bin", "HOME": self.tmp.name,
+                    "PRUEBA_RECURSOS": self.app, "PRUEBA_DATOS": os.path.join(self.tmp.name, "datos"), "PRUEBA_LLAVE": "no-debe-salir"}
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def py(self, codigo):
+        r = subprocess.run([sys.executable, "-c", codigo], capture_output=True, text=True, cwd=os.path.join(self.app, "bin"), env=self.env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        return r.stdout
+
+    def registro_ia(self):
+        with open(self.registro) as f:
+            return json.load(f)
+
+
+class Nucleo(AppDePrueba):
+    def test_config_solo_lo_declarado(self):
+        salida = self.py("import nucleo, json; print(json.dumps(nucleo.guardar_config("
+                         "{'ia': 'codex', 'tema': 'morado', 'raro': 1, 'bienvenida': True})))")
+        self.assertEqual(json.loads(salida), {"ia": "codex", "bienvenida": True})
+
+    def test_carpeta_privada_y_escritura_atomica(self):
+        self.py("import nucleo; nucleo.escribir_json(nucleo.carpeta_datos() + '/x.json', {'a': 1})")
+        datos = self.env["PRUEBA_DATOS"]
+        self.assertEqual(stat.S_IMODE(os.stat(datos).st_mode), 0o700)
+        self.assertEqual(stat.S_IMODE(os.stat(os.path.join(datos, "x.json")).st_mode), 0o600)
+        self.assertEqual(sorted(os.listdir(datos)), ["x.json"])
+
+    def test_ruta_en_no_sale(self):
+        salida = self.py("import nucleo; print([nucleo.ruta_en('/tmp', p) is None for p in ['a/b', '../x', '/etc', '', 'a/../../x']])")
+        self.assertEqual(salida.strip(), "[False, True, True, True, True]")
+
+    def test_contrato_error_como_json(self):
+        entrada, salida = os.path.join(self.tmp.name, "e.json"), os.path.join(self.tmp.name, "s.json")
+        with open(entrada, "w") as f:
+            f.write("{no es json")
+        r = subprocess.run([sys.executable, "ia.py", "probar", entrada, salida], cwd=os.path.join(self.app, "bin"), env=self.env,
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0)
+        self.assertFalse(json.load(open(salida))["ok"])
+
+
+class IA(AppDePrueba):
+    def preguntar(self, ia, extra=""):
+        return self.py(f"import ia; t, e = ia.preguntar({SECRETO!r}, ia={ia!r}{extra}); print(t.strip(), e)")
+
+    def test_claude_sin_herramientas_ni_memoria_y_pedido_por_stdin(self):
+        self.assertIn("listo None", self.preguntar("claude"))
+        r = self.registro_ia()
+        self.assertNotIn(SECRETO, " ".join(r["argv"]))
+        self.assertEqual(r["stdin"], SECRETO)
+        self.assertIn("--strict-mcp-config", r["argv"])
+        self.assertEqual(r["argv"][r["argv"].index("--disallowedTools") + 1], "*")
+        self.assertIn("--safe-mode", r["argv"])
+        self.assertEqual(r["env"].get("CLAUDE_CODE_DISABLE_CLAUDE_MDS"), "1")
+        self.assertFalse([k for k in r["env"] if k.startswith("PRUEBA_")])
+
+    def test_claude_con_material_solo_lee(self):
+        foto = os.path.join(self.tmp.name, "cuaderno.PNG")
+        open(foto, "wb").write(b"x")
+        self.preguntar("claude", f", archivos=[{foto!r}]")
+        argv = self.registro_ia()["argv"]
+        self.assertEqual(argv[argv.index("--allowedTools") + 1], "Read,Glob,Grep")
+        self.assertIn("Bash", argv[argv.index("--disallowedTools") + 1])
+
+    def test_codex_solo_lectura(self):
+        self.assertIn("listo None", self.preguntar("codex"))
+        r = self.registro_ia()
+        self.assertIn("read-only", r["argv"])
+        self.assertNotIn(SECRETO, " ".join(r["argv"]))
+
+    def test_antigravity_pedido_en_archivo(self):
+        self.assertIn("listo None", self.preguntar("gemini"))
+        r = self.registro_ia()
+        self.assertNotIn(SECRETO, " ".join(r["argv"]))
+        self.assertEqual(r["archivos"].get("instrucciones.md"), SECRETO)
+
+    def test_no_instalada_da_codigo_traducible(self):
+        os.remove(os.path.join(self.bin, "codex"))
+        salida = self.py("import ia, json; print(json.dumps(ia.probar('codex')))")
+        r = json.loads(salida)
+        self.assertEqual((r["ok"], r["codigo"]), (False, "no_instalada"))
+        self.assertIn("ChatGPT (Codex)", r["error"])
+
+    def test_textos_en_ingles_sumados(self):
+        textos = json.load(open(os.path.join(self.app, "ui", "idiomas", "en.json")))["textos"]
+        self.assertEqual(textos["Hola"], "Hello")
+        self.assertIn("No conozco esa IA.", textos)
+
+
+class Herramienta(AppDePrueba):
+    def test_revisar_la_base(self):
+        r = correr(PIEZA, "revisar")
+        self.assertEqual(r.returncode, 0, r.stdout)
+
+    def test_requisitos_y_config(self):
+        lock = json.load(open(os.path.join(self.app, "piezas.json")))
+        self.assertEqual(sorted(lock["piezas"]), ["ia", "nucleo"])
+        self.assertEqual(json.load(open(os.path.join(self.app, "app.json")))["config"]["ia"], ["claude", "codex", "gemini"])
+
+    def test_no_pisa_lo_que_la_app_cambio(self):
+        ruta = os.path.join(self.app, "bin", "ia.py")
+        with open(ruta, "a") as f:
+            f.write("\n# mejora propia de la app\n")
+        lock_ruta = os.path.join(self.app, "piezas.json")
+        lock = json.load(open(lock_ruta))
+        lock["piezas"]["ia"]["version"] = "0.0.1"
+        json.dump(lock, open(lock_ruta, "w"))
+        self.assertIn("la app cambió bin/ia.py", correr(PIEZA, "estado", self.app).stdout)
+        self.assertIn("no actualicé bin/ia.py", correr(PIEZA, "actualizar", self.app).stdout)
+        self.assertIn("mejora propia", open(ruta).read())
+        self.assertIn("+# mejora propia", correr(PIEZA, "diferencias", self.app, "ia").stdout)
+
+    def test_regla_de_oro_texto_nunca_en_args(self):
+        sys.path.insert(0, os.path.join(BASE, "herramientas"))
+        import pieza
+        mala = {"id": "mala", "version": "1.0.0", "archivos": {},
+                "acciones": {"x": {"script": "x.py", "scriptDeLaApp": True, "args": ["$pedido"], "limite": 10,
+                                   "datos": {"pedido": {"tipo": "texto", "max": 100}}}}}
+        errores = " ".join(pieza.errores_pieza("mala", mala, {}))
+        self.assertIn("solo puede ser un campo enum o entero", errores)
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -1,0 +1,39 @@
+{
+ "formato": 1,
+ "id": "ia",
+ "version": "0.1.0",
+ "nombre": "Tu IA",
+ "descripcion": "La IA de la persona (Claude Code, Codex o Gemini) con su propia cuenta: sin herramientas, sin su memoria, el pedido nunca como argumento, material y revisión a fondo de solo lectura.",
+ "origen": "esquema/bin/ia.py + alcancia (pedido en archivo) + repasa (material) — corrige el reintento sin protecciones de graba y minuta",
+ "requiere": ["nucleo"],
+ "archivos": {
+  "python/ia.py": "bin/ia.py"
+ },
+ "config": {
+  "ia": ["claude", "codex", "gemini"]
+ },
+ "acciones": {
+  "probarIA": {
+   "script": "ia.py",
+   "args": ["probar"],
+   "entrada": "archivo",
+   "datos": {"ia": {"tipo": "enum", "valores": ["claude", "codex", "gemini"]}},
+   "responde": "iaProbada",
+   "limite": 120
+  },
+  "listaIA": {
+   "script": "ia.py",
+   "args": ["lista"],
+   "entrada": null,
+   "datos": {},
+   "responde": "iaLista",
+   "limite": 30
+  }
+ },
+ "textos": {
+  "No encontré {ia} en este computador. Revisa en Ajustes → Tu IA.": "I couldn't find {ia} on this computer. Check Settings → Your AI.",
+  "{ia} se demoró demasiado en responder. Inténtalo de nuevo.": "{ia} took too long to answer. Please try again.",
+  "{ia} no respondió. {detalle}": "{ia} didn't answer. {detalle}",
+  "No conozco esa IA.": "I don't know that AI."
+ }
+}

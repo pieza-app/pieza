@@ -1,0 +1,35 @@
+# Pieza «ia» — tu IA, con tu cuenta
+
+Corre la IA que la persona ya tiene instalada (Claude Code, Codex o Gemini/Antigravity) para que la app nunca necesite una cuenta
+ni una llave propia.
+
+```python
+import ia
+texto, error = ia.preguntar("Resume esto: …")                     # sin herramientas
+texto, error = ia.preguntar(pedido, archivos=["foto.jpg"])         # puede leer copias del material
+texto, error = ia.preguntar(pedido, leer=repo, no_leer=[".env*"])  # revisión a fondo, solo lectura
+if error:
+    print(ia.frase(error))   # o manda error["codigo"] + error["valores"] a la interfaz para traducir
+```
+
+| Función | Devuelve |
+|---|---|
+| `lista()` | `[{id, nombre, instalada}]` |
+| `elegida()` / `nombre(ia)` | La IA de la config / su nombre visible |
+| `preguntar(prompt, *, ia, timeout, archivos, leer, no_leer, modelo)` | `(texto, None)` o `("", {codigo, valores})` |
+| `ejecutar(...)` | El `CompletedProcess`, para quien necesite más control |
+| `probar(ia)` | `{ia, ok, codigo?, error?}` |
+
+Garantías (probadas en `pruebas/test_piezas.py`): el pedido nunca va como argumento; Claude corre sin MCP, sin herramientas
+(o solo lectura con material) y sin la memoria de la persona; la IA no ve las variables `<ID>_*` de la app; nunca se quitan
+protecciones para que un CLI viejo funcione.
+
+Acciones que declara: `probarIA` → `iaProbada`, `listaIA` → `iaLista`. Requiere `nucleo`.
+
+## Pasar una app a esta pieza
+
+Las apps hoy tienen su propio `bin/ia.py`, así que `pieza.py agregar ia` no lo pisa y avisa. Para pasarla:
+1. `pieza.py diferencias <app> ia` y revisar si la copia de la app tiene algo mejor (traerlo aquí primero).
+2. `pieza.py actualizar <app> ia --forzar`.
+3. Ajustar quien llama: `preguntar()` ahora devuelve el error como `{codigo, valores}` (antes, un texto). Donde se mostraba el
+   texto, usar `ia.frase(error)`, o mandar el código a la interfaz para traducirlo. `ejecutar_ia` pasó a llamarse `ejecutar`.

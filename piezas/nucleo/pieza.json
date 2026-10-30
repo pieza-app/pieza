@@ -1,0 +1,15 @@
+{
+ "formato": 1,
+ "id": "nucleo",
+ "version": "0.1.0",
+ "nombre": "Núcleo",
+ "descripcion": "Lo que todo script necesita: app.json, carpeta de datos, config validada, escritura atómica y el contrato «el último argumento es la salida».",
+ "origen": "esquema/bin/comun.py + lo mejor de alcancia/bin/datos.py y repasa/bin/datos.py",
+ "requiere": [],
+ "archivos": {
+  "python/nucleo.py": "bin/nucleo.py"
+ },
+ "config": {},
+ "acciones": {},
+ "textos": {}
+}
