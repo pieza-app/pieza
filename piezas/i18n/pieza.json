@@ -10,7 +10,7 @@
   "siempre": true,
   "cuando": "Siempre: toda app sale en español e inglés y deja sumar idiomas."
  },
- "tomar_de": "minuta/ui/app.js (tr) + esquema (T que escapa, traducirDOM) + graba (prioridad config > URL > sistema); en.json unificado {codigo, nombre, bandera, textos}",
+ "tomar_de": "minuta/ui/app.js (tr) + alcancia (T que escapa, Thtml para HTML armado con esc(), Tp en texto plano para toast; rama seguridad/brechas) + esquema (traducirDOM) + graba (prioridad config > URL > sistema); en.json unificado {codigo, nombre, bandera, textos}",
  "requiere": [
   "host-ui"
  ],
