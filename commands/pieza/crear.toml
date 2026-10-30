@@ -1,0 +1,7 @@
+description = "Crear una app abierta con Pieza: entrevista, ficha completa (pantallas, permisos, red) y repos."
+prompt = """
+Activa la skill `lanzar-proyecto-open-source` de la extensión Pieza y sigue su flujo desde la fase 0, con las equivalencias para
+Gemini CLI que trae la skill. La idea de la persona es:
+
+{{args}}
+"""

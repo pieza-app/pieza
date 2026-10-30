@@ -1,4 +1,10 @@
-# Pieza
+<p align="center"><img src="docs/favicon.svg" alt="" width="96" height="96"></p>
+
+<h1 align="center">Pieza</h1>
+
+<p align="center"><b>Framework abierto para apps que viven en tu computador.</b><br>
+<a href="https://pieza-app.github.io/pieza/">Página</a> · <a href="https://pieza-app.github.io/pieza/#empezar">Empezar</a> ·
+<a href="https://github.com/pieza-app/pieza/discussions">Comunidad</a> · <a href="CONTRIBUTING.md">Cómo aportar</a></p>
 
 Piezas probadas para armar apps abiertas que viven en tu computador. Cada pieza resuelve una cosa (tu IA, el idioma, el
 catálogo, las actualizaciones…) y se enchufa en cualquier app de la familia con un comando, en vez de escribirla de cero.
@@ -7,14 +13,14 @@ Las usan [Minuta](https://github.com/minuta-app/minuta), [Graba](https://github.
 [Corta](https://github.com/corta-app/corta), [Alcancía](https://github.com/alcancia-app/alcancia),
 [Repasa](https://github.com/repasa-app/repasa) y [Esquema](https://github.com/esquema-app/esquema).
 
-**Con Claude Code**, instala los flujos (crear una app y revisar aportes):
+**Instala los flujos** (crear una app y revisar aportes) en tu IA y pídele «creemos una app para…»:
 
-```
-/plugin marketplace add pieza-app/pieza
-/plugin install pieza@pieza
-```
+| Claude Code | Gemini CLI | Codex |
+|---|---|---|
+| `/plugin marketplace add pieza-app/pieza`<br>`/plugin install pieza@pieza` | `gemini extensions install https://github.com/pieza-app/pieza --auto-update` | `python3 herramientas/pieza.py skills instalar codex` |
 
-y pídele «creemos una app para…». **Sin Claude Code**, la herramienta funciona sola:
+Con otra IA, que siga [`AGENTS.md`](AGENTS.md). Equivalencias entre herramientas en [docs/otras-ias.md](docs/otras-ias.md).
+**Sin IA**, la herramienta funciona sola:
 
 ```bash
 python3 herramientas/pieza.py catalogo                    # todas las piezas, listas y en camino
@@ -43,3 +49,9 @@ lo que se puede actualizar solo y un issue con los pasos para lo demás ([cómo]
 Y si quieres, el sello: [![Hecho con Pieza](https://pieza-app.github.io/pieza/sello.svg)](https://pieza-app.github.io/pieza/)
 
 Sin dependencias: Python con su biblioteca estándar. Licencia AGPL-3.0.
+
+---
+
+**English:** Pieza is an open framework of tested pieces for apps that live on your computer (your own AI, languages, safe
+updates, a community catalog). Install the flows in Claude Code, Gemini CLI or Codex (table above) and ask for “let's build an
+app for…”. Everything is documented in Spanish; any AI can follow it in your language.

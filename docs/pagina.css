@@ -13,7 +13,7 @@ body{margin:0;background:var(--fondo);color:var(--tinta);font:16px/1.6 var(--let
 a{color:inherit;text-decoration-color:var(--acento);text-underline-offset:4px}
 a:focus-visible,button:focus-visible{outline:3px solid var(--acento);outline-offset:3px;border-radius:6px}
 code,pre{font-family:var(--mono);font-size:14px}
-pre{background:var(--oscuro);color:#f3f0ff;padding:14px 16px;border-radius:12px;overflow-x:auto;margin:12px 0 0}
+pre{background:var(--oscuro);color:#f3f0ff;padding:14px 16px;border-radius:12px;overflow-x:auto;margin:12px 0 0;white-space:pre-wrap;overflow-wrap:anywhere}
 p code,li code{background:var(--tarjeta);border:1px solid var(--linea);border-radius:6px;padding:1px 6px}
 .envoltura{max-width:1080px;margin:0 auto;padding:0 20px}
 .saltar{position:absolute;left:-999px}.saltar:focus{left:16px;top:12px;z-index:9;background:var(--tarjeta);padding:8px 12px}
@@ -61,11 +61,15 @@ h3{margin:0;font-size:18px;letter-spacing:-.01em}
 .piezas .cabeza b{font-size:16px}
 .piezas p{margin:6px 0 0;font-size:14.5px;color:var(--suave)}
 .piezas .datos{margin:10px 0 0;font-size:13px;color:var(--suave);display:grid;gap:2px}
-.caminos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:28px 0 0}
+.caminos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:28px 0 0}
 .caminos article{background:var(--tarjeta);border:1px solid var(--linea);border-radius:var(--radio);padding:22px;min-width:0}
 .caminos p{margin:8px 0 0;color:var(--suave);font-size:15px}
 .enlaces{display:grid;gap:6px;font-weight:600;overflow-wrap:anywhere}
-@media (max-width:900px){.caminos{grid-template-columns:minmax(0,1fr)}}
+@media (max-width:700px){.caminos{grid-template-columns:minmax(0,1fr)}}
+.preguntas{display:grid;gap:10px;margin:24px 0 0}
+.preguntas details{background:var(--tarjeta);border:1px solid var(--linea);border-radius:14px;padding:14px 18px}
+.preguntas summary{font-weight:600;cursor:pointer}
+.preguntas p{margin:10px 0 0;color:var(--suave)}
 .sello-h{margin-top:40px}
 .principios{list-style:none;padding:0;margin:24px 0 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 .principios li{padding:14px 16px 14px 44px;position:relative;background:var(--tarjeta);border:1px solid var(--linea);border-radius:14px}

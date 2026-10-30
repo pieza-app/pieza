@@ -51,18 +51,24 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 - **Pieza nueva o campo nuevo** (pantallas, permisos, red, tareas) → aparece solo en el creador. No hay que tocar la skill.
 - **Paso nuevo en el flujo** o aprendizaje → editar ese SKILL.md, subir «Versión del flujo» y anotarlo en `CHANGELOG.md`.
 - Igual con `skills/revisar-aportes-open-source/`: sus «Aprendizajes» se anotan aquí, no en la copia instalada.
+- **Las skills sirven en cualquier IA.** Nunca nombres una herramienta de una sola IA sin su equivalente: usa la tabla «Si no usas
+  Claude Code» de cada skill (y `docs/otras-ias.md`). Al cambiar la versión, sube igual `.claude-plugin/plugin.json` y
+  `gemini-extension.json` (la prueba lo revisa): así se actualizan Claude Code y Gemini CLI.
 
 ## Mapa
 
 | Ruta | Qué es |
 |---|---|
 | `piezas/<id>/` | Cada pieza: `pieza.json` + código + README |
-| `herramientas/pieza.py` | `listar`, `catalogo`, `ficha`, `iniciar`, `agregar`, `estado`, `actualizar`, `diferencias`, `revisar` |
+| `herramientas/pieza.py` | `listar`, `catalogo`, `ficha`, `iniciar`, `agregar`, `estado`, `actualizar`, `aviso`, `diferencias`, `revisar`, `skills estado/instalar` |
 | `docs/enchufe.md` | El contrato: `pieza.json`, `app.json`, `piezas.json`, reglas de seguridad, host genérico |
 | `docs/catalogo.md` | Qué piezas hay, cuáles faltan y en qué orden, y brechas encontradas en las apps |
 | `plantillas/pieza-al-dia.yml` | El workflow que `iniciar` agrega a cada app para que se entere de las versiones nuevas |
 | `docs/` | La página pública (`index.html`, `pagina.js`, `pagina.css`, `sello.svg`) y los datos que arma `herramientas/pagina.py` |
 | `.claude-plugin/` | El plugin de Claude Code (las skills de `skills/`) y su marketplace |
+| `gemini-extension.json`, `gemini/contexto.md`, `commands/pieza/` | La extensión de Gemini CLI: las mismas skills, su contexto y los comandos `/pieza:crear` y `/pieza:revisar` |
+| `.agents/skills/` | Enlaces a `skills/` para que Codex las vea dentro del repo (`pieza.py skills instalar codex` las deja en `~/.agents/skills`) |
+| `docs/otras-ias.md` | Cómo usar Pieza en Claude Code, Gemini CLI, Codex u otra IA, y la tabla de equivalencias |
 | `skills/` | Los flujos oficiales (las skills), cada uno con su «Versión del flujo»: `lanzar-proyecto-open-source` (crear una app) y `revisar-aportes-open-source` (revisar PRs, con sus aprendizajes) |
 | `pruebas/` | `correr.sh` y `test_piezas.py` (una app ficticia con CLIs de IA falsos) |
 

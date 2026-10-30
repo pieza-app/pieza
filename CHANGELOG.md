@@ -1,5 +1,11 @@
 # Cambios
 
+## 0.4.0 — 2026-10-30
+- Pieza funciona igual en **Gemini CLI** (extensión con las skills y los comandos `/pieza:crear` y `/pieza:revisar`) y en
+  **Codex** (skills en `.agents/skills`; `pieza.py skills instalar codex` las pone al día sin borrar tu configuración local).
+- Las skills traen una tabla de equivalencias entre herramientas; guía en `docs/otras-ias.md`.
+- Página: preguntas frecuentes, cómo empezar con cada IA, imagen para compartir, datos estructurados y sitemap. Logo en el README.
+
 ## 0.3.0 — 2026-10-30
 - Versiones con tipo de cambio (arreglo, mejora, rompe, seguridad) y compatibilidad entre piezas.
 - «Pieza al día»: cada app recibe un PR semanal con lo que se actualiza solo y un issue con los pasos para lo demás.
