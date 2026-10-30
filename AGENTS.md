@@ -48,6 +48,7 @@ copias que, al usarse, comparan su «Versión del flujo» con esta y siguen la m
 adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 - **Pieza nueva o campo nuevo** (pantallas, permisos, red, tareas) → aparece solo en el creador. No hay que tocar la skill.
 - **Paso nuevo en el flujo** o aprendizaje → editar ese SKILL.md, subir «Versión del flujo» y anotarlo en `CHANGELOG.md`.
+- Igual con `skills/revisar-aportes-open-source/`: sus «Aprendizajes» se anotan aquí, no en la copia instalada.
 
 ## Mapa
 
@@ -57,7 +58,7 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 | `herramientas/pieza.py` | `listar`, `catalogo`, `ficha`, `iniciar`, `agregar`, `estado`, `actualizar`, `diferencias`, `revisar` |
 | `docs/enchufe.md` | El contrato: `pieza.json`, `app.json`, `piezas.json`, reglas de seguridad, host genérico |
 | `docs/catalogo.md` | Qué piezas hay, cuáles faltan y en qué orden, y brechas encontradas en las apps |
-| `skills/lanzar-proyecto-open-source/` | El flujo oficial para crear una app nueva (la skill), con su versión |
+| `skills/` | Los flujos oficiales (las skills), cada uno con su «Versión del flujo»: `lanzar-proyecto-open-source` (crear una app) y `revisar-aportes-open-source` (revisar PRs, con sus aprendizajes) |
 | `pruebas/` | `correr.sh` y `test_piezas.py` (una app ficticia con CLIs de IA falsos) |
 
 Licencia AGPL-3.0, como las apps.
