@@ -159,7 +159,7 @@ def ruta_relativa_ok(r):
 #: La forma de cada campo, antes de mirar su contenido (un pieza.json de afuera puede traer cualquier cosa).
 FORMA = {"version": str, "estado": str, "nombre": str, "icono": str, "categoria": str, "descripcion": str, "recomendar": dict,
          "requiere": list, "compatible": dict, "plataformas": list, "pantallas": list, "permisos": dict, "red": list,
-         "red_nota": str, "tareas_persona": list, "archivos": dict, "config": dict, "acciones": dict, "textos": dict,
+         "red_nota": str, "tareas_persona": list, "archivos": dict, "solo": dict, "config": dict, "acciones": dict, "textos": dict,
          "cambios": list, "tomar_de": (str, list), "origen": str}
 
 
@@ -249,6 +249,9 @@ def errores_pieza(pid, p, ids, carpeta="local"):
     for plat in p.get("plataformas", PLATAFORMAS):
         if plat not in PLATAFORMAS:
             e.append(f"plataformas: «{plat}» desconocida")
+    for origen, plats in p.get("solo", {}).items():
+        if origen not in p.get("archivos", {}) or not isinstance(plats, list) or not plats or any(x not in PLATAFORMAS for x in plats):
+            e.append(f"solo: «{origen}» tiene que ser un archivo de la pieza con una lista de plataformas")
     cambios = p.get("cambios", [])
     if p.get("estado", "lista") == "lista":
         if not cambios or cambios[0].get("version") != p.get("version"):
@@ -382,7 +385,10 @@ def copiar(pid, app, forzar=False, lock=None):
     lock = lock or candado(app)
     antes = lock["piezas"].get(pid, {})
     copiados, saltados = {}, []
+    plataformas_app = set((leer(os.path.join(app, "app.json"), {}) or {}).get("plataformas") or PLATAFORMAS)
     for origen, destino in p.get("archivos", {}).items():
+        if not plataformas_app & set(p.get("solo", {}).get(origen, PLATAFORMAS)):
+            continue  # el archivo es de una plataforma que esta app no tiene (app.json → «plataformas»)
         dst = destino_seguro(app, destino)
         anterior = antes.get("archivos", {}).get(destino)
         if os.path.exists(dst) and not forzar:

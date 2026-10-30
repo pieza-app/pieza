@@ -190,6 +190,13 @@ class Herramienta(AppDePrueba):
         self.assertIn("pieza", ajustes["extraKnownMarketplaces"])
         self.assertNotIn("enabledPlugins", ajustes)
 
+    def test_archivos_solo_de_algunas_plataformas(self):
+        ruta = os.path.join(self.app, "app.json")
+        a = json.load(open(ruta)); a["plataformas"] = ["mac"]; json.dump(a, open(ruta, "w"))
+        correr(PIEZA, "agregar", "actualizaciones", self.app)
+        self.assertTrue(os.path.isfile(os.path.join(self.app, "app", "Sources", "PiezaActualizaciones", "Actualizaciones.swift")))
+        self.assertFalse(os.path.exists(os.path.join(self.app, "escritorio", "src", "actualizaciones.js")))
+
     def test_si_pide_mas_no_se_actualiza_solo(self):
         nueva = self._base_con_version("mejora", cambiar={"red": ["ejemplo.com"]})
         e = json.loads(correr(nueva, "estado", self.app, "--json").stdout)

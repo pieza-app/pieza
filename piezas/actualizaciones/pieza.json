@@ -59,5 +59,14 @@
    "seguridad": true,
    "resumen": "Primera versión: Mac (Swift) y Windows/Linux (Electron) con lo mejor de Esquema y Repasa; descarga solo de los Releases del repo, huella SHA-256 obligatoria y nada variable en un guion sin comillas."
   }
- ]
+ ],
+ "solo": {
+  "mac/Actualizaciones.swift": [
+   "mac"
+  ],
+  "escritorio/actualizaciones.js": [
+   "windows",
+   "linux"
+  ]
+ }
 }

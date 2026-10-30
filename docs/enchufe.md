@@ -54,6 +54,7 @@ enruten solos.
 | Campo | Para qué |
 |---|---|
 | `licencia` | **Obligatoria.** Las oficiales, `MPL-2.0` (ver «Licencia»). |
+| `solo` | Opcional: `{origen: [plataformas]}` para un archivo que es de algunas plataformas (el Swift solo en `mac`). Se copia solo si la app tiene alguna de ellas en `app.json` → `plataformas` (sin esa clave, todo). |
 | `icono` | **Obligatorio.** Un `.svg` dentro de la pieza (ver «El ícono»). Es lo que la gente ve en el catálogo, la página y el creador. |
 | `archivos` | Origen en la pieza → destino en la app. `pieza.py agregar` los copia y anota su huella. El destino va dentro de `bin/`, `ui/`, `app/`, `escritorio/`, `movil/`, `docs/`, `pruebas/` o `herramientas/`, nunca en carpetas que empiezan con punto (`.github/`, `.git/`, `.claude/`: ahí un archivo ejecuta código), y sin enlaces. |
 | `requiere` | Otras piezas que se agregan antes, solas. |
@@ -132,7 +133,7 @@ red). Así el catálogo se recorre mirando, no leyendo.
 ## `app.json` (en la raíz de cada app)
 
 ```json
-{"nombre": "Esquema", "id": "esquema", "datos": "sistema",
+{"nombre": "Esquema", "id": "esquema", "datos": "sistema", "plataformas": ["mac", "windows", "linux"],
  "config": {"idioma_ui": ["es", "en"], "tema": ["sistema", "claro", "oscuro"], "bienvenida": "bool", "ia": ["claude", "codex", "gemini"]}}
 ```
 
