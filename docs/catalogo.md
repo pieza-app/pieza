@@ -11,11 +11,11 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 
 | Pieza | Versión | Qué es | Tomada de |
 |---|---|---|---|
-| `nucleo` | 0.1.0 | `app.json`, carpeta de datos, config validada, escritura atómica, `ruta_en`, contrato de scripts | Esquema `bin/comun.py` + Alcancía/Repasa |
-| `ia` | 0.1.0 | La IA de la persona con su cuenta, segura | Esquema `bin/ia.py` + Alcancía (pedido en archivo) + Repasa (material) |
-| `i18n` | 0.1.0 | `T`/`Tp`/`Thtml`/`tr`/`traducirDOM`, paquetes de idioma validados | Minuta (`tr`) + Esquema (`T` que escapa, `traducirDOM`) + Alcancía (`Thtml`) + Graba (prioridad) |
-| `bienvenida` | 0.1.0 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
-| `actualizaciones` | 0.1.0 | Releases del propio repo, `.sha256` obligatorio, Mac (target propio) y Electron | Esquema + Repasa (URL sin puerto ni `..`, PATH fijo, textos que traduce la interfaz) |
+| `nucleo` | 0.3.0 | `app.json`, carpeta de datos, config validada, escritura atómica, `ruta_en`, contrato de scripts | Esquema `bin/comun.py` + Alcancía/Repasa |
+| `ia` | 0.2.0 | La IA de la persona con su cuenta, segura | Esquema `bin/ia.py` + Alcancía (pedido en archivo) + Repasa (material) |
+| `i18n` | 0.1.1 | `T`/`Tp`/`Thtml`/`tr`/`traducirDOM`, paquetes de idioma validados | Minuta (`tr`) + Esquema (`T` que escapa, `traducirDOM`) + Alcancía (`Thtml`) + Graba (prioridad) |
+| `bienvenida` | 0.2.0 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
+| `actualizaciones` | 0.2.0 | Releases del propio repo, `.sha256` obligatorio, Mac (target propio) y Electron | Esquema + Repasa (URL sin puerto ni `..`, PATH fijo, textos que traduce la interfaz) |
 
 ## Por extraer, en este orden
 

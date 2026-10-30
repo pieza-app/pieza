@@ -13,7 +13,7 @@
 //
 //   const { crear } = require("./actualizaciones");
 //   const act = crear({ app, net, repo: "ana-app/ana", nombre: "Ana" });
-//   const r = await act.revisar();          // {hay, version, notas, sinConexion}
+//   const r = await act.revisar();          // {hay, version, notas, sinConexion, texto, valores}
 //   await act.instalar((avance) => ventana.llamar("actualizacionProgreso", avance));
 "use strict";
 const crypto = require("crypto");
@@ -146,7 +146,7 @@ function crear(opciones) {
     get version() { return o.app.getVersion(); },
     instalacion: inst,
 
-    /** {hay, version, notas, sinConexion}. Sin empaquetar (desarrollo) o puesta a mano, nunca hay. */
+    /** {hay, version, notas, sinConexion, texto, valores}. Sin empaquetar (desarrollo) o puesta a mano, nunca hay. */
     async revisar() {
       const i = inst();
       if (!i) return act._fin(false);
@@ -168,9 +168,12 @@ function crear(opciones) {
       return act._fin(true, false, tag, notas);
     },
     _fin(hay, sinConexion = false, version = "", notas = "") {
-      act.disponible = { hay, version: hay ? version : "", notas: hay ? notas : "" };
-      return { ...act.disponible, sinConexion, texto: hay ? TEXTOS.version : "", valores: { v: version } };
+      // `disponible` (lo que la app manda en su estado) tiene la misma forma que la respuesta: la interfaz usa una sola función.
+      act.disponible = { hay, version: hay ? version : "", notas: hay ? notas : "", texto: hay && version ? TEXTOS.version : "", valores: { v: hay ? version : "" } };
+      return { ...act.disponible, sinConexion };
     },
+    /** Un aviso de avance con la forma estándar ({paso, codigo, texto, valores, total}). `codigo` es una clave de TEXTOS. */
+    aviso: (paso, codigo) => aviso(paso, TEXTOS[codigo] ? codigo : "errorArmar"),
 
     /** Descarga, verifica e instala. avisar({paso: "1"|"2"|"3"|"error", codigo, texto, valores, total, pct?}). Al final la
      *  app se cierra y se vuelve a abrir. Quien llama se asegura antes de que no haya nada guardándose. */

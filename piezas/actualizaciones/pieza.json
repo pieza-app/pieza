@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "actualizaciones",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Actualizaciones",
  "icono": "icono.svg",
@@ -53,6 +53,11 @@
  "permisos": {},
  "red_nota": "Solo pregunta a GitHub por la última versión del repo de la app (al abrir y cada 6 horas) y baja de sus Releases; GitHub redirige la descarga a su almacenamiento. Sin datos de la persona.",
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "mejora",
+   "resumen": "Una sola forma para la interfaz: `disponible` (lo que la app manda en su estado) trae `texto` y `valores` igual que la respuesta de revisar, Electron suma `aviso(paso, codigo)` como Swift y Swift deja ver `Actualizaciones.version`. Lo pidió Esquema: su interfaz esperaba un `detalle` ya traducido."
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

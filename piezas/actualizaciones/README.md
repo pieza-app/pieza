@@ -36,14 +36,30 @@ Actualizaciones.revisarCadaRato { r in Ventana.shared.llamar("actualizacionRevis
 ```
 Instalación de desarrollo (build.sh dejó la ruta del checkout en `archivoDesarrollo`): `git pull --ff-only` + `herramientas/empaquetar.sh`.
 
-## Lo que llega a la interfaz
+## Lo que llega a la interfaz (una sola forma)
 - `actualizacionRevisada`: `{hay, version, notas, sinConexion, texto: "Versión {v}", valores: {v}}`.
-- `actualizacionProgreso`: `{paso: "1"|"2"|"3"|"error", codigo, texto, valores: {app}, total: 3, pct?}`.
+- `disponible` (lo que la app manda en su estado, p. ej. `estado.actualizacion`): lo mismo, sin `sinConexion`.
+- `actualizacionProgreso`: `{paso: "1"|"2"|"3"|"error", codigo, texto, valores: {app}, total: 3, pct?}` (`aviso(paso, codigo)`
+  lo arma en Swift y en Electron).
 
-`texto` es la frase en español con marcadores: muéstrala con `T(texto, valores)` (pieza `i18n`). Ningún texto traducido ni nada
-variable entra al guion de instalación sin `comillas()`: el guion solo escribe códigos de paso.
+`texto` es la frase en español con marcadores (una clave de `ui/idiomas`): la interfaz la muestra con `T(texto, valores)` (pieza
+`i18n`); `notas` son las del Release, tal cual (con `esc()`). Nunca se traduce en la app nativa ni se manda un texto ya traducido.
+En una instalación de desarrollo (Mac) `hay` puede venir sin versión: `texto` vacío y en `notas` los commits nuevos.
+
+Si la app suma un aviso propio (por ejemplo «espera a que termine de guardar»), usa la misma forma, con su frase en español en
+`texto` y su inglés en `ui/idiomas/en.json`:
+```js
+llamar("actualizacionProgreso", { paso: "error", codigo: "ocupada", texto: "Espera a que termine de guardar y vuelve a intentarlo.", valores: {} });
+```
+```js
+// En la interfaz:
+const linea = (r) => (r.texto ? T(r.texto, r.valores || {}) : "");
+```
+Ningún texto traducido ni nada variable entra al guion de instalación sin `comillas()`: el guion solo escribe códigos de paso.
 
 ## Pasar una app a esta pieza
-Esquema, Repasa, Alcancía y Corta tienen su `Actualizaciones` con el nombre y el repo escritos adentro. Cambiar las llamadas por
-las de arriba (`revisar` ahora devuelve un diccionario; `instalar` devuelve un código de `textos` en vez de un texto) y mostrar
-`texto` con `T()`. Graba no valida el origen de la descarga: pasarla primero.
+Repasa, Alcancía y Corta tienen su `Actualizaciones` con el nombre y el repo escritos adentro (Esquema ya usa la pieza). Cambiar
+las llamadas por las de arriba (`revisar` ahora devuelve un diccionario; `instalar` devuelve un código de `textos` en vez de un
+texto), mandar `disponible` en el estado tal cual y mostrar `texto` con `T()` (si la interfaz esperaba un `detalle` ya traducido,
+ahora son `texto`/`valores` + `notas`). En Mac, `Actualizaciones.version` sirve para el estado o un User-Agent. Graba no valida
+el origen de la descarga: pasarla primero.

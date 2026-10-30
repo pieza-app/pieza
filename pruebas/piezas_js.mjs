@@ -349,6 +349,11 @@ test("actualizaciones: revisar encuentra la versión y solo acepta URLs propias"
   assert.equal(r.version, "0.2.0");
   assert.equal(r.texto, "Versión {v}");
   assert.match(r.notas, /Ahora puedes algo/);
+  assert.deepEqual(r.valores, { v: "0.2.0" });
+  // Lo que la app manda en su estado tiene la misma forma (sin «sinConexion»): la interfaz usa una sola función.
+  assert.deepEqual(act.disponible, { hay: true, version: "0.2.0", notas: r.notas, texto: "Versión {v}", valores: { v: "0.2.0" } });
+  assert.deepEqual(act.aviso("error", "errorBajar"), { paso: "error", codigo: "errorBajar", texto: Act.TEXTOS.errorBajar, valores: { app: "Ana" }, total: 3 });
+  assert.equal(act.aviso("1", "inventado").codigo, "errorArmar", "un código desconocido no inventa un texto");
   assert.equal(s.pedidos[0], `https://api.github.com/repos/${REPO}/releases/latest`);
   // Sin empaquetar (desarrollo): nunca hay y no sale a internet.
   const dev = Act.crear({ app: { ...s.app, isPackaged: false }, net: s.net, repo: REPO, nombre: "Ana" });
@@ -357,6 +362,7 @@ test("actualizaciones: revisar encuentra la versión y solo acepta URLs propias"
   // Sin conexión
   const sin = Act.crear({ app: s.app, net: { fetch: async () => { throw new Error("x"); } }, repo: REPO, nombre: "Ana", plataforma: "linux", entorno: { APPIMAGE: appimage } });
   assert.deepEqual([(await sin.revisar()).hay, (await sin.revisar()).sinConexion], [false, true]);
+  assert.deepEqual(sin.disponible, { hay: false, version: "", notas: "", texto: "", valores: { v: "" } });
   fs.rmSync(s.tmp, { recursive: true, force: true });
 });
 
