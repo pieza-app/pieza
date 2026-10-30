@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "i18n",
- "version": "0.1.0",
+ "version": "0.1.1",
  "estado": "lista",
  "nombre": "Idiomas",
  "icono": "icono.svg",
@@ -44,6 +44,11 @@
  "permisos": {},
  "red": [],
  "cambios": [
+  {
+   "version": "0.1.1",
+   "tipo": "arreglo",
+   "resumen": "Un texto como «<nombre>.md» ya no se rechaza como HTML; ?idioma= gana sobre la config (vistas previas y pruebas); traducirDOM(raiz, {soloDentro: true}) no toca los atributos de la raíz. Lo encontró Esquema al migrar."
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",
