@@ -1,6 +1,11 @@
 # Cambios
 
-## Sin publicar
+## 0.7.0 — 2026-10-30
+- **Portada en 3D:** piezas con volumen dibujadas con WebGL propio (sin librerías) y una terminal que las enchufa una a una;
+  sin WebGL, con movimiento reducido o en equipos lentos, el rompecabezas de siempre.
+- **5 piezas listas:** `i18n`, `bienvenida` y `actualizaciones` se suman a `nucleo` e `ia`. **Esquema es la primera app que usa
+  Pieza de verdad** (`nucleo`, `ia` e `i18n`); lo que aprendimos al migrarla ya está en las piezas (`i18n` 0.1.1, `nucleo` 0.3.0,
+  `bienvenida` 0.2.0) y en `pieza.py iniciar` (`--plataformas`, `.gitignore` de lista blanca).
 - **Piezas MPL-2.0:** si mejoras una pieza, compartes la mejora; tu app elige su propia licencia. Las herramientas siguen AGPL-3.0.
   Cada pieza dice su `licencia` y las oficiales traen el aviso de la MPL en cada archivo de código.
 - **«Pieza al día» más segura:** ejecuta una versión fija de `pieza.py` (la sube la app a mano), lee las piezas nuevas solo como
