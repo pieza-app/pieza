@@ -33,5 +33,11 @@ clave que la interfaz no puede cambiar (la cambia el host después de algo que h
 
 ### Datos a la vista (`"datos": "visible"`)
 
-Con `"datos": "visible"` la carpeta es `~/<Nombre>/.<id>/` (como Graba: `~/Graba/.graba`), creada en 0700. En las pruebas, `<ID>_DATOS`
-apunta a una carpeta temporal: nunca se tocan los datos reales.
+Con `"datos": "visible"` la carpeta es `~/<Nombre>/.<id>/` (como Graba: `~/Graba/.graba`), creada en 0700 (y `~/<Nombre>` también, si
+la crea `nucleo`). En las pruebas, `<ID>_CARPETA` mueve `~/<Nombre>` entero (o `<ID>_DATOS` solo la interna) a una carpeta
+temporal: nunca se tocan los datos reales. `"privado": true` en `app.json` deja todo archivo que escribe `nucleo` en 0600.
+
+### Una carpeta propia (`"datos": {"carpeta": "~/minuta"}`)
+
+Para una app cuyos datos ya viven en una carpeta suya (en Minuta, `~/minuta` es a la vez el checkout y los datos): `nucleo` la usa
+tal cual, sin crearla ni cambiarle permisos, y solo si está dentro de `~`. `<ID>_DATOS` sigue mandando en las pruebas.

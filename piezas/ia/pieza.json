@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "ia",
- "version": "0.3.0",
+ "version": "0.4.0",
  "estado": "lista",
  "nombre": "Tu IA",
  "icono": "icono.svg",
@@ -84,17 +84,24 @@
   }
  },
  "textos": {
-  "No encontré {ia} en este computador. Revisa en Ajustes → Tu IA.": "I couldn't find {ia} on this computer. Check Settings → Your AI.",
   "{ia} se demoró demasiado en responder. Inténtalo de nuevo.": "{ia} took too long to answer. Please try again.",
   "{ia} no respondió. {detalle}": "{ia} didn't answer. {detalle}",
   "No conozco esa IA.": "I don't know that AI.",
-  "Actualiza {ia} para usarla con {app}: tu versión no conoce las protecciones que necesitamos.": "Update {ia} to use it with {app}: your version doesn't know the protections we need."
+  "Actualiza {ia} para usarla con {app}: tu versión no conoce las protecciones que necesitamos.": "Update {ia} to use it with {app}: your version doesn't know the protections we need.",
+  "No encontré {ia} en este computador.": "I couldn't find {ia} on this computer.",
+  "{ia} no respondió.": "{ia} didn't answer."
  },
  "compatible": {
   "nucleo": ">=0.2.0 <1.0.0"
  },
  "red_nota": "La app no sale a internet: la IA de la persona se conecta a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
  "cambios": [
+  {
+   "version": "0.4.0",
+   "tipo": "mejora",
+   "resumen": "Lo que pidió Repasa: «no la encontré» ya no nombra un menú (cada app dice dónde se elige la IA), y «no respondió» sin detalle tiene su propia frase (código sin_respuesta_corta), así se traduce entera. Las variables de la app se quitan sin importar mayúsculas (Windows).",
+   "seguridad": true
+  },
   {
    "version": "0.3.0",
    "tipo": "mejora",

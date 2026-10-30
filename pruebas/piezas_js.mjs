@@ -61,6 +61,13 @@ test("i18n: T traduce, escapa los valores y nunca vuelve a reemplazar lo que tra
   assert.equal(i.frase("Guardar", {}, "img onerror=x"), "<span data-sin-traducir>Save</span>");
 });
 
+test("i18n: marcadores repetidos se llenan en orden (Minuta: «Paso {n} de {n}»)", () => {
+  const i = PiezaI18n.crear();
+  i.usar({ codigo: "en", nombre: "English", textos: { "Paso {n} de {n}": "Step {n} of {n}" } });
+  assert.equal(i.Tp("Paso {n} de {n}", [2, 8]), "Step 2 of 8");
+  assert.equal(i.tr("Paso 2 de 8"), "Step 2 of 8");
+});
+
 test("i18n: «<nombre>.md» no es HTML, una etiqueta de verdad sí", () => {
   const r = PiezaI18n.validarPaquete({ codigo: "en", nombre: "English", textos: {
     "Se guarda en flujos/<nombre>.md": "Saved in flows/<name>.md", "Mal": "<script>x</script>", "Mal2": "<a href=x>y</a>" } });

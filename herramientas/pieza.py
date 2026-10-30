@@ -2,7 +2,7 @@
 """pieza — enchufa piezas de esta base en una app. Solo biblioteca estándar.
 
   pieza.py listar                         Las piezas disponibles.
-  pieza.py iniciar <app> <id> <Nombre> [--plataformas=mac,windows,linux]
+  pieza.py iniciar <app> <id> <Nombre> [--plataformas=mac,windows,linux] [--datos=sistema|visible]
                                           Crea app.json en una app que aún no lo tiene.
   pieza.py agregar <pieza> <app> [--sin-revisar]
                                           Copia la pieza (y lo que requiere) a la app y la anota en piezas.json. Oficial o de la
@@ -362,17 +362,19 @@ def candado(app):
     return leer(os.path.join(app, "piezas.json"), {"formato": 1, "piezas": {}})
 
 
-def iniciar(app, aid, nombre, plataformas=None):
+def iniciar(app, aid, nombre, plataformas=None, datos="sistema"):
     ruta = os.path.join(app, "app.json")
     if os.path.exists(ruta):
         sys.exit("Esta app ya tiene app.json.")
     if not re.match(r"^[a-z][a-z0-9]{0,30}$", aid):  # la misma regla que nucleo.app()
         sys.exit("El id va en minúsculas, solo letras y números (ej. esquema).")
     plataformas = plataformas or list(PLATAFORMAS)
+    if datos not in ("sistema", "visible"):
+        sys.exit("--datos=sistema (Application Support…) o --datos=visible (~/<Nombre>/.<id>).")
     if any(x not in PLATAFORMAS for x in plataformas):
         sys.exit(f"Plataformas: {', '.join(PLATAFORMAS)}.")
-    escribir(ruta, {"nombre": nombre, "id": aid, "datos": "sistema", "icono": "docs/favicon.svg", "plataformas": plataformas,
-                    "config": {"idioma_ui": ["es", "en"], "tema": ["sistema", "claro", "oscuro"], "bienvenida": "bool"}})
+    escribir(ruta, {"nombre": nombre, "id": aid, "datos": datos, "icono": "docs/favicon.svg", "plataformas": plataformas,
+                    "config": {"idioma_ui": ["es", "en"], "bienvenida": "bool"}})
     print(f"+ {ruta}")
     # Muchas apps tienen un .gitignore de lista blanca («/*» y luego «!…»): ahí app.json y piezas.json quedarían fuera sin aviso.
     gi = os.path.join(app, ".gitignore")
@@ -758,9 +760,10 @@ def main(a):
         return revisar()
     elif orden == "skills" and len(resto) == 2 and resto[0] in ("estado", "instalar"):
         (skills_estado if resto[0] == "estado" else skills_instalar)(resto[1])
-    elif orden == "iniciar" and len([x for x in resto if not x.startswith("--plataformas=")]) == 3:
+    elif orden == "iniciar" and len([x for x in resto if not x.startswith("--")]) == 3:
         plats = next((x.split("=", 1)[1].split(",") for x in resto if x.startswith("--plataformas=")), None)
-        iniciar(*[x for x in resto if not x.startswith("--plataformas=")], plataformas=plats)
+        datos = next((x.split("=", 1)[1] for x in resto if x.startswith("--datos=")), "sistema")
+        iniciar(*[x for x in resto if not x.startswith("--")], plataformas=plats, datos=datos)
     elif orden == "agregar" and len([x for x in resto if x != "--sin-revisar"]) == 2:
         libres = [x for x in resto if x != "--sin-revisar"]
         agregar(libres[0], os.path.abspath(libres[1]), "--sin-revisar" in resto)

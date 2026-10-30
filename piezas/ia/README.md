@@ -47,3 +47,5 @@ Las apps hoy tienen su propio `bin/ia.py`, así que `pieza.py agregar ia` no lo 
   las protecciones. Todo pasa por `ia.py probar`.
 - Lo propio de la app (frases de su asistente, instrucciones fijas como «responde solo con…») va en sus módulos, no en esta copia:
   así `pieza.py actualizar` puede traer las versiones nuevas sin chocar.
+- **Las IA falsas de tus pruebas** tienen que responder `--help` con `--strict-mcp-config` y `--disallowedTools` (como el Claude
+  real): sin eso, desde la 0.3.0 la pieza no corre y responde `actualizar`.

@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "i18n",
- "version": "0.1.1",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Idiomas",
  "icono": "icono.svg",
@@ -44,6 +44,11 @@
  "permisos": {},
  "red": [],
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "mejora",
+   "resumen": "Lo que pidió Minuta: T/Tp/Thtml aceptan una lista de valores que se llenan en orden («Paso {n} de {n}» → «Paso 2 de 8»), y una frase ya armada con un marcador repetido se traduce con cada valor en su lugar."
+  },
   {
    "version": "0.1.1",
    "tipo": "arreglo",

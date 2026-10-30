@@ -1,6 +1,10 @@
 # Cambios
 
 ## Sin publicar
+- **Lo que pidieron Repasa y Minuta al migrar:** `nucleo` 0.6.0 (carpeta visible recién creada en 0700, `<ID>_CARPETA` para las
+  pruebas, `"privado": true` para dejar todo en 0600 y `"datos": {"carpeta": "~/…"}` para una carpeta propia), `ia` 0.4.0 (frases
+  de error sin nombrar menús, «no respondió» sin detalle con su propia frase, variables de la app quitadas sin importar mayúsculas)
+  e `i18n` 0.2.0 (marcadores repetidos en orden). `pieza.py iniciar --datos=visible` y sin `tema` por defecto.
 - **Lo que aprendimos al migrar Graba:** `ia` 0.3.0 (seguridad): los errores traen `plantilla` para que la interfaz los traduzca
   sin copiar la tabla, un CLI sin las protecciones obligatorias pide actualizarse en vez de fallar raro, `--help` sin las variables
   de la app y Claude con `--tools` si lo conoce. `nucleo` 0.4.0: textos de config con su propio máximo y `guardar_config` conserva

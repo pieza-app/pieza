@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "nucleo",
- "version": "0.4.0",
+ "version": "0.6.0",
  "estado": "lista",
  "nombre": "Núcleo",
  "icono": "icono.svg",
@@ -26,6 +26,17 @@
  "acciones": {},
  "textos": {},
  "cambios": [
+  {
+   "version": "0.6.0",
+   "tipo": "mejora",
+   "resumen": "Lo que pidió Minuta: \"datos\": {\"carpeta\": \"~/minuta\"} para una app cuya carpeta de datos es propia (o es también su checkout): se usa tal cual, sin crearla ni cambiarle permisos, y solo dentro de ~."
+  },
+  {
+   "version": "0.5.0",
+   "tipo": "mejora",
+   "seguridad": true,
+   "resumen": "Lo que pidió Repasa: con \"datos\": \"visible\" la carpeta ~/<Nombre> recién creada queda 0700, <ID>_CARPETA la mueve entera en las pruebas, y \"privado\": true en app.json deja todo archivo en 0600 siempre."
+  },
   {
    "version": "0.4.0",
    "tipo": "mejora",
