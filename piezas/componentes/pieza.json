@@ -1,20 +1,20 @@
 {
  "formato": 1,
  "id": "componentes",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Componentes",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "interfaz",
- "descripcion": "Diálogo accesible, avisos (toast) con cola, Ajustes base y Acerca de, con tokens CSS comunes.",
+ "descripcion": "Diálogo accesible, confirmar, avisos (toast) en cola, filas de Tu IA, actualizaciones «Paso n de 3», Acerca de y comentarios a GitHub.",
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre."
  },
- "tomar_de": "esquema/ui (dialogo, toast, filas); unificar tokens CSS (--suave/--linea)",
  "requiere": [
-  "i18n"
+  "i18n",
+  "tema"
  ],
  "plataformas": [
   "mac",
@@ -26,8 +26,89 @@
  "pantallas": [
   {
    "donde": "Ajustes",
+   "nombre": "Tu IA",
+   "que": "probar y elegir la IA de la persona"
+  },
+  {
+   "donde": "Ajustes",
+   "nombre": "Actualizaciones",
+   "que": "buscar, ver las notas e instalar, paso a paso"
+  },
+  {
+   "donde": "Ajustes",
    "nombre": "Acerca de",
    "que": "versión, licencia y enlaces: código, comunidad, cómo aportar"
+  },
+  {
+   "donde": "Ajustes",
+   "nombre": "Enviar comentarios",
+   "que": "contar un error o una idea en un issue de GitHub, sin cuenta en la app"
+  }
+ ],
+ "origen": "esquema/ui (diálogos con aria-modal, data-autofoco, hoja desde abajo a 760 px, filas de IA y de actualización, selector segmentado, giro) + alcancia (IA no instalada con «Cómo instalarla», error de la IA traducido, toast que deja espacio a la barra inferior) + minuta (formulario de comentarios → issue prellenado con versión, idioma y sistema; nunca obligatorio) + corta y esquema (avisos que esperan a que se elija el idioma). Nuevo: el foco queda dentro del diálogo (Tab y Mayús+Tab) y vuelve a donde estaba al cerrarlo aunque la app pinte todo de nuevo, Esc y el velo cierran lo de más arriba, confirmar() devuelve una promesa, los avisos van en cola sin repetirse (antes uno pisaba al otro), la fila de actualización usa la forma de la pieza actualizaciones con una barra de avance, y clases con prefijo pz- para no chocar con las de cada app.",
+ "archivos": {
+  "ui/componentes.js": "ui/componentes.js",
+  "ui/componentes.css": "ui/componentes.css"
+ },
+ "config": {},
+ "acciones": {},
+ "textos": {
+  "Cerrar": "Close",
+  "Aceptar": "OK",
+  "Cancelar": "Cancel",
+  "No encontré ninguna IA instalada. Puedes instalar Claude Code, Codex o Gemini y probarla aquí.": "I couldn't find any AI installed. You can install Claude Code, Codex or Gemini and test it here.",
+  "No está instalada": "Not installed",
+  "Cómo instalarla": "How to install it",
+  "En uso": "In use",
+  "Instalada": "Installed",
+  "Lista": "Ready",
+  "Probando…": "Testing…",
+  "Probar otra vez": "Test again",
+  "Usar y probar": "Use and test",
+  "Lista para usar": "Ready to use",
+  "No respondió.": "It didn't answer.",
+  "Buscando…": "Checking…",
+  "Estás en la última versión": "You're on the latest version",
+  "No pude revisar: sin conexión": "I couldn't check: no connection",
+  "{app} revisa sola si hay versiones nuevas.": "{app} checks for new versions on its own.",
+  "Hay una versión nueva de {app}": "There's a new version of {app}",
+  "Tus datos no se tocan al actualizar.": "Updating never touches your data.",
+  "Actualizar ahora": "Update now",
+  "Buscar actualizaciones": "Check for updates",
+  "Buscar de nuevo": "Check again",
+  "Paso {n} de {total}": "Step {n} of {total}",
+  "No se pudo actualizar": "The update didn't work",
+  "{app} {v} · Gratis y abierto ({licencia}). Sin cuentas ni telemetría.": "{app} {v} · Free and open ({licencia}). No accounts, no telemetry.",
+  "Sitio": "Website",
+  "Código": "Code",
+  "Comunidad": "Community",
+  "Cómo aportar": "How to contribute",
+  "Enviar comentarios": "Send feedback",
+  "Se abre GitHub con tu mensaje listo; lo revisas y lo publicas tú. Es público, así que no incluyas datos personales.": "GitHub opens with your message ready; you review it and post it yourself. It's public, so don't include personal data.",
+  "Tipo": "Type",
+  "Algo falla": "Something's wrong",
+  "Una idea": "An idea",
+  "Otro": "Other",
+  "Título": "Title",
+  "Escribe un título.": "Write a title.",
+  "Cuéntanos": "Tell us",
+  "Incluir la versión de la app, el idioma y el sistema": "Include the app version, language and system",
+  "Ayuda a entender el contexto. Nunca se incluye nada tuyo.": "It helps us understand the context. Nothing of yours is ever included.",
+  "Abrir en GitHub": "Open in GitHub",
+  "Se abrió GitHub: revisa y publica": "GitHub is open: review and post"
+ },
+ "permisos": {},
+ "red": [],
+ "red_nota": "Los comentarios abren github.com en el navegador de la persona; la app no sale a internet.",
+ "compatible": {
+  "i18n": ">=0.2.0 <1.0.0",
+  "tema": ">=0.1.0 <1.0.0"
+ },
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "resumen": "Primera versión: diálogo con foco atrapado y Esc, confirmar con promesa, avisos en cola, filas de Tu IA (probarIA {ia}), fila de actualización «Paso n de 3», Acerca de y comentarios a GitHub. Lo que cada app tenía repetido en su app.js."
   }
  ]
 }

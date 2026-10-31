@@ -1,8 +1,8 @@
 {
  "formato": 1,
  "id": "host-ui",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Puente de la interfaz",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
@@ -12,7 +12,6 @@
   "siempre": true,
   "cuando": "Siempre: es como la interfaz habla con la app."
  },
- "tomar_de": "esquema/ui/app.js (host + simular); unificar probarIA con {ia}",
  "requiere": [],
  "plataformas": [
   "mac",
@@ -20,5 +19,23 @@
   "linux",
   "ios",
   "android"
+ ],
+ "origen": "esquema/ui/app.js (host.enviar con webkit.messageHandlers.<id> → window.<id>Escritorio → simular, window.<App> con las respuestas) + repasa y alcancia (puente del celular, window.<id>Movil) + minuta (mensaje plano y canal propio mientras su app nativa no cambie). Nuevo: un solo crearHost({nombre, global, simular}) con la plataforma leída de window.<ID>_HOST, nombres y acciones validados, los datos viajan como JSON también en la vista previa (la simulación nunca comparte objetos con la interfaz), simular como función o como mapa por acción y simulacionesComunes() (probarIA {ia}, buscarActualizacion, actualizar, abrirEnlace solo https, copiar).",
+ "archivos": {
+  "ui/host.js": "ui/host.js"
+ },
+ "config": {},
+ "acciones": {},
+ "textos": {
+  "En la vista previa no hay nada que actualizar.": "There's nothing to update in the preview."
+ },
+ "permisos": {},
+ "red": [],
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "resumen": "Primera versión: crearHost({nombre, global, simular}) reemplaza el objeto host de cada app; probarIA lleva {ia} en todas (antes Graba, Corta, Repasa, Alcancía y Minuta mandaban {id})."
+  }
  ]
 }

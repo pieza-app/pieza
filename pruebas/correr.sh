@@ -6,6 +6,14 @@ python3 herramientas/pieza.py revisar
 python3 -W ignore -m unittest -q pruebas/test_piezas.py
 # Las piezas de JavaScript (i18n, bienvenida, actualizaciones de Electron): Node, sin dependencias.
 node --test pruebas/piezas_js.mjs > /dev/null || node --test pruebas/piezas_js.mjs
+# Las piezas de interfaz en un navegador de verdad (foco, CSP, tema, contraste, 390 px): Chromium con Playwright, instalado aparte
+# (PLAYWRIGHT=/ruta/a/node_modules/playwright). En GitHub corre en Linux; sin Playwright se avisa y se sigue.
+if PLAYWRIGHT="${PLAYWRIGHT:-playwright}" node -e 'require(process.env.PLAYWRIGHT)' 2>/dev/null; then
+  node pruebas/interfaz.mjs > /dev/null || node pruebas/interfaz.mjs
+  echo "Interfaz: todo bien"
+else
+  echo "Interfaz: sin Playwright, no la pruebo aquí (PLAYWRIGHT=/ruta/a/playwright)"
+fi
 # El flujo oficial tiene que decir su versión: las skills instaladas la comparan para saber si quedaron atrás.
 for s in skills/*/SKILL.md; do
   grep -Eq '^Versión del flujo: [0-9]+$' "$s" || { echo "Falta «Versión del flujo: N» en $s"; exit 1; }

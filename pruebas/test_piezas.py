@@ -640,7 +640,7 @@ class PiezasDeInterfaz(unittest.TestCase):
     def test_textos_completos_y_con_los_mismos_marcadores(self):
         import re
         marcas = lambda t: sorted(re.findall(r"\{(\w+)\}", t))
-        for pid in ("i18n", "bienvenida", "actualizaciones"):
+        for pid in ("i18n", "bienvenida", "actualizaciones", "host-ui", "componentes", "tema"):
             for es, en in self.ficha(pid)["textos"].items():
                 self.assertEqual(marcas(es), marcas(en), f"{pid}: {es}")
         bv = self.ficha("bienvenida")["textos"]
@@ -654,6 +654,39 @@ class PiezasDeInterfaz(unittest.TestCase):
         frases = re.findall(r':\s*"([^"]+)"', bloque)
         self.assertEqual(len(frases), 7)
         self.assertEqual(set(frases) - set(act), set())
+
+    def test_componentes_trae_i18n_y_tema_con_sus_textos(self):
+        r = correr(PIEZA, "agregar", "componentes", self.app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        for ruta in ("ui/i18n.js", "ui/tema.css", "ui/tema.js", "ui/componentes.js", "ui/componentes.css"):
+            self.assertTrue(os.path.isfile(os.path.join(self.app, ruta)), ruta)
+        lock = json.load(open(os.path.join(self.app, "piezas.json")))["piezas"]
+        self.assertEqual(sorted(lock), ["componentes", "i18n", "tema"])
+        config = json.load(open(os.path.join(self.app, "app.json")))["config"]
+        self.assertEqual(config["tema"], ["sistema", "claro", "oscuro"])
+        en = json.load(open(os.path.join(self.app, "ui", "idiomas", "en.json")))["textos"]
+        self.assertEqual(en["Usar y probar"], "Use and test")
+        self.assertEqual(en["Como el sistema"], "Match system")
+        self.assertEqual(correr(PIEZA, "agregar", "host-ui", self.app).returncode, 0)
+        self.assertTrue(os.path.isfile(os.path.join(self.app, "ui", "host.js")))
+
+    def test_cada_frase_visible_de_las_piezas_de_interfaz_tiene_su_ingles(self):
+        import re
+        literal = r'"((?:[^"\\]|\\.)+)"'
+        casos = {
+            "componentes": (self.fuente("componentes", "ui/componentes.js"), r"\b(?:L|F|T|Tp|tr|aviso)\(" + literal),
+            "tema": (self.fuente("tema", "ui/tema.js"), r'\["(?:sistema|claro|oscuro)", ' + literal + r"\]|aria-label=" + literal),
+            "host-ui": (self.fuente("host-ui", "ui/host.js"), r"texto: " + literal),
+        }
+        for pid, (codigo, patron) in casos.items():
+            usados = {x for m in re.finditer(patron, codigo) for x in m.groups() if x}
+            usados -= {"Guardado"}   # solo en el ejemplo del encabezado
+            self.assertTrue(usados, pid)
+            self.assertEqual(usados - set(self.ficha(pid)["textos"]), set(), f"{pid}: frases sin inglés en pieza.json")
+        # Las frases por defecto de confirmar y el título del formulario, que van en variables.
+        comp = self.ficha("componentes")["textos"]
+        for x in ("Aceptar", "Cancelar", "Enviar comentarios", "No respondió.", "No se pudo actualizar"):
+            self.assertIn(x, comp)
 
     def test_el_guion_de_swift_solo_mete_lo_variable_con_comillas(self):
         import re
@@ -673,6 +706,8 @@ class PiezasDeInterfaz(unittest.TestCase):
     def test_nada_de_una_app_adentro(self):
         import re
         for pid, rutas in (("i18n", ["ui/i18n.js"]), ("bienvenida", ["ui/bienvenida.js", "ui/bienvenida.css"]),
-                           ("actualizaciones", ["mac/Actualizaciones.swift", "escritorio/actualizaciones.js"])):
+                           ("actualizaciones", ["mac/Actualizaciones.swift", "escritorio/actualizaciones.js"]),
+                           ("host-ui", ["ui/host.js"]), ("tema", ["ui/tema.js", "ui/tema.css"]),
+                           ("componentes", ["ui/componentes.js", "ui/componentes.css"])):
             for ruta in rutas:
                 self.assertIsNone(re.search(r"esquema|minuta|graba|corta|repasa|alcanc", self.fuente(pid, ruta), re.I), f"{pid}/{ruta}")

@@ -16,14 +16,14 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | `i18n` | 0.2.0 | `T`/`Tp`/`Thtml`/`tr`/`traducirDOM`, paquetes de idioma validados | Minuta (`tr`) + Esquema (`T` que escapa, `traducirDOM`) + Alcancía (`Thtml`) + Graba (prioridad) |
 | `bienvenida` | 0.2.0 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
 | `actualizaciones` | 0.2.0 | Releases del propio repo, `.sha256` obligatorio, Mac (target propio) y Electron | Esquema + Repasa (URL sin puerto ni `..`, PATH fijo, textos que traduce la interfaz) |
+| `host-ui` | 0.1.0 | `crearHost({nombre, global, simular})`: `host.enviar` y `window.<App>.*` iguales en Mac, Electron, celular y navegador; `probarIA {ia}` en todas | Esquema + Repasa/Alcancía (puente del celular) + Minuta (mensaje plano mientras cambia) |
+| `tema` | 0.1.0 | Un solo juego de tokens CSS (`--texto-suave`, `--panel-2`…), pares claro/oscuro con `light-dark()`, selector «Apariencia» | Esquema (`data-tema`) + los nombres comunes de Graba, Corta, Repasa y Alcancía; tabla de nombres viejos → nuevos en su README |
+| `componentes` | 0.1.0 | Diálogo con foco atrapado y Esc, confirmar, avisos en cola, filas de Tu IA, fila de actualización «Paso n de 3», Acerca de, comentarios a GitHub | Esquema + Alcancía («Cómo instalarla», error de la IA traducido) + Minuta (comentarios → issue prellenado) |
 
 ## Por extraer, en este orden
 
 | # | Pieza | Tipo | Tomar de | Sumar de | Notas |
 |---|---|---|---|---|---|
-| 2 | `host-ui` (JS) | UI | Esquema | — | `crearHost({nombre, global, simular})`. Antes: `probarIA` lleva `{ia}` en todas (hoy unas usan `{id}`) |
-| 4 | `componentes` (JS+CSS) | UI | Esquema | Minuta (`formComentarios` → issue en GitHub) | Diálogo, toast con cola, filas de IA, fila de actualización «Paso n de 3». Antes: unificar tokens CSS (`--suave` hoy es texto en 4 apps y fondo en Esquema) |
-| 5 | `tema` (CSS) | UI | Esquema (sistema/claro/oscuro) | — | Con `light-dark()` para no repetir el bloque oscuro |
 | 6 | `catalogo` (Py + host) | Py + (b) | Esquema `plantillas.py` + `Catalogo.swift` + `catalogo.js` | Corta (`origen`, categoría = carpeta) | SHA-256 **obligatorio** (en Corta es opcional) |
 | 7 | `red` (Py) | Py | Alcancía `bin/red.py` | — | HTTPS sin redirecciones, dominios permitidos |
 | 8 | `mcp` (Py) | Py | Alcancía `mcp_servidor.py` + `mcp_conectar.py` | — | `mcp.servir(nombre, …, herramientas)`; conectar a claude/codex/gemini/Claude Desktop |
@@ -49,3 +49,6 @@ Después: la página pública (`docs/`), `revisar_privacidad.sh`, `generar_demo.
 | Graba, Minuta | El vocabulario de whisper va como argumento | `procesar.py` | Por archivo, como Corta |
 | Alcancía, Corta, Repasa | `T()` mete valores sin escapar en HTML | `ui/app.js` | Pieza `i18n` (lista: `T` escapa, `Thtml` para HTML armado) |
 | Todas | Ningún `Procesador` tiene límite de tiempo | Swift/Electron | `limite` en el enchufe (#11, #12) |
+| Graba, Repasa | Rojo y verde bajo AA como texto en claro (Graba también el rojo en oscuro) | `ui/app.css` | Los pares del README de `tema` (mismo tono, un poco más oscuro) |
+| Graba, Corta, Repasa, Alcancía, Minuta | `probarIA` manda `{id}`; Esquema y la pieza `ia`, `{ia}` | `ui/app.js` + `Ventana.swift`/`VisorWeb.swift`, Electron y `movil/host/host.js` | Pieza `host-ui` (lista): `{ia}` en todas |
+| Minuta | Sus ventanas (`.galeria-caja`, `role="dialog"`) no tienen `aria-modal` ni atrapan el foco | `ui/app.js` | Pieza `componentes` (lista) |

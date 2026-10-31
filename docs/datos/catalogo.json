@@ -1,13 +1,13 @@
 {
  "total": 30,
- "listas": 2,
+ "listas": 8,
  "piezas": [
   {
    "id": "actualizaciones",
    "nombre": "Actualizaciones",
    "categoria": "plataforma",
-   "estado": "planeada",
-   "version": "0.0.0",
+   "estado": "lista",
+   "version": "0.2.0",
    "descripcion": "Avisa dentro de la app, descarga solo de los Releases del repo, verifica sha256 y actualiza en un clic sin tocar los datos.",
    "plataformas": [
     "mac",
@@ -18,15 +18,31 @@
     {
      "donde": "Ajustes",
      "nombre": "Actualizaciones",
-     "que": "buscar, ver el avance «Paso n de 3» y «Estás en la última versión»"
+     "que": "buscar, ver el avance «Paso n de 3» y «Estás en la última versión» (la pieza da los datos y los textos; la fila la pinta la app)"
     }
    ],
+   "permisos": {},
    "red": [
-    "github.com",
     "api.github.com",
-    "objects.githubusercontent.com"
+    "github.com",
+    "objects.githubusercontent.com",
+    "release-assets.githubusercontent.com"
    ],
+   "red_nota": "Solo pregunta a GitHub por la última versión del repo de la app (al abrir y cada 6 horas) y baja de sus Releases; GitHub redirige la descarga a su almacenamiento. Sin datos de la persona.",
    "requiere": [],
+   "cambios": [
+    {
+     "version": "0.2.0",
+     "tipo": "mejora",
+     "resumen": "Una sola forma para la interfaz: `disponible` (lo que la app manda en su estado) trae `texto` y `valores` igual que la respuesta de revisar, Electron suma `aviso(paso, codigo)` como Swift y Swift deja ver `Actualizaciones.version`. Lo pidió Esquema: su interfaz esperaba un `detalle` ya traducido."
+    },
+    {
+     "version": "0.1.0",
+     "tipo": "inicial",
+     "seguridad": true,
+     "resumen": "Primera versión: Mac (Swift) y Windows/Linux (Electron) con lo mejor de Esquema y Repasa; descarga solo de los Releases del repo, huella SHA-256 obligatoria y nada variable en un guion sin comillas."
+    }
+   ],
    "siempre": true,
    "cuando": "Siempre en escritorio.",
    "icono": "iconos/piezas/actualizaciones.svg",
@@ -36,8 +52,8 @@
    "id": "bienvenida",
    "nombre": "Bienvenida",
    "categoria": "interfaz",
-   "estado": "planeada",
-   "version": "0.0.0",
+   "estado": "lista",
+   "version": "0.2.0",
    "descripcion": "Primer uso por pasos, con el idioma SIEMPRE primero; cada pieza puede sumar su paso.",
    "plataformas": [
     "mac",
@@ -58,8 +74,28 @@
      "que": "último paso, qué hacer primero"
     }
    ],
+   "permisos": {},
+   "red": [],
    "requiere": [
     "i18n"
+   ],
+   "compatible": {
+    "i18n": ">=0.1.0 <1.0.0"
+   },
+   "cambios": [
+    {
+     "version": "0.2.0",
+     "tipo": "rompe",
+     "resumen": "Colores con variables propias (--bv-acento, --bv-linea, --bv-panel, --bv-texto-suave) y «Lo hago después» opcional por paso (saltable: false). Lo pidió Esquema: su --suave es un fondo.",
+     "migrar": [
+      "En el CSS de la app define --bv-acento, --bv-linea, --bv-panel y --bv-texto-suave con tus colores (por ejemplo --bv-texto-suave: var(--texto-suave))."
+     ]
+    },
+    {
+     "version": "0.1.0",
+     "tipo": "inicial",
+     "resumen": "Primera versión: el idioma primero (bilingüe, teclas 1/2, el del sistema sugerido y con el foco), pasos que suma cada app o pieza y avisos que esperan."
+    }
    ],
    "siempre": true,
    "cuando": "Siempre.",
@@ -220,9 +256,9 @@
    "id": "componentes",
    "nombre": "Componentes",
    "categoria": "interfaz",
-   "estado": "planeada",
-   "version": "0.0.0",
-   "descripcion": "Diálogo accesible, avisos (toast) con cola, Ajustes base y Acerca de, con tokens CSS comunes.",
+   "estado": "lista",
+   "version": "0.1.0",
+   "descripcion": "Diálogo accesible, confirmar, avisos (toast) en cola, filas de Tu IA, actualizaciones «Paso n de 3», Acerca de y comentarios a GitHub.",
    "plataformas": [
     "mac",
     "windows",
@@ -233,12 +269,42 @@
    "pantallas": [
     {
      "donde": "Ajustes",
+     "nombre": "Tu IA",
+     "que": "probar y elegir la IA de la persona"
+    },
+    {
+     "donde": "Ajustes",
+     "nombre": "Actualizaciones",
+     "que": "buscar, ver las notas e instalar, paso a paso"
+    },
+    {
+     "donde": "Ajustes",
      "nombre": "Acerca de",
      "que": "versión, licencia y enlaces: código, comunidad, cómo aportar"
+    },
+    {
+     "donde": "Ajustes",
+     "nombre": "Enviar comentarios",
+     "que": "contar un error o una idea en un issue de GitHub, sin cuenta en la app"
     }
    ],
+   "permisos": {},
+   "red": [],
+   "red_nota": "Los comentarios abren github.com en el navegador de la persona; la app no sale a internet.",
    "requiere": [
-    "i18n"
+    "i18n",
+    "tema"
+   ],
+   "compatible": {
+    "i18n": ">=0.2.0 <1.0.0",
+    "tema": ">=0.1.0 <1.0.0"
+   },
+   "cambios": [
+    {
+     "version": "0.1.0",
+     "tipo": "inicial",
+     "resumen": "Primera versión: diálogo con foco atrapado y Esc, confirmar con promesa, avisos en cola, filas de Tu IA (probarIA {ia}), fila de actualización «Paso n de 3», Acerca de y comentarios a GitHub. Lo que cada app tenía repetido en su app.js."
+    }
    ],
    "siempre": true,
    "cuando": "Siempre.",
@@ -448,8 +514,8 @@
    "id": "host-ui",
    "nombre": "Puente de la interfaz",
    "categoria": "interfaz",
-   "estado": "planeada",
-   "version": "0.0.0",
+   "estado": "lista",
+   "version": "0.1.0",
    "descripcion": "host.enviar(accion, datos) y las respuestas window.<App>.*, igual en Mac, Electron, móvil y navegador (modo demo).",
    "plataformas": [
     "mac",
@@ -458,7 +524,16 @@
     "ios",
     "android"
    ],
+   "permisos": {},
+   "red": [],
    "requiere": [],
+   "cambios": [
+    {
+     "version": "0.1.0",
+     "tipo": "inicial",
+     "resumen": "Primera versión: crearHost({nombre, global, simular}) reemplaza el objeto host de cada app; probarIA lleva {ia} en todas (antes Graba, Corta, Repasa, Alcancía y Minuta mandaban {id})."
+    }
+   ],
    "siempre": true,
    "cuando": "Siempre: es como la interfaz habla con la app.",
    "icono": "iconos/piezas/host-ui.svg",
@@ -468,8 +543,8 @@
    "id": "i18n",
    "nombre": "Idiomas",
    "categoria": "interfaz",
-   "estado": "planeada",
-   "version": "0.0.0",
+   "estado": "lista",
+   "version": "0.2.0",
    "descripcion": "Traducciones con la frase en español como clave, plantillas {n}, escape seguro y traducir la página entera.",
    "plataformas": [
     "mac",
@@ -485,8 +560,26 @@
      "que": "cambiar el idioma de la app"
     }
    ],
-   "requiere": [
-    "host-ui"
+   "permisos": {},
+   "red": [],
+   "requiere": [],
+   "cambios": [
+    {
+     "version": "0.2.0",
+     "tipo": "mejora",
+     "resumen": "Lo que pidió Minuta: T/Tp/Thtml aceptan una lista de valores que se llenan en orden («Paso {n} de {n}» → «Paso 2 de 8»), y una frase ya armada con un marcador repetido se traduce con cada valor en su lugar."
+    },
+    {
+     "version": "0.1.1",
+     "tipo": "arreglo",
+     "resumen": "Un texto como «<nombre>.md» ya no se rechaza como HTML; ?idioma= gana sobre la config (vistas previas y pruebas); traducirDOM(raiz, {soloDentro: true}) no toca los atributos de la raíz. Lo encontró Esquema al migrar."
+    },
+    {
+     "version": "0.1.0",
+     "tipo": "inicial",
+     "seguridad": true,
+     "resumen": "Primera versión: T(), Tp(), Thtml(), tr() y traducirDOM() de las apps en un solo archivo; valida las traducciones que vienen de afuera y escapa los valores (en Alcancía, Corta y Repasa T() no los escapaba)."
+    }
    ],
    "siempre": true,
    "cuando": "Siempre: toda app sale en español e inglés y deja sumar idiomas.",
@@ -498,7 +591,7 @@
    "nombre": "Tu IA",
    "categoria": "ia",
    "estado": "lista",
-   "version": "0.1.0",
+   "version": "0.5.0",
    "descripcion": "La IA de la persona (Claude Code, Codex o Gemini) con su propia cuenta: sin herramientas, sin su memoria, el pedido nunca como argumento, material y revisión a fondo de solo lectura.",
    "plataformas": [
     "mac",
@@ -522,9 +615,32 @@
     "nucleo"
    ],
    "compatible": {
-    "nucleo": ">=0.1.0 <1.0.0"
+    "nucleo": ">=0.2.0 <1.0.0"
    },
    "cambios": [
+    {
+     "version": "0.5.0",
+     "tipo": "mejora",
+     "resumen": "Lo que pidió Corta: \"ia\": {\"ayuda\": \"Revisa en Ajustes → Tu IA.\"} en app.json suma a los errores no_instalada y actualizar la frase de la app (campo «ayuda», que la interfaz traduce con su en.json) sin copiar la tabla de errores. Para saber qué IA están instaladas, el host usa ia.py lista (acción listaIA) en vez de buscarlas por su cuenta."
+    },
+    {
+     "version": "0.4.0",
+     "tipo": "mejora",
+     "resumen": "Lo que pidió Repasa: «no la encontré» ya no nombra un menú (cada app dice dónde se elige la IA), y «no respondió» sin detalle tiene su propia frase (código sin_respuesta_corta), así se traduce entera. Las variables de la app se quitan sin importar mayúsculas (Windows).",
+     "seguridad": true
+    },
+    {
+     "version": "0.3.0",
+     "tipo": "mejora",
+     "seguridad": true,
+     "resumen": "Lo que pidió Graba al migrar: los errores traen «plantilla» (la interfaz hace Tp(plantilla, valores) sin copiar la tabla ERRORES); un CLI sin las protecciones obligatorias da el error «actualizar» claro en vez de su propio error; --help se pregunta sin las variables de la app y otra vez si el CLI cambia; Claude con --tools si lo conoce (las demás herramientas ni se cargan)."
+    },
+    {
+     "version": "0.2.0",
+     "tipo": "arreglo",
+     "resumen": "Seguridad: la IA siempre corre en una carpeta temporal; la carpeta a revisar solo se agrega para leer (su configuración, hooks y AGENTS.md ya no se cargan). Claude sin configuración de proyecto (--setting-sources user) si lo conoce. Detectar opciones del CLI exige la opción exacta.",
+     "seguridad": true
+    },
     {
      "version": "0.1.0",
      "tipo": "inicial",
@@ -708,7 +824,7 @@
    "nombre": "Núcleo",
    "categoria": "base",
    "estado": "lista",
-   "version": "0.1.0",
+   "version": "0.7.0",
    "descripcion": "Lo que todo script necesita: app.json, carpeta de datos, config validada, escritura atómica y el contrato «el último argumento es la salida».",
    "plataformas": [
     "mac",
@@ -717,6 +833,38 @@
    ],
    "requiere": [],
    "cambios": [
+    {
+     "version": "0.7.0",
+     "tipo": "mejora",
+     "resumen": "Lo que pidió Corta: un texto de config con patrón ({\"tipo\": \"texto\", \"patron\": \"auto|[a-z]{2,3}\"}): el valor entero tiene que calzar, así un valor que va a otro programa (el idioma del transcriptor) no necesita validarse a mano."
+    },
+    {
+     "version": "0.6.0",
+     "tipo": "mejora",
+     "resumen": "Lo que pidió Minuta: \"datos\": {\"carpeta\": \"~/minuta\"} para una app cuya carpeta de datos es propia (o es también su checkout): se usa tal cual, sin crearla ni cambiarle permisos, y solo dentro de ~."
+    },
+    {
+     "version": "0.5.0",
+     "tipo": "mejora",
+     "seguridad": true,
+     "resumen": "Lo que pidió Repasa: con \"datos\": \"visible\" la carpeta ~/<Nombre> recién creada queda 0700, <ID>_CARPETA la mueve entera en las pruebas, y \"privado\": true en app.json deja todo archivo en 0600 siempre."
+    },
+    {
+     "version": "0.4.0",
+     "tipo": "mejora",
+     "resumen": "Lo que pidió Graba: un texto de config con su propio máximo ({\"tipo\": \"texto\", \"max\": 200000}) y guardar_config conserva las claves que no conoce (las que escribe el host)."
+    },
+    {
+     "version": "0.3.0",
+     "tipo": "mejora",
+     "resumen": "Claves de config que la interfaz nunca puede cambiar (\"interfaz\": false en app.json) y escribir_atomico con modo DOCUMENTO para archivos de la persona (lo pidió Esquema al migrar)."
+    },
+    {
+     "version": "0.2.0",
+     "tipo": "arreglo",
+     "resumen": "Seguridad: la app se reconoce primero por el app.json junto al script; la variable <ID>_RECURSOS solo vale si su prefijo es el id de esa app (otra app ya no puede hacerse pasar por esta). El id solo acepta a-z y 0-9.",
+     "seguridad": true
+    },
     {
      "version": "0.1.0",
      "tipo": "inicial",
@@ -802,9 +950,9 @@
    "id": "tema",
    "nombre": "Tema claro y oscuro",
    "categoria": "interfaz",
-   "estado": "planeada",
-   "version": "0.0.0",
-   "descripcion": "Sistema, claro u oscuro, con light-dark() y sin repetir colores.",
+   "estado": "lista",
+   "version": "0.1.0",
+   "descripcion": "Sistema, claro u oscuro con un solo juego de tokens CSS y light-dark(): cada color se escribe una vez.",
    "plataformas": [
     "mac",
     "windows",
@@ -819,8 +967,15 @@
      "que": "sistema, claro u oscuro"
     }
    ],
-   "requiere": [
-    "componentes"
+   "permisos": {},
+   "red": [],
+   "requiere": [],
+   "cambios": [
+    {
+     "version": "0.1.0",
+     "tipo": "inicial",
+     "resumen": "Primera versión: tokens comunes con light-dark() y respaldo para navegadores sin él, selector «Apariencia» y data-tema en <html>. La tabla para pasar de los nombres de cada app está en el README."
+    }
    ],
    "siempre": true,
    "cuando": "Siempre.",

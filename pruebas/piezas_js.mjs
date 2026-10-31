@@ -470,3 +470,286 @@ test("actualizaciones: los textos de Electron y Swift son los mismos", () => {
   const swift = fs.readFileSync(path.join(BASE, "piezas/actualizaciones/mac/Actualizaciones.swift"), "utf8");
   for (const [k, v] of Object.entries(Act.TEXTOS)) assert.ok(swift.includes(`"${k}": "${v}"`), k);
 });
+
+// ───────────── host-ui ─────────────
+const PiezaHost = require(path.join(BASE, "piezas/host-ui/ui/host.js"));
+function ventanaFalsa(extra = {}) {
+  return { console: { warn() {} }, document: { documentElement: { dataset: {} } }, ...extra };
+}
+
+test("host-ui: en el navegador responde simular (mapa o función) con copias JSON", async () => {
+  const v = ventanaFalsa();
+  const vistos = [];
+  const host = PiezaHost.crearHost({ nombre: "ana", global: "Ana", ventana: v, simular: {
+    ...PiezaHost.simulacionesComunes({ espera: 0 }),
+    guardar: (d, c) => { d.texto = "cambiado"; c.responder("guardado", { ok: true, d }); },
+  } });
+  assert.equal(host.plataforma, "web");
+  assert.equal(host.esWeb, true);
+  assert.equal(v.document.documentElement.dataset.host, "web");
+  host.responder({ guardado: (r) => vistos.push(r), iaProbada: (r) => vistos.push(r), __proto__: () => {} });
+  assert.equal(v.Ana.guardado !== undefined, true, "queda en window.Ana");
+  const datos = { texto: "original", raro: () => 1 };
+  host.enviar("guardar", datos);
+  assert.equal(datos.texto, "original", "la simulación recibe una copia, como por el puente de verdad");
+  assert.deepEqual(vistos[0], { ok: true, d: { texto: "cambiado" } });
+  host.enviar("probarIA", { ia: "claude" });
+  await esperar(5);
+  assert.deepEqual(vistos[1], { ia: "claude", ok: true });
+  assert.equal(host.enviar("noSimulada", {}), undefined, "una acción sin simular no hace nada");
+  const funcion = PiezaHost.crearHost({ nombre: "ana", global: "Ana", ventana: ventanaFalsa(), simular: (a, d, c) => [a, d, typeof c.responder] });
+  assert.deepEqual(funcion.enviar("listo", [1, 2]), ["listo", {}, "function"], "datos que no son objeto viajan como {}");
+});
+
+test("host-ui: Mac, Electron y celular reciben {accion, datos}; Minuta puede seguir plano", () => {
+  const mensajes = [];
+  const mac = ventanaFalsa({ ANA_HOST: "mac", webkit: { messageHandlers: { ana: { postMessage: (m) => mensajes.push(["mac", m]) } } } });
+  PiezaHost.crearHost({ nombre: "ana", global: "Ana", ventana: mac }).enviar("probarIA", { ia: "codex" });
+  const win = ventanaFalsa({ ANA_HOST: "windows", anaEscritorio: { enviar: (m) => mensajes.push(["win", m]) } });
+  const h = PiezaHost.crearHost({ nombre: "ana", global: "Ana", ventana: win });
+  assert.equal(h.esEscritorio, true);
+  h.enviar("config", { tema: "oscuro" });
+  const cel = ventanaFalsa({ ANA_HOST: "movil", anaMovil: { enviar: (m) => mensajes.push(["movil", m]) } });
+  PiezaHost.crearHost({ nombre: "ana", global: "Ana", ventana: cel }).enviar("listo");
+  const minuta = ventanaFalsa({ ANA_HOST: "linux", anaHost: { enviar: (m) => mensajes.push(["plano", m]) } });
+  PiezaHost.crearHost({ nombre: "ana", global: "Ana", ventana: minuta, plano: true, canales: { escritorio: "anaHost" } }).enviar("probarIA", { ia: "claude", accion: "otra" });
+  assert.deepEqual(mensajes, [
+    ["mac", { accion: "probarIA", datos: { ia: "codex" } }],
+    ["win", { accion: "config", datos: { tema: "oscuro" } }],
+    ["movil", { accion: "listo", datos: {} }],
+    ["plano", { ia: "claude", accion: "probarIA" }],
+  ]);
+  const raro = ventanaFalsa({ ANA_HOST: "<script>" });
+  assert.equal(PiezaHost.crearHost({ nombre: "ana", global: "Ana", ventana: raro }).plataforma, "web", "una plataforma desconocida es la vista previa");
+});
+
+test("host-ui: nombres, acciones y respuestas validados", () => {
+  for (const o of [{ nombre: "Ana", global: "Ana" }, { nombre: "ana app", global: "Ana" }, { nombre: "ana", global: "ana" }, { nombre: "ana", global: "A.b" },
+    { nombre: "ana", global: "Ana", canales: { escritorio: "x;y" } }]) assert.throws(() => PiezaHost.crearHost({ ...o, ventana: ventanaFalsa() }), JSON.stringify(o));
+  const host = PiezaHost.crearHost({ nombre: "ana", global: "Ana", ventana: ventanaFalsa(), simular: {} });
+  assert.throws(() => host.enviar("../x"));
+  assert.throws(() => host.enviar(""));
+  assert.equal(host.llamar("__proto__", {}), undefined);
+  assert.equal(host.llamar("noExiste", {}), undefined);
+  const abiertas = [];
+  const v = ventanaFalsa({ open: (...a) => abiertas.push(a) });
+  const h2 = PiezaHost.crearHost({ nombre: "ana", global: "Ana", ventana: v, simular: PiezaHost.simulacionesComunes() });
+  h2.enviar("abrirEnlace", { url: "javascript:alert(1)" });
+  h2.enviar("abrirEnlace", { url: "http://ejemplo.cl" });
+  h2.enviar("abrirEnlace", { url: "https://ejemplo.cl/a" });
+  assert.deepEqual(abiertas, [["https://ejemplo.cl/a", "_blank", "noopener"]]);
+  h2.cancelarPendientes();
+});
+
+// ───────────── tema ─────────────
+const PiezaTema = require(path.join(BASE, "piezas/tema/ui/tema.js"));
+function temaFalso(oscuroSistema = false) {
+  const guardados = [], cambios = [];
+  const escuchas = [];
+  const ventana = { matchMedia: () => ({ matches: oscuroSistema, addEventListener: (e, f) => escuchas.push(f), removeEventListener() {} }), location: { search: "" } };
+  const documento = { documentElement: { dataset: {} } };
+  const tema = PiezaTema.crear({ ventana, documento, guardar: (v) => guardados.push(v), alCambiar: (r, v) => cambios.push([r, v]) });
+  return { tema, documento, guardados, cambios, escuchas };
+}
+test("tema: aplicar pone o quita data-tema; un valor raro es «sistema»", () => {
+  const { tema, documento, cambios } = temaFalso(true);
+  assert.equal(tema.aplicar("oscuro"), "oscuro");
+  assert.equal(documento.documentElement.dataset.tema, "oscuro");
+  assert.equal(tema.aplicar("claro"), "claro");
+  assert.equal(tema.resuelto(), "claro");
+  assert.equal(tema.aplicar("morado"), "sistema");
+  assert.equal("tema" in documento.documentElement.dataset, false);
+  assert.equal(tema.resuelto(), "oscuro", "el sistema está oscuro");
+  assert.deepEqual(cambios.at(-1), ["oscuro", "sistema"]);
+});
+test("tema: elegir sigue ?tema= > config > sistema, y el selector guarda", () => {
+  const { tema, guardados, escuchas } = temaFalso();
+  assert.equal(tema.elegir({ config: "oscuro", url: null }), "oscuro");
+  assert.equal(tema.elegir({ config: "oscuro", url: "claro" }), "claro");
+  assert.equal(tema.elegir({ config: "<x>", url: "nada" }), "sistema");
+  assert.equal(tema.elegir({ config: "claro" }), "claro", "sin ?tema= en la dirección");
+  tema.aplicar("claro");
+  const h = tema.selectorHTML();
+  assert.match(h, /class="pz-seg" role="group" aria-label="Apariencia"/);
+  assert.match(h, /data-pz-tema="claro" aria-pressed="true">Claro</);
+  assert.match(h, /data-pz-tema="sistema" aria-pressed="false">Como el sistema</);
+  const clic = (v) => ({ preventDefault() {}, target: { closest: (s) => (s === "[data-pz-tema]" && v ? { getAttribute: () => v } : null) } });
+  assert.equal(tema.manejarClic(clic("oscuro")), true);
+  assert.equal(tema.manejarClic(clic("rojo")), false);
+  assert.equal(tema.manejarClic(clic(null)), false);
+  assert.deepEqual(guardados, ["oscuro"]);
+  const vistos = [];
+  tema.escuchar((r) => vistos.push(r));
+  escuchas[0]();
+  assert.deepEqual(vistos, [], "con un tema elegido el cambio del sistema no importa");
+  tema.aplicar("sistema"); escuchas[0]();
+  assert.deepEqual(vistos, ["claro"]);
+});
+test("tema: cada token tiene su par y el respaldo sin light-dark() los nombra todos", () => {
+  const css = fs.readFileSync(path.join(BASE, "piezas/tema/ui/tema.css"), "utf8");
+  const tokens = [...css.matchAll(/--([a-z0-9-]+): light-dark\(var\(--\1-claro\), var\(--\1-oscuro\)\)/g)].map((m) => m[1]);
+  assert.ok(tokens.length >= 12, tokens.join());
+  const respaldo = css.slice(css.indexOf("@supports not"));
+  for (const t of tokens) {
+    assert.match(css, new RegExp(`--${t}-claro:`), t);
+    assert.match(css, new RegExp(`--${t}-oscuro:`), t);
+    for (const modo of ["claro", "oscuro"]) assert.equal((respaldo.match(new RegExp(`--${t}: var\\(--${t}-${modo}\\)`, "g")) || []).length, modo === "claro" ? 1 : 2, `${t} ${modo}`);
+  }
+});
+
+// ───────────── componentes ─────────────
+const PiezaComponentes = require(path.join(BASE, "piezas/componentes/ui/componentes.js"));
+function componentes(extra = {}) {
+  const i18n = i18nEn();
+  i18n.usar({ codigo: "en", nombre: "English", textos: { ...EN.textos, "Paso {n} de {total}": "Step {n} of {total}", "Hay una versión nueva de {app}": "There's a new version of {app}" } });
+  const enviados = [];
+  let pintadas = 0;
+  const host = { plataforma: "mac", enviar: (a, d) => enviados.push([a, d]) };
+  const ui = PiezaComponentes.crear({ i18n, host, app: "Ana <b>", repo: "ana-app/ana", pintar: () => pintadas++, documento: null, ventana: { navigator: { userAgent: "Mac OS X 15_2" } }, ...extra });
+  return { ui, enviados, pintadas: () => pintadas, i18n };
+}
+const clicEn = (attrs) => ({ preventDefault() {}, target: {
+  closest: (sel) => (Object.keys(attrs).some((a) => sel.includes(`[${a}]`)) ? { hasAttribute: (a) => a in attrs, getAttribute: (a) => attrs[a] } : null),
+  matches: () => false } });
+
+test("componentes: filas de IA escapan, prueban con {ia} y muestran el error traducido", () => {
+  const { ui, enviados } = componentes();
+  const ias = [{ id: "claude", nombre: "<img src=x onerror=alert(1)>", instalada: true }, { id: "codex", nombre: "Codex", instalada: false }, { id: "../mal", nombre: "x", instalada: true }];
+  let h = ui.filasIA({ ias, elegida: "claude", guia: "https://ana-app.github.io/ana/ia.html" });
+  assert.match(h, /&lt;img src=x onerror=alert\(1\)&gt;/);
+  assert.doesNotMatch(h, /<img/);
+  assert.doesNotMatch(h, /\.\.\/mal/);
+  assert.match(h, /data-pz-enlace="https:\/\/ana-app.github.io\/ana\/ia.html#codex">Cómo instalarla/);
+  assert.match(h, />Probar otra vez</);
+  assert.equal(ui.manejarClic(clicEn({ "data-pz-probar-ia": "codex" })), true);
+  assert.deepEqual(enviados.at(-1), ["probarIA", { ia: "codex" }]);
+  assert.match(ui.filasIA({ ias }), /aria-label="Probando…"/);
+  ui.iaProbada({ ia: "claude", ok: false, plantilla: "No encontré {ia} en este computador.", valores: { ia: "<Claude>" }, ayuda: "Revisa en Ajustes → Tu IA." });
+  h = ui.filasIA({ ias });
+  assert.match(h, /pz-error-texto" data-sin-traducir>No encontré &lt;Claude&gt; en este computador\. Revisa en Ajustes → Tu IA\./);
+  ui.iaProbada({ id: "claude", ok: true });   // la forma vieja también se entiende
+  assert.deepEqual(enviados.at(-1), ["config", { ia: "claude" }]);
+  assert.match(ui.filasIA({ ias, elegida: "claude" }), /class="pz-ok">Lista</);
+  assert.equal(ui.probarIA("rm -rf"), false);
+  assert.match(ui.filasIA({ ias: [] }), /No encontré ninguna IA instalada/);
+});
+
+test("componentes: la fila de actualización sigue la forma de la pieza actualizaciones", () => {
+  const { ui, enviados } = componentes();
+  assert.match(ui.filaActualizacion(), /<span data-sin-traducir>Ana &lt;b&gt; checks|revisa sola/);
+  assert.equal(ui.manejarClic(clicEn({ "data-pz-act": "buscar" })), true);
+  assert.deepEqual(enviados.at(-1), ["buscarActualizacion", {}]);
+  assert.match(ui.filaActualizacion(), /Buscando…[\s\S]*disabled/);
+  ui.actualizacionRevisada({ hay: false, sinConexion: true });
+  assert.match(ui.filaActualizacion(), /No pude revisar: sin conexión/);
+  ui.actualizacionRevisada({ hay: true, version: "0.2.0", notas: "• <script>x</script>", texto: "Versión {v}", valores: { v: "0.2.0" } });
+  let h = ui.filaActualizacion();
+  assert.match(h, /There&#39;s a new version of Ana &lt;b&gt;/);
+  assert.match(h, /&lt;script&gt;x&lt;\/script&gt;/);
+  assert.match(h, /data-pz-act="instalar">Actualizar ahora/);
+  ui.manejarClic(clicEn({ "data-pz-act": "instalar" }));
+  assert.deepEqual(enviados.at(-1), ["actualizar", {}]);
+  ui.actualizacionProgreso({ paso: "2", texto: "Preparando la versión nueva…", valores: {}, total: 3, pct: 140 });
+  h = ui.filaActualizacion();
+  assert.match(h, /Step 2 of 3/);
+  assert.match(h, / · 100%/);
+  assert.match(h, /<progress class="pz-progreso" max="300" value="200">/);
+  ui.actualizacionProgreso({ paso: "error", codigo: "errorBajar", texto: "No pude descargar la versión nueva. Revisa tu conexión e intenta de nuevo.", valores: {} });
+  h = ui.filaActualizacion();
+  assert.match(h, /pz-error-texto/);
+  assert.match(h, /data-pz-act="buscar">Buscar de nuevo/);
+  assert.doesNotMatch(h, /Step/);
+});
+
+test("componentes: diálogo, confirmar, Acerca de y enlaces solo https", async () => {
+  const { ui, enviados } = componentes();
+  const d = ui.dialogo({ id: "t-aj", titulo: "Hola, **{nombre}**", valores: { nombre: "<x>" }, cuerpo: "<p>c</p>", pie: "<b>p</b>", clase: "pz-ancho mal\"clase" });
+  assert.match(d, /role="dialog" aria-modal="true" aria-labelledby="t-aj"/);
+  assert.match(d, /class="pz-dialogo pz-ancho"/);
+  assert.match(d, /<h2 id="t-aj" tabindex="-1" data-sin-traducir>Hi, <b>&lt;x&gt;<\/b><\/h2>/);
+  assert.match(d, /data-pz-cerrar aria-label="Cerrar"/);
+  assert.doesNotMatch(ui.dialogo({ id: "x", titulo: "T", cerrable: false }), /data-pz-cerrar/);
+  assert.match(ui.dialogo({ id: "x", titulo: "T", sinEsc: true }), /data-pz-sin-esc/);
+  assert.throws(() => ui.dialogo({ id: "a\" onclick=\"x", titulo: "T" }));
+  const p = ui.confirmar({ titulo: "¿Borrar «{x}»?", valores: { x: "<b>nota</b>" }, si: "Borrar", peligro: true });
+  assert.match(ui.capas(), /role="alertdialog"[\s\S]*&lt;b&gt;nota&lt;\/b&gt;[\s\S]*pz-principal pz-peligro" data-pz-confirmar="si" data-autofoco/);
+  assert.equal(ui.hayCapa, true);
+  ui.manejarClic(clicEn({ "data-pz-confirmar": "si" }));
+  assert.equal(await p, true);
+  assert.equal(ui.capas(), "");
+  const p2 = ui.confirmar({ titulo: "¿Seguro?" });
+  ui.manejarClic(clicEn({ "data-pz-cerrar": "" }));
+  assert.equal(await p2, false, "cerrar es «no»");
+  const a = ui.acercaDe({ version: "1.0", enlaces: { codigo: "https://github.com/ana-app/ana", sitio: "javascript:alert(1)", comunidad: "http://x.cl", aportar: "https://x.cl/\"><img" } });
+  assert.match(a, /data-pz-enlace="https:\/\/github.com\/ana-app\/ana">Código/);
+  assert.doesNotMatch(a, /javascript|http:\/\/x|<img/);
+  assert.match(a, /Ana &lt;b&gt; 1.0 · Gratis y abierto \(AGPL-3.0\)/);
+  assert.match(a, /data-pz-comentarios="error">Enviar comentarios/);
+  ui.manejarClic(clicEn({ "data-pz-enlace": "https://github.com/ana-app/ana" }));
+  ui.manejarClic(clicEn({ "data-pz-enlace": "file:///etc/passwd" }));
+  assert.deepEqual(enviados.filter((x) => x[0] === "abrirEnlace"), [["abrirEnlace", { url: "https://github.com/ana-app/ana" }]]);
+});
+
+test("componentes: comentarios abren un issue prellenado del repo de la app, sin datos de la persona", () => {
+  const { ui, enviados } = componentes({ version: "0.3.0" });
+  assert.equal(PiezaComponentes.urlIssue("mal repo", {}), null);
+  assert.equal(PiezaComponentes.urlIssue("a/b/../c", {}), null);
+  const u = PiezaComponentes.urlIssue("ana-app/ana", { titulo: "💡 Más <b>", cuerpo: "a&b=c", etiqueta: "idea" });
+  assert.equal(u, "https://github.com/ana-app/ana/issues/new?title=%F0%9F%92%A1%20M%C3%A1s%20%3Cb%3E&body=a%26b%3Dc&labels=idea");
+  assert.doesNotMatch(PiezaComponentes.urlIssue("ana-app/ana", { etiqueta: "x&y" }), /labels/);
+  assert.equal(PiezaComponentes.sistemaDe("mac", { userAgent: "Mozilla (Macintosh; Intel Mac OS X 15_2)" }), "macOS 15.2");
+  assert.equal(PiezaComponentes.sistemaDe("linux"), "Linux");
+  ui.manejarClic(clicEn({ "data-pz-comentarios": "idea" }));
+  assert.match(ui.capas(), /aria-labelledby="pz-t-coment"[\s\S]*data-pz-coment-tipo="idea" aria-pressed="true"/);
+  ui.manejarClic(clicEn({ "data-pz-coment-enviar": "" }));
+  assert.match(ui.capas(), /aria-invalid="true"[\s\S]*Escribe un título\./, "sin título no se envía");
+  assert.equal(enviados.length, 0);
+  const datos = ui.datosComentario({ tipo: "idea", titulo: "Modo oscuro", texto: "Por favor", sistema: true, version: "0.3.0" });
+  assert.deepEqual(datos, { titulo: "💡 Modo oscuro", cuerpo: "Por favor\n\n---\nAna <b> 0.3.0 · en · macOS 15.2", etiqueta: "idea" });
+  assert.equal(ui.datosComentario({ tipo: "error", titulo: "x", texto: "y", sistema: false }).cuerpo, "y");
+});
+
+test("componentes: avisos en cola, uno a la vez, sin repetir y esperando la bienvenida", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const clases = new Set();
+  const el = { textContent: "", setAttribute() {}, classList: { add: (c) => clases.add(c), remove: (c) => clases.delete(c), toggle: (c, s) => (s ? clases.add(c) : clases.delete(c)) } };
+  const documento = { getElementById: (id) => (id === "toast" ? el : null) };
+  const retenidos = [];
+  let esperar = true;
+  const { ui } = componentes({ documento, duracion: 1000, pausa: 100, retener: (...a) => (esperar ? (retenidos.push(a), true) : false) });
+  assert.equal(ui.aviso("Guardar"), false);
+  assert.deepEqual(retenidos, [["Guardar", {}]]);
+  esperar = false;
+  ui.aviso("Guardar");                      // se traduce con Tp
+  ui.aviso("Comentarios");
+  ui.aviso("Comentarios");                  // repetido: no entra
+  ui.aviso("<b>listo</b>", { traducido: true, error: true });
+  assert.equal(el.textContent, "Save");
+  assert.ok(clases.has("visible") && clases.has("pz-toast"));
+  assert.deepEqual(ui.avisos.enCola, ["Comments", "<b>listo</b>"]);
+  t.mock.timers.tick(1080);                 // 900 + 45·4 = 1080 ms visible
+  assert.equal(clases.has("visible"), false, "se esconde antes del siguiente");
+  t.mock.timers.tick(100);                  // y la pausa
+  assert.equal(el.textContent, "Comments");
+  t.mock.timers.tick(1400); t.mock.timers.tick(100);
+  assert.equal(el.textContent, "<b>listo</b>", "texto plano: nunca HTML");
+  assert.ok(clases.has("pz-error"));
+  t.mock.timers.tick(3000); t.mock.timers.tick(100);
+  assert.equal(ui.avisos.actual, null);
+  assert.equal(clases.has("visible"), false);
+  for (let i = 0; i < 9; i++) ui.aviso(`Aviso ${i}`, { traducido: true });
+  assert.deepEqual(ui.avisos.enCola, ["Aviso 5", "Aviso 6", "Aviso 7", "Aviso 8"], "si se juntan muchos quedan los últimos");
+  ui.avisos.limpiar();
+});
+
+test("componentes, tema y host-ui: sin eval, sin innerHTML, sin estilos ni manejadores en línea, nada de una app adentro", () => {
+  for (const f of ["piezas/host-ui/ui/host.js", "piezas/tema/ui/tema.js", "piezas/componentes/ui/componentes.js"]) {
+    const t = fs.readFileSync(path.join(BASE, f), "utf8");
+    assert.doesNotMatch(t, /\beval\(|new Function|innerHTML\s*=|style="|\.style\.cssText|setAttribute\("style"|\son[a-z]+=/, f);
+    assert.doesNotMatch(t, /esquema|minuta|graba|corta|repasa|alcanc/i, f);
+  }
+  for (const f of ["piezas/tema/ui/tema.css", "piezas/componentes/ui/componentes.css"]) {
+    const t = fs.readFileSync(path.join(BASE, f), "utf8");
+    assert.doesNotMatch(t, /@import|url\(|esquema|minuta|graba|corta|repasa|alcanc/i, f);
+  }
+});

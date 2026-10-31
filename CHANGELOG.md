@@ -1,5 +1,15 @@
 # Cambios
 
+## Sin publicar
+- **3 piezas de interfaz listas (fase 1 de «todo como si hubiéramos partido con Pieza»):** `host-ui` (el puente
+  `host.enviar` / `window.<App>.*` con un solo `crearHost`, y `probarIA {ia}` en todas las apps), `tema` (un solo juego de nombres
+  de colores, cada color escrito una vez con `light-dark()`, y el selector «Apariencia») y `componentes` (diálogo que no deja
+  escapar el foco y lo devuelve al cerrar, confirmar, avisos en cola, «Tu IA», actualizaciones paso a paso, «Acerca de» y
+  comentarios a GitHub). Cada README trae los pasos para pasar cada app, y el de `tema` la tabla de nombres viejos → nuevos.
+- Las pruebas suman un navegador de verdad (`pruebas/interfaz.mjs`, Chromium con Playwright): CSP de las apps, foco, Esc, tema,
+  contraste AA en claro y oscuro (también los colores de cada app) y celular a 390 px.
+- `tema` ya no depende de `componentes` (al revés: `componentes` requiere `i18n` y `tema`).
+
 ## 0.8.0 — 2026-10-30
 - **Las seis apps usan Pieza:** Graba, Repasa, Minuta, Alcancía y Corta se suman a Esquema (cada una con `nucleo` e `ia`, y casi todas
   con `i18n`). Al migrarlas se cerraron huecos: los hosts que probaban la IA lanzándola directo, sin protecciones, ahora usan

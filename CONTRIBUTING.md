@@ -24,9 +24,10 @@ una app y revisar aportes. Hay lugar para cualquiera, programes o no. *(English 
 ## Programando (con o sin IA)
 1. Lee [`AGENTS.md`](AGENTS.md) y [`docs/enchufe.md`](docs/enchufe.md): cómo se hace una pieza, el contrato (`pieza.json`,
    `app.json`, `piezas.json`) y las reglas de seguridad. Sirven igual para personas y para tu IA.
-2. Haz un fork, una rama y tu cambio. Pieza no tiene dependencias: basta Python 3 con su biblioteca estándar.
+2. Haz un fork, una rama y tu cambio. Pieza no tiene dependencias: basta Python 3 con su biblioteca estándar y Node.
 3. Corre `bash pruebas/correr.sh` (lo mismo que revisa GitHub en cada cambio: valida todos los `pieza.json`, corre las pruebas,
-   revisa los workflows y la privacidad).
+   revisa los workflows y la privacidad). Si tocas una pieza de interfaz, instala Playwright aparte (`PLAYWRIGHT=/ruta/a/playwright`)
+   para que corra también `pruebas/interfaz.mjs` en Chromium; sin él, se salta y GitHub la corre en Linux.
 4. Si tu cambio se nota, deja al día lo que lo cuenta: el `pieza.json` (`cambios`, `version`), [`CHANGELOG.md`](CHANGELOG.md),
    [`docs/catalogo.md`](docs/catalogo.md) y el README. Si no sabes bien qué tocar, dilo en el pull request y lo completamos.
 5. Abre un pull request contando qué cambia para las apps que usan la pieza y cómo lo probaste.

@@ -1,21 +1,18 @@
 {
  "formato": 1,
  "id": "tema",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Tema claro y oscuro",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "interfaz",
- "descripcion": "Sistema, claro u oscuro, con light-dark() y sin repetir colores.",
+ "descripcion": "Sistema, claro u oscuro con un solo juego de tokens CSS y light-dark(): cada color se escribe una vez.",
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre."
  },
- "tomar_de": "esquema/ui/app.css (data-tema)",
- "requiere": [
-  "componentes"
- ],
+ "requiere": [],
  "plataformas": [
   "mac",
   "windows",
@@ -30,11 +27,32 @@
    "que": "sistema, claro u oscuro"
   }
  ],
+ "origen": "esquema/ui/app.css (data-tema=\"claro|oscuro\" sobre el sistema, colores neutros con contraste AA) + los nombres que ya compartían graba, corta, repasa y alcancia (--fondo, --panel, --texto, --linea, --acento, --sobre-acento, --rojo, --verde). Nuevo: un solo juego de nombres (--texto-suave para el texto secundario y --panel-2 para el fondo secundario: antes --suave era texto en cuatro apps y fondo en Esquema), cada color como par --x-claro/--x-oscuro elegido con light-dark() (sin repetir el bloque oscuro), derivados con color-mix() (--hover, --acento-suave, --rojo-suave, --verde-suave), las variables de la bienvenida conectadas y ?tema= para vistas previas.",
+ "archivos": {
+  "ui/tema.css": "ui/tema.css",
+  "ui/tema.js": "ui/tema.js"
+ },
  "config": {
   "tema": [
    "sistema",
    "claro",
    "oscuro"
   ]
- }
+ },
+ "acciones": {},
+ "textos": {
+  "Apariencia": "Appearance",
+  "Como el sistema": "Match system",
+  "Claro": "Light",
+  "Oscuro": "Dark"
+ },
+ "permisos": {},
+ "red": [],
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "resumen": "Primera versión: tokens comunes con light-dark() y respaldo para navegadores sin él, selector «Apariencia» y data-tema en <html>. La tabla para pasar de los nombres de cada app está en el README."
+  }
+ ]
 }
