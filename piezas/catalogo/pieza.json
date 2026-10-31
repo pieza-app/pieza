@@ -1,13 +1,13 @@
 {
  "formato": 1,
  "id": "catalogo",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Catálogo de la comunidad",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "datos",
- "descripcion": "Contenido descargable (plantillas, temas, efectos…) desde un repo de solo datos, validado y con sha256 obligatorio.",
+ "descripcion": "Contenido de la comunidad (plantillas, efectos, temas…) desde un repo de solo datos: dominio fijo, sin redirecciones, tamaño máximo y SHA-256 obligatorio; cada app pone su validador.",
  "recomendar": {
   "cuando": "La gente puede crear y compartir contenido para la app (plantillas, temas, universos, efectos).",
   "palabras": [
@@ -18,22 +18,19 @@
    "galería"
   ]
  },
- "tomar_de": "esquema bin/plantillas.py + Catalogo.swift + escritorio/src/catalogo.js; corta (origen, categoría = carpeta)",
  "requiere": [
-  "host-ui"
+  "nucleo"
  ],
  "plataformas": [
   "mac",
   "windows",
-  "linux",
-  "ios",
-  "android"
+  "linux"
  ],
  "pantallas": [
   {
    "donde": "Galería",
    "nombre": "Comunidad",
-   "que": "ver, previsualizar, descargar y quitar contenido"
+   "que": "ver, descargar y quitar contenido (la pieza da los datos y los errores; la galería la pinta la app)"
   }
  ],
  "red": [
@@ -41,5 +38,78 @@
  ],
  "tareas_persona": [
   "Crear el repo <org>/<app>-catalogo (solo datos JSON)"
+ ],
+ "origen": "esquema (bin/plantillas.py + plantilla_formato.py: índice validado, instalar que vuelve a revisar huella y formato, generar el índice del repo; Catalogo.swift y escritorio/src/catalogo.js: dominio fijo, sin redirecciones, lectura cortada en el máximo, el id solo del índice validado) + corta (Catalogo.swift con un Tipo por cosa, «origen» incluido/descargado, la categoría ES la carpeta, «archivo»/«bytes» aceptados en el índice). Nuevo: repo y tipos en app.json (nada de la app adentro), validador de formato que pone cada app, instalar compara id, tamaño y huella con el último índice validado guardado en disco (no con lo que manda el host), «quitar», errores con código y plantilla, y Swift en su propio target.",
+ "archivos": {
+  "python/catalogo.py": "bin/catalogo.py",
+  "mac/Catalogo.swift": "app/Sources/PiezaCatalogo/Catalogo.swift",
+  "escritorio/catalogo.js": "escritorio/src/catalogo.js"
+ },
+ "solo": {
+  "mac/Catalogo.swift": [
+   "mac"
+  ],
+  "escritorio/catalogo.js": [
+   "windows",
+   "linux"
+  ]
+ },
+ "config": {},
+ "acciones": {
+  "catalogoInstalados": {
+   "script": "catalogo.py",
+   "args": [
+    "listar"
+   ],
+   "entrada": "archivo",
+   "datos": {
+    "tipo": {
+     "tipo": "texto",
+     "max": 31
+    }
+   },
+   "responde": "catalogoInstalados",
+   "limite": 30
+  },
+  "catalogoQuitar": {
+   "script": "catalogo.py",
+   "args": [
+    "quitar"
+   ],
+   "entrada": "archivo",
+   "datos": {
+    "tipo": {
+     "tipo": "texto",
+     "max": 31
+    },
+    "id": {
+     "tipo": "texto",
+     "max": 60
+    }
+   },
+   "responde": "catalogoQuitado",
+   "cola": "escritura",
+   "limite": 30
+  }
+ },
+ "textos": {
+  "No pude conectarme. Revisa tu conexión.": "I couldn't connect. Check your connection.",
+  "No pude leer el catálogo.": "I couldn't read the catalog.",
+  "Eso no es válido.": "That isn't valid.",
+  "Llegó dañado. Intenta de nuevo.": "It arrived damaged. Please try again.",
+  "Ya no está en el catálogo. Vuelve a abrirlo.": "It's no longer in the catalog. Open it again."
+ },
+ "permisos": {},
+ "red_nota": "Solo baja del repo del catálogo en raw.githubusercontent.com (sin redirecciones) cuando la persona abre «Comunidad» o descarga algo. Sin datos de la persona.",
+ "compatible": {
+  "nucleo": ">=0.7.0 <1.0.0"
+ },
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "seguridad": true,
+   "resumen": "Primera versión: une Esquema y Corta. SHA-256 obligatorio (en Corta era opcional al instalar), el id se busca solo en el último índice validado y la categoría tiene que ser la carpeta."
+  }
  ]
 }

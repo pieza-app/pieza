@@ -3,7 +3,7 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 python3 herramientas/pieza.py revisar
-python3 -W ignore -m unittest -q pruebas/test_piezas.py
+python3 -W ignore -m unittest -q pruebas/test_piezas.py pruebas/test_piezas_datos.py
 # Las piezas de JavaScript (i18n, bienvenida, actualizaciones de Electron): Node, sin dependencias.
 node --test pruebas/piezas_js.mjs > /dev/null || node --test pruebas/piezas_js.mjs
 # Las piezas de interfaz en un navegador de verdad (foco, CSP, tema, contraste, 390 px): Chromium con Playwright, instalado aparte

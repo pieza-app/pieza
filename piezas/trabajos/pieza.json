@@ -1,0 +1,67 @@
+{
+ "formato": 1,
+ "icono": "icono.svg",
+ "licencia": "MPL-2.0",
+ "id": "trabajos",
+ "version": "0.1.0",
+ "estado": "lista",
+ "nombre": "Trabajos largos",
+ "categoria": "datos",
+ "descripcion": "Lo que tarda minutos corre por etapas en segundo plano: estado en disco, avance en vivo, latido, «Detener», «Seguir donde quedó» y trabajos que esperan respuestas.",
+ "recomendar": {
+  "cuando": "La app hace algo que tarda minutos (documentar, transcribir, resumir un libro) y no puede perderse si se cierra.",
+  "palabras": [
+   "trabajo",
+   "segundo plano",
+   "progreso",
+   "detener",
+   "largo"
+  ]
+ },
+ "origen": "esquema/bin/trabajos.py (estado en disco escrito de una vez, eventos JSONL, latido de 5 s e «interrumpido» a los 45 s, .detener, «esperando» con preguntas y respuestas validadas, limpieza de viejos) + LectorProgreso (Swift) y lectorProgreso (escritorio/src/servicios.js). Nuevo: nada de la app adentro (carpeta de datos y <ID>_PROGRESO salen de app.json), detener() en la pieza, los lectores con tope por línea y por vuelta, y el Swift en su propio target.",
+ "requiere": [
+  "nucleo"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "archivos": {
+  "python/trabajos.py": "bin/trabajos.py",
+  "mac/LectorProgreso.swift": "app/Sources/PiezaTrabajos/LectorProgreso.swift",
+  "escritorio/progreso.js": "escritorio/src/progreso.js"
+ },
+ "solo": {
+  "mac/LectorProgreso.swift": [
+   "mac"
+  ],
+  "escritorio/progreso.js": [
+   "windows",
+   "linux"
+  ]
+ },
+ "config": {},
+ "acciones": {},
+ "permisos": {},
+ "red": [],
+ "textos": {},
+ "tareas_persona": [],
+ "pantallas": [
+  {
+   "donde": "Panel",
+   "nombre": "Trabajo",
+   "que": "etapas, ítems con su estado, «Detener», «Seguir» y preguntas (la pieza da los datos; la tarjeta la pinta la app)"
+  }
+ ],
+ "compatible": {
+  "nucleo": ">=0.7.0 <1.0.0"
+ },
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "resumen": "Primera versión, desde Esquema."
+  }
+ ]
+}

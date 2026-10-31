@@ -753,3 +753,155 @@ test("componentes, tema y host-ui: sin eval, sin innerHTML, sin estilos ni manej
     assert.doesNotMatch(t, /@import|url\(|esquema|minuta|graba|corta|repasa|alcanc/i, f);
   }
 });
+
+// ───────────── cifrado ─────────────
+const PiezaCifrado = require(path.join(BASE, "piezas/cifrado/ui/cifrado.js"));
+const FRASE = "caballo batería grapa correcta";
+
+test("cifrado: armar y abrir con la frase o con la llave guardada; nombres opacos estables", async () => {
+  const c = PiezaCifrado.crear({ app: "Prueba", contexto: "prueba:copia", tipo: "copia" });
+  const { cabecera, llaves } = await c.nuevaCabecera(FRASE.normalize("NFD"));
+  const texto = await c.armar({ hola: "Ana Pérez" }, cabecera, llaves);
+  assert.ok(!texto.includes("Ana"));
+  const a = await c.abrir(texto, { frase: FRASE });
+  assert.deepEqual(a.contenido, { hola: "Ana Pérez" }, "la frase se normaliza (NFC)");
+  const b = await c.abrir(texto, { raw: llaves.raw });
+  assert.deepEqual(b.contenido, a.contenido);
+  const n1 = await c.nombreOpaco(llaves, "perfiles/ana.json");
+  assert.match(n1, /^[0-9a-f]{32}$/);
+  assert.equal(await c.nombreOpaco(a.llaves, "perfiles/ana.json"), n1);
+  assert.notEqual(await c.nombreOpaco(llaves, "perfiles/matias.json"), n1);
+});
+
+test("cifrado: frase mala, sobre cambiado, AAD de otro lugar, versión más nueva, tamaño y pocas vueltas", async () => {
+  const c = PiezaCifrado.crear({ app: "Prueba", contexto: "prueba:copia", maximo: 50000 });
+  const { cabecera, llaves } = await c.nuevaCabecera(FRASE);
+  const texto = await c.armar({ x: 1 }, cabecera, llaves);
+  const codigo = async (p) => { try { await p; return "ok"; } catch (e) { return e.codigo; } };
+  assert.equal(await codigo(c.abrir(texto, { frase: "otra frase bastante larga" })), "frase");
+  const obj = JSON.parse(texto);
+  const dañado = { ...obj, datos: { ...obj.datos, datos: obj.datos.datos.replace(/^./, (x) => (x === "A" ? "B" : "A")) } };
+  assert.equal(await codigo(c.abrir(JSON.stringify(dañado), { frase: FRASE })), "danado");
+  assert.equal(await codigo(c.abrir(JSON.stringify({ ...obj, version: 2 }), { frase: FRASE })), "version");
+  assert.equal(await codigo(c.abrir(JSON.stringify({ ...obj, kdf: { ...obj.kdf, iteraciones: 1000 } }), { frase: FRASE })), "danado");
+  assert.equal(await codigo(c.abrir("x".repeat(60000), { frase: FRASE })), "no_es");
+  assert.equal(await codigo(c.abrir('{"otra":"cosa"}', { frase: FRASE })), "no_es");
+  const sobre = await c.cifrarJSON(llaves, { a: 1 }, "perfiles/ana");
+  assert.deepEqual(await c.descifrarJSON(llaves, sobre, "perfiles/ana"), { a: 1 });
+  assert.equal(await codigo(c.descifrarJSON(llaves, sobre, "perfiles/matias")), "danado", "el AAD ata el sobre a su lugar");
+  assert.equal(await codigo(c.nuevaCabecera("corta")), "corta");
+  const e = await c.abrir(texto, { frase: "no" }).catch((x) => x);
+  assert.equal(e.plantilla, "La frase no es la correcta.");
+  const v = await c.abrir(JSON.stringify({ ...obj, version: 9 }), { frase: FRASE }).catch((x) => x);
+  assert.equal(v.message, "Este archivo viene de una versión más nueva de Prueba. Actualiza la app.");
+  assert.equal(PiezaCifrado.fuerzaFrase("uno dos tres cuatro cinco seis").nivel, 3);
+});
+
+test("cifrado: abre lo que armaba la copia de Alcancía (llave de 256 bits) con su contexto", async () => {
+  const s = crypto.webcrypto.subtle;
+  const sal = crypto.randomBytes(16);
+  const base = await s.importKey("raw", new TextEncoder().encode(FRASE), "PBKDF2", false, ["deriveBits"]);
+  const bits = new Uint8Array(await s.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: sal, iterations: 600000 }, base, 256));
+  const aes = await s.importKey("raw", bits, { name: "AES-GCM" }, false, ["encrypt"]);
+  const sobre = async (texto, aad) => {
+    const iv = crypto.randomBytes(12);
+    const d = new Uint8Array(await s.encrypt({ name: "AES-GCM", iv, additionalData: new TextEncoder().encode(aad) }, aes, new TextEncoder().encode(texto)));
+    return { iv: Buffer.from(iv).toString("base64"), datos: Buffer.from(d).toString("base64") };
+  };
+  const archivo = JSON.stringify({
+    alcancia: "copia-celular", version: 1, kdf: { alg: "PBKDF2-SHA256", iteraciones: 600000, sal: sal.toString("base64") }, cifrado: "AES-256-GCM",
+    verificador: await sobre("alcancia", "alcancia:celular:verificador"), datos: await sobre('{"formato":1,"estado":{}}', "alcancia:celular:1"),
+  });
+  const c = PiezaCifrado.crear({ app: "Alcancía", contexto: "alcancia:celular", verificador: "alcancia", marca: "alcancia", tipo: "copia-celular" });
+  assert.deepEqual((await c.abrir(archivo, { frase: FRASE })).contenido, { formato: 1, estado: {} });
+  assert.deepEqual((await c.abrir(archivo, { raw: Buffer.from(bits).toString("base64") })).contenido.formato, 1, "una llave guardada de 32 bytes");
+});
+
+// ───────────── catálogo (Electron) contra un servidor falso ─────────────
+const Cat = require(path.join(BASE, "piezas/catalogo/escritorio/catalogo.js"));
+import http from "node:http";
+
+async function servidorCatalogo(rutas) {
+  const vistos = [];
+  const srv = http.createServer((req, res) => {
+    vistos.push(req.url);
+    const r = rutas[req.url];
+    if (!r) { res.writeHead(404); return res.end(); }
+    if (r.redirige) { res.writeHead(302, { Location: r.redirige }); return res.end(); }
+    res.writeHead(200); res.end(r.cuerpo);
+  });
+  await new Promise((ok) => srv.listen(0, "127.0.0.1", ok));
+  const puerto = srv.address().port;
+  // El fetch de la app con la URL real cambiada al servidor local (las mismas opciones: redirect "error" de verdad).
+  const fetchFalso = (url, opciones) => {
+    const u = new URL(url);
+    assert.equal(u.host, "raw.githubusercontent.com");
+    assert.equal(opciones.redirect, "error");
+    // Como net.fetch: la respuesta dice la URL que se pidió (si hubo una redirección, ni siquiera llega: redirect "error").
+    return fetch(`http://127.0.0.1:${puerto}${u.pathname}`, opciones).then((r) => ({
+      status: r.status, redirected: r.redirected, url: u.toString(), headers: r.headers, body: r.body, arrayBuffer: () => r.arrayBuffer(),
+    }));
+  };
+  return { srv, vistos, fetchFalso, puerto };
+}
+
+test("catálogo (Electron): solo del índice validado, con huella, sin redirecciones y con tope", async () => {
+  const p = (id) => JSON.stringify({ formato: 1, id, categoria: "basicas", nombre: id });
+  const h = (t) => crypto.createHash("sha256").update(t).digest("hex");
+  const entrada = (id, cuerpo, extra = {}) => ({ id, categoria: "basicas", ruta: `plantillas/basicas/${id}.json`, sha256: h(cuerpo), tamano: Buffer.byteLength(cuerpo), ...extra });
+  const buena = p("buena"), danada = p("danada"), grande = p("grande");
+  const base = "/ana-app/ana-catalogo/main/";
+  const { srv, vistos, fetchFalso } = await servidorCatalogo({
+    [base + "plantillas/index.json"]: { cuerpo: "{}" },
+    [base + "plantillas/basicas/buena.json"]: { cuerpo: buena },
+    [base + "plantillas/basicas/danada.json"]: { cuerpo: danada.replace("danada\"}", "otra\"}") },
+    [base + "plantillas/basicas/grande.json"]: { cuerpo: grande + " ".repeat(5000) },
+    [base + "plantillas/basicas/vuelta.json"]: { redirige: "/robar" },
+  });
+  const llamadas = [];
+  const procesador = {
+    async conEntrada(script, accion, datos) {
+      llamadas.push([script, accion, datos, accion === "instalar" ? fs.readFileSync(datos.archivo, "utf8") : null]);
+      if (accion === "indice") return { ok: true, tipo: "plantillas", plantillas: [entrada("buena", buena), entrada("danada", danada), entrada("grande", grande), entrada("vuelta", buena), entrada("rara", buena, { ruta: "../app.json" })] };
+      return { ok: true, tipo: "plantillas", id: datos.id };
+    },
+  };
+  const cat = Cat.crear({ fetch: fetchFalso, procesador, appJson: { catalogo: { repo: "ana-app/ana-catalogo", tipos: { plantillas: { validador: "x" } } } } });
+  try {
+    assert.equal((await cat.descargar("plantillas", "buena")).codigo, "no_esta", "sin índice no baja nada");
+    assert.equal(vistos.length, 0);
+    const listado = await cat.listar("plantillas");
+    assert.equal(listado.ok, true, JSON.stringify(listado));
+    assert.equal((await cat.descargar("plantillas", "buena")).ok, true);
+    assert.equal(llamadas.at(-1)[3], buena, "Python recibe lo bajado, con la huella del índice");
+    assert.equal((await cat.descargar("plantillas", "danada")).codigo, "danado");
+    assert.equal((await cat.descargar("plantillas", "grande")).codigo, "danado", "más grande que lo que dice el índice");
+    assert.equal((await cat.descargar("plantillas", "vuelta")).codigo, "sin_conexion", "una redirección nunca se sigue");
+    assert.ok(!vistos.includes("/robar"));
+    assert.equal((await cat.descargar("plantillas", "rara")).codigo, "no_valido");
+    assert.equal((await cat.descargar("plantillas", "inventada")).codigo, "no_esta");
+    assert.equal((await cat.listar("otro")).codigo, "no_valido");
+    assert.equal(llamadas.filter((x) => x[1] === "instalar").length, 1, "solo lo bueno llegó a instalarse");
+    assert.equal(fs.readdirSync(os.tmpdir()).filter((x) => x.startsWith("pieza-catalogo-")).length, 0, "sin temporales");
+  } finally { srv.close(); }
+  assert.throws(() => Cat.leerConfig({ catalogo: { repo: "../x" } }));
+  assert.throws(() => Cat.leerConfig({ catalogo: { repo: "a/b", tipos: { plantillas: { indice: "../index.json" } } } }));
+});
+
+// ───────────── trabajos: el lector de progreso (Electron) ─────────────
+const { lectorProgreso } = require(path.join(BASE, "piezas/trabajos/escritorio/progreso.js"));
+
+test("trabajos: el lector pasa las líneas nuevas, salta las rotas y las enormes, y borra su archivo", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "pieza-progreso-"));
+  const recibidos = [];
+  const l = lectorProgreso((e) => recibidos.push(...e), { prefijo: "Prueba!", cada: 20, dir });
+  assert.match(path.basename(l.ruta), /^prueba-progreso-/);
+  assert.equal(fs.statSync(l.ruta).mode & 0o777, 0o600);
+  fs.appendFileSync(l.ruta, '{"t":"lee","ruta":"a.py"}\nno es json\n{"t":"est');
+  await new Promise((ok) => setTimeout(ok, 80));
+  fs.appendFileSync(l.ruta, 'ado"}\n' + "x".repeat(1024 * 1024 + 10) + "\n[1,2]\n" + '{"t":"fin"}\n');
+  l.terminar();
+  assert.deepEqual(recibidos, [{ t: "lee", ruta: "a.py" }, { t: "estado" }, { t: "fin" }]);
+  assert.ok(!fs.existsSync(l.ruta));
+  fs.rmSync(dir, { recursive: true });
+});

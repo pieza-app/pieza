@@ -1,6 +1,19 @@
 # Cambios
 
 ## Sin publicar
+- **6 piezas de datos listas (fase 2 de «todo como si hubiéramos partido con Pieza»):** `catalogo` 0.1.0 (contenido de la
+  comunidad: dominio fijo, sin redirecciones, tope de tamaño, SHA-256 obligatorio y el id buscado solo en el último índice
+  validado; el validador lo pone cada app; Python, Swift y Electron), `red` 0.1.0 (HTTPS solo a dominios permitidos, sin
+  redirecciones, con tope de tamaño y de tiempo), `cifrado` 0.1.0 (PBKDF2 600.000 + AES-256-GCM con AAD, nombres opacos,
+  verificador de frase y archivos con versión; abre lo que ya guardaron Repasa y Alcancía), `transcribir` 0.1.0 (whisper con
+  modelos de huella fija, vocabulario en un archivo privado que se borra, también con `whisper-cli`; VAD y filtro de inventos y
+  bucles), `trabajos` 0.1.0 (trabajos largos con estado en disco, latido, «Detener», preguntas, y los lectores de progreso de
+  Swift y Electron) y `contenido` 0.1.0 (md, txt, pdf, docx, odt, epub y html con topes contra zip bombas y XML sin entidades).
+  Cada README dice qué cambia en cada app al pasarse.
+- `ia` 0.6.0: `preguntar_vivo` (lo que lee la IA en vivo y «Detener») con el mismo armado del comando que `ejecutar`, y sin el
+  aviso «Permission deny rule "MultiEdit" matches no known tool» de Claude Code 2.1 (sin dejar de prohibir lo que sí conoce).
+- Pruebas: `pruebas/test_piezas_datos.py` (servidor falso, whisper falso, CLIs falsos que exigen las protecciones) y más casos
+  en `piezas_js.mjs` (cifrado y catálogo de Electron contra un servidor local).
 - **3 piezas de interfaz listas (fase 1 de «todo como si hubiéramos partido con Pieza»):** `host-ui` (el puente
   `host.enviar` / `window.<App>.*` con un solo `crearHost`, y `probarIA {ia}` en todas las apps), `tema` (un solo juego de nombres
   de colores, cada color escrito una vez con `light-dark()`, y el selector «Apariencia») y `componentes` (diálogo que no deja

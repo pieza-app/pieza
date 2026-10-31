@@ -1,0 +1,63 @@
+{
+ "formato": 1,
+ "icono": "icono.svg",
+ "licencia": "MPL-2.0",
+ "id": "contenido",
+ "version": "0.1.0",
+ "estado": "lista",
+ "nombre": "Leer archivos",
+ "categoria": "datos",
+ "descripcion": "El texto de un .md, .txt, .pdf, .docx, .odt, .epub o .html solo con la biblioteca estándar, con topes contra zip bombas y XML sin entidades; y partir un libro en capítulos sin IA.",
+ "recomendar": {
+  "cuando": "La persona agrega documentos, libros, apuntes o actas para que la app los lea.",
+  "palabras": [
+   "pdf",
+   "docx",
+   "epub",
+   "documento",
+   "libro",
+   "importar"
+  ]
+ },
+ "origen": "esquema/bin/contenido.py (extraer md, txt, pdf, docx, odt, epub y html como Markdown; partir_capitulos sin índice; titulo_de) + alcancia/bin/recetas.py (ArchivoNoValido: tope de partes y de cada parte de un zip, sin DOCTYPE ni ENTITY en ninguna parte). Nuevo: el zip se cuenta al descomprimir (no se confía en lo que declara), tope total en un PDF, XML mal formado = dañado, errores con código y plantilla con {app}, y extraer_archivo con tope. Lo de Esquema (detectar historia/libro, ids de tickets) queda en Esquema.",
+ "requiere": [
+  "nucleo"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "archivos": {
+  "python/contenido.py": "bin/contenido.py"
+ },
+ "config": {},
+ "acciones": {},
+ "permisos": {},
+ "red": [],
+ "tareas_persona": [],
+ "textos": {
+  "Ese archivo es muy grande (más de 25 MB). Divídelo o pega el texto.": "That file is too large (over 25 MB). Split it or paste the text.",
+  "{app} no lee ese formato sin programas extra. Guárdalo como .docx, PDF o texto, o copia el texto y pégalo aquí.": "{app} can't read that format without extra programs. Save it as .docx, PDF or text, or copy the text and paste it here.",
+  "No sé leer ese tipo de archivo. Copia el texto y pégalo aquí.": "I don't know how to read that kind of file. Copy the text and paste it here.",
+  "Ese archivo no tiene texto que pueda leer. Copia el texto y pégalo aquí.": "That file has no text I can read. Copy the text and paste it here.",
+  "Ese archivo trae algo raro adentro y no lo abro.": "That file has something odd inside, so I won't open it.",
+  "Ese archivo está dañado o no es lo que dice su nombre.": "That file is damaged or isn't what its name says.",
+  "Ese archivo es demasiado grande por dentro.": "That file is too large inside.",
+  "Ese archivo no es un PDF.": "That file isn't a PDF.",
+  "Ese PDF tiene clave. Ábrelo, copia el texto y pégalo aquí.": "That PDF has a password. Open it, copy the text and paste it here.",
+  "No pude leer el texto de este PDF (puede ser escaneado o usar letras especiales). Ábrelo, copia el texto y pégalo aquí.": "I couldn't read the text in this PDF (it may be scanned or use special fonts). Open it, copy the text and paste it here.",
+  "Ese EPUB está dañado: no encuentro su índice.": "That EPUB is damaged: I can't find its table of contents."
+ },
+ "compatible": {
+  "nucleo": ">=0.7.0 <1.0.0"
+ },
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "seguridad": true,
+   "resumen": "Primera versión, desde Esquema, con los topes de Alcancía y la zip contada al leer."
+  }
+ ]
+}

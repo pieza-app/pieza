@@ -1,6 +1,6 @@
 {
- "total": 30,
- "listas": 8,
+ "total": 32,
+ "listas": 14,
  "piezas": [
   {
    "id": "actualizaciones",
@@ -143,28 +143,39 @@
    "id": "catalogo",
    "nombre": "Catálogo de la comunidad",
    "categoria": "datos",
-   "estado": "planeada",
-   "version": "0.0.0",
-   "descripcion": "Contenido descargable (plantillas, temas, efectos…) desde un repo de solo datos, validado y con sha256 obligatorio.",
+   "estado": "lista",
+   "version": "0.1.0",
+   "descripcion": "Contenido de la comunidad (plantillas, efectos, temas…) desde un repo de solo datos: dominio fijo, sin redirecciones, tamaño máximo y SHA-256 obligatorio; cada app pone su validador.",
    "plataformas": [
     "mac",
     "windows",
-    "linux",
-    "ios",
-    "android"
+    "linux"
    ],
    "pantallas": [
     {
      "donde": "Galería",
      "nombre": "Comunidad",
-     "que": "ver, previsualizar, descargar y quitar contenido"
+     "que": "ver, descargar y quitar contenido (la pieza da los datos y los errores; la galería la pinta la app)"
     }
    ],
+   "permisos": {},
    "red": [
     "raw.githubusercontent.com"
    ],
+   "red_nota": "Solo baja del repo del catálogo en raw.githubusercontent.com (sin redirecciones) cuando la persona abre «Comunidad» o descarga algo. Sin datos de la persona.",
    "requiere": [
-    "host-ui"
+    "nucleo"
+   ],
+   "compatible": {
+    "nucleo": ">=0.7.0 <1.0.0"
+   },
+   "cambios": [
+    {
+     "version": "0.1.0",
+     "tipo": "inicial",
+     "seguridad": true,
+     "resumen": "Primera versión: une Esquema y Corta. SHA-256 obligatorio (en Corta era opcional al instalar), el id se busca solo en el último índice validado y la categoría tiene que ser la carpeta."
+    }
    ],
    "siempre": false,
    "cuando": "La gente puede crear y compartir contenido para la app (plantillas, temas, universos, efectos).",
@@ -204,9 +215,9 @@
    "id": "cifrado",
    "nombre": "Cifrado",
    "categoria": "datos",
-   "estado": "planeada",
-   "version": "0.0.0",
-   "descripcion": "Cifrar con una frase de la persona (PBKDF2 600k + AES-256-GCM) y nombres de archivo con HMAC.",
+   "estado": "lista",
+   "version": "0.1.0",
+   "descripcion": "Cifrar con una frase de la persona (PBKDF2-SHA256 600.000 + AES-256-GCM con AAD), nombres de archivo opacos con HMAC, verificador de frase y archivos con versión.",
    "plataformas": [
     "mac",
     "windows",
@@ -214,7 +225,17 @@
     "ios",
     "android"
    ],
+   "permisos": {},
+   "red": [],
    "requiere": [],
+   "cambios": [
+    {
+     "version": "0.1.0",
+     "tipo": "inicial",
+     "seguridad": true,
+     "resumen": "Primera versión: une Repasa y Alcancía con los mismos formatos de archivo."
+    }
+   ],
    "siempre": false,
    "cuando": "Datos personales salen del computador (respaldo, celular, nube).",
    "icono": "iconos/piezas/cifrado.svg",
@@ -345,6 +366,39 @@
    "siempre": false,
    "cuando": "La app trae datos de servicios de la persona (banco, billetera, tienda).",
    "icono": "iconos/piezas/conectores.svg",
+   "fuente": "oficial"
+  },
+  {
+   "id": "contenido",
+   "nombre": "Leer archivos",
+   "categoria": "datos",
+   "estado": "lista",
+   "version": "0.1.0",
+   "descripcion": "El texto de un .md, .txt, .pdf, .docx, .odt, .epub o .html solo con la biblioteca estándar, con topes contra zip bombas y XML sin entidades; y partir un libro en capítulos sin IA.",
+   "plataformas": [
+    "mac",
+    "windows",
+    "linux"
+   ],
+   "permisos": {},
+   "red": [],
+   "requiere": [
+    "nucleo"
+   ],
+   "compatible": {
+    "nucleo": ">=0.7.0 <1.0.0"
+   },
+   "cambios": [
+    {
+     "version": "0.1.0",
+     "tipo": "inicial",
+     "seguridad": true,
+     "resumen": "Primera versión, desde Esquema, con los topes de Alcancía y la zip contada al leer."
+    }
+   ],
+   "siempre": false,
+   "cuando": "La persona agrega documentos, libros, apuntes o actas para que la app los lea.",
+   "icono": "iconos/piezas/contenido.svg",
    "fuente": "oficial"
   },
   {
@@ -591,8 +645,8 @@
    "nombre": "Tu IA",
    "categoria": "ia",
    "estado": "lista",
-   "version": "0.5.0",
-   "descripcion": "La IA de la persona (Claude Code, Codex o Gemini) con su propia cuenta: sin herramientas, sin su memoria, el pedido nunca como argumento, material y revisión a fondo de solo lectura.",
+   "version": "0.6.0",
+   "descripcion": "La IA de la persona (Claude Code, Codex o Gemini) con su propia cuenta: sin herramientas, sin su memoria, el pedido nunca como argumento, material y revisión a fondo de solo lectura, y en vivo (lo que lee y «Detener»).",
    "plataformas": [
     "mac",
     "windows",
@@ -618,6 +672,11 @@
     "nucleo": ">=0.2.0 <1.0.0"
    },
    "cambios": [
+    {
+     "version": "0.6.0",
+     "tipo": "mejora",
+     "resumen": "Lo que pidió Esquema: preguntar_vivo(prompt, al_evento, detener) cuenta en vivo lo que la IA lee (Claude con stream-json, Codex con --json) y se puede detener (código «detenido», ia.detenido(error)); usa el mismo armado del comando que ejecutar (_armar), así las protecciones están en un solo lugar (Esquema puede borrar bin/ia_vivo.py). A Claude solo se le prohíben las herramientas que su versión conoce: ya no avisa «Permission deny rule \"MultiEdit\" matches no known tool» (solo cuando conoce --tools, que igual deja fuera todo lo demás). preguntar y preguntar_vivo aceptan material y modelo por igual."
+    },
     {
      "version": "0.5.0",
      "tipo": "mejora",
@@ -932,15 +991,31 @@
    "id": "red",
    "nombre": "Red segura",
    "categoria": "conexiones",
-   "estado": "planeada",
-   "version": "0.0.0",
-   "descripcion": "HTTPS sin redirecciones, solo a dominios permitidos, credenciales nunca en errores.",
+   "estado": "lista",
+   "version": "0.1.0",
+   "descripcion": "Pedidos HTTPS desde los scripts: solo a dominios permitidos, sin redirecciones, con tope de tamaño y de tiempo, y la credencial nunca en un error.",
    "plataformas": [
     "mac",
     "windows",
     "linux"
    ],
-   "requiere": [],
+   "permisos": {},
+   "red": [],
+   "red_nota": "La pieza no sale a ninguna parte por sí sola: cada script dice a qué dominios puede hablar (los de su servicio).",
+   "requiere": [
+    "nucleo"
+   ],
+   "compatible": {
+    "nucleo": ">=0.7.0 <1.0.0"
+   },
+   "cambios": [
+    {
+     "version": "0.1.0",
+     "tipo": "inicial",
+     "seguridad": true,
+     "resumen": "Primera versión, desde Alcancía: suma tope de tamaño y de tiempo y errores traducibles."
+    }
+   ],
    "siempre": false,
    "cuando": "Algún script de la app sale a internet (APIs, descargas).",
    "icono": "iconos/piezas/red.svg",
@@ -983,12 +1058,51 @@
    "fuente": "oficial"
   },
   {
+   "id": "trabajos",
+   "nombre": "Trabajos largos",
+   "categoria": "datos",
+   "estado": "lista",
+   "version": "0.1.0",
+   "descripcion": "Lo que tarda minutos corre por etapas en segundo plano: estado en disco, avance en vivo, latido, «Detener», «Seguir donde quedó» y trabajos que esperan respuestas.",
+   "plataformas": [
+    "mac",
+    "windows",
+    "linux"
+   ],
+   "pantallas": [
+    {
+     "donde": "Panel",
+     "nombre": "Trabajo",
+     "que": "etapas, ítems con su estado, «Detener», «Seguir» y preguntas (la pieza da los datos; la tarjeta la pinta la app)"
+    }
+   ],
+   "permisos": {},
+   "red": [],
+   "requiere": [
+    "nucleo"
+   ],
+   "compatible": {
+    "nucleo": ">=0.7.0 <1.0.0"
+   },
+   "cambios": [
+    {
+     "version": "0.1.0",
+     "tipo": "inicial",
+     "resumen": "Primera versión, desde Esquema."
+    }
+   ],
+   "siempre": false,
+   "cuando": "La app hace algo que tarda minutos (documentar, transcribir, resumir un libro) y no puede perderse si se cierra.",
+   "icono": "iconos/piezas/trabajos.svg",
+   "fuente": "oficial"
+  },
+  {
    "id": "transcribir",
    "nombre": "Transcribir",
    "categoria": "medios",
-   "estado": "planeada",
-   "version": "0.0.0",
-   "descripcion": "Audio a texto en el computador con whisper: modelos verificados, vocabulario por archivo, filtro de alucinaciones.",
+   "estado": "lista",
+   "version": "0.1.0",
+   "descripcion": "Audio a texto en el computador con whisper.cpp: modelos con huella fija, vocabulario por archivo privado (nunca como argumento), VAD y filtro de inventos y bucles.",
    "plataformas": [
     "mac",
     "windows",
@@ -998,7 +1112,7 @@
     {
      "donde": "Bienvenida",
      "nombre": "Modelo de voz",
-     "que": "descargar el modelo la primera vez, con avance"
+     "que": "descargar el modelo la primera vez, con avance (la descarga la hace el host con MODELOS)"
     },
     {
      "donde": "Ajustes",
@@ -1006,10 +1120,32 @@
      "que": "idioma del audio y modelo"
     }
    ],
+   "permisos": {
+    "mac": [
+     {
+      "clave": "NSMicrophoneUsageDescription",
+      "por": "solo si la app graba la voz que transcribe (la pieza solo lee archivos de audio)"
+     }
+    ]
+   },
    "red": [
     "huggingface.co"
    ],
-   "requiere": [],
+   "red_nota": "Solo para bajar los modelos de voz la primera vez (huggingface.co redirige a su almacenamiento); se verifican por tamaño y SHA-256. Transcribir no sale a internet.",
+   "requiere": [
+    "nucleo"
+   ],
+   "compatible": {
+    "nucleo": ">=0.7.0 <1.0.0"
+   },
+   "cambios": [
+    {
+     "version": "0.1.0",
+     "tipo": "inicial",
+     "seguridad": true,
+     "resumen": "Primera versión: une Minuta, Corta y Graba; el vocabulario nunca va como argumento, tampoco con whisper-cli."
+    }
+   ],
    "siempre": false,
    "cuando": "La app trabaja con voz, reuniones o videos.",
    "icono": "iconos/piezas/transcribir.svg",

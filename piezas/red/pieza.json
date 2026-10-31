@@ -1,21 +1,53 @@
 {
  "formato": 1,
  "id": "red",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Red segura",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "conexiones",
- "descripcion": "HTTPS sin redirecciones, solo a dominios permitidos, credenciales nunca en errores.",
+ "descripcion": "Pedidos HTTPS desde los scripts: solo a dominios permitidos, sin redirecciones, con tope de tamaño y de tiempo, y la credencial nunca en un error.",
  "recomendar": {
   "cuando": "Algún script de la app sale a internet (APIs, descargas)."
  },
- "tomar_de": "alcancia/bin/red.py",
- "requiere": [],
+ "requiere": [
+  "nucleo"
+ ],
  "plataformas": [
   "mac",
   "windows",
   "linux"
+ ],
+ "origen": "alcancia/bin/red.py (sin redirecciones, dominios de cada conector, servidor falso solo en 127.0.0.1 y nunca dentro de la app, frases claras por estado). Nuevo: tope de tamaño cortado al leer y de tiempo del pedido entero, sin puerto raro ni usuario:clave en la URL, errores con código y plantilla para traducir, nada de la app adentro (agente y variable de prueba salen de app.json).",
+ "archivos": {
+  "python/red.py": "bin/red.py"
+ },
+ "config": {},
+ "acciones": {},
+ "permisos": {},
+ "red": [],
+ "red_nota": "La pieza no sale a ninguna parte por sí sola: cada script dice a qué dominios puede hablar (los de su servicio).",
+ "textos": {
+  "Dirección no permitida para {servicio}.": "Address not allowed for {servicio}.",
+  "{servicio} quiso mandarme a otra dirección y no la seguí (por seguridad).": "{servicio} tried to send me somewhere else and I didn't follow (for safety).",
+  "{servicio} no aceptó la llave (puede estar vencida o sin permiso de lectura).": "{servicio} didn't accept the key (it may have expired or lack read permission).",
+  "{servicio} pidió esperar un rato antes de volver a consultar.": "{servicio} asked to wait a while before checking again.",
+  "{servicio} respondió con un error ({estado}).": "{servicio} answered with an error ({estado}).",
+  "No pude conectarme con {servicio}. ¿Hay internet?": "I couldn't connect to {servicio}. Are you online?",
+  "{servicio} se demoró demasiado en responder.": "{servicio} took too long to answer.",
+  "{servicio} mandó una respuesta demasiado grande.": "{servicio} sent an answer that is too large.",
+  "{servicio} respondió algo que no entendí.": "{servicio} answered something I didn't understand."
+ },
+ "compatible": {
+  "nucleo": ">=0.7.0 <1.0.0"
+ },
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "seguridad": true,
+   "resumen": "Primera versión, desde Alcancía: suma tope de tamaño y de tiempo y errores traducibles."
+  }
  ]
 }

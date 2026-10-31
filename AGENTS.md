@@ -19,7 +19,7 @@ menos tokens: elegir piezas, no reescribirlas.
 
 1. Carpeta `piezas/<id>/` con `pieza.json` (formato en `docs/enchufe.md`), su código (`python/`, `ui/`, `mac/`, `escritorio/`),
    su `icono.svg` (obligatorio: 24×24, de línea, trazo 2, `currentColor`, solo formas; `herramientas/icono.py` lo valida),
-   un `README.md` corto (qué resuelve, API, ejemplo) y lo que necesite en `pruebas/test_piezas.py`.
+   un `README.md` corto (qué resuelve, API, ejemplo) y lo que necesite en `pruebas/test_piezas.py` (o `test_piezas_datos.py` para las de datos).
 2. **Partir de la mejor versión** que ya exista en las apps y sumarle lo que otras resolvieron mejor. Decir de dónde salió en
    `origen`.
 3. **Nada de la app adentro**: ni nombres, ni rutas, ni prefijos. Lo que cambia por app sale de `app.json` (`nucleo.app()`).
@@ -81,6 +81,6 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 | `.github/` | `workflows/` (`revisar.yml`, `pagina.yml`: actions fijadas por SHA, permisos mínimos, `persist-credentials: false`), `ISSUE_TEMPLATE/` (error, idea, pieza, probar; seguridad y Discussions en `config.yml`), `pull_request_template.md` (checklist) y `dependabot.yml` (solo actions, con `cooldown`) |
 | `herramientas/revisar_privacidad.sh` | Busca datos personales antes de cada commit (`.terminos-privados`, local y nunca versionado); `--generico` corre en `pruebas/correr.sh` |
 | `.claude/agents/` | `pieza-revisor` (revisar PRs: regla de oro, ficha honesta, versión y cambios, brechas conocidas; nunca junta sin aprobación) y `pieza-privacidad` (antes de cada commit) |
-| `pruebas/` | `correr.sh` (valida los `pieza.json`, la versión de cada flujo, que toda action esté fijada por SHA y que la plantilla «Pieza al día» use las mismas versiones, la privacidad y `test_piezas.py`: una app ficticia con CLIs de IA falsos), `piezas_js.mjs` (las piezas de JavaScript en Node) e `interfaz.mjs` (las piezas de interfaz en Chromium con Playwright, con la CSP de las apps: foco, tema, contraste AA, 390 px; sin Playwright se salta) |
+| `pruebas/` | `correr.sh` (valida los `pieza.json`, la versión de cada flujo, que toda action esté fijada por SHA y que la plantilla «Pieza al día» use las mismas versiones, la privacidad, `test_piezas.py`: una app ficticia con CLIs de IA falsos, y `test_piezas_datos.py`: red, catálogo, transcribir, trabajos, contenido e IA en vivo con servidores, whisper y CLIs falsos), `piezas_js.mjs` (las piezas de JavaScript en Node) e `interfaz.mjs` (las piezas de interfaz en Chromium con Playwright, con la CSP de las apps: foco, tema, contraste AA, 390 px; sin Playwright se salta) |
 
 Licencia AGPL-3.0, como las apps.

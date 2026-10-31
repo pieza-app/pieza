@@ -210,7 +210,7 @@ class Herramienta(AppDePrueba):
         self.assertIn("+# mejora propia", correr(PIEZA, "diferencias", self.app, "ia").stdout)
 
     def test_planeada_no_se_agrega(self):
-        r = correr(PIEZA, "agregar", "transcribir", self.app)
+        r = correr(PIEZA, "agregar", "mcp", self.app)
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("aún no está extraída", r.stderr)
 

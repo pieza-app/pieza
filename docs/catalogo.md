@@ -12,23 +12,25 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | Pieza | Versión | Qué es | Tomada de |
 |---|---|---|---|
 | `nucleo` | 0.7.0 | `app.json`, carpeta de datos, config validada, escritura atómica, `ruta_en`, contrato de scripts | Esquema `bin/comun.py` + Alcancía/Repasa |
-| `ia` | 0.5.0 | La IA de la persona con su cuenta, segura | Esquema `bin/ia.py` + Alcancía (pedido en archivo) + Repasa (material) |
+| `ia` | 0.6.0 | La IA de la persona con su cuenta, segura; en vivo (lo que lee y «Detener») | Esquema `bin/ia.py` + `ia_vivo.py` + Alcancía (pedido en archivo) + Repasa (material) |
 | `i18n` | 0.2.0 | `T`/`Tp`/`Thtml`/`tr`/`traducirDOM`, paquetes de idioma validados | Minuta (`tr`) + Esquema (`T` que escapa, `traducirDOM`) + Alcancía (`Thtml`) + Graba (prioridad) |
 | `bienvenida` | 0.2.0 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
 | `actualizaciones` | 0.2.0 | Releases del propio repo, `.sha256` obligatorio, Mac (target propio) y Electron | Esquema + Repasa (URL sin puerto ni `..`, PATH fijo, textos que traduce la interfaz) |
 | `host-ui` | 0.1.0 | `crearHost({nombre, global, simular})`: `host.enviar` y `window.<App>.*` iguales en Mac, Electron, celular y navegador; `probarIA {ia}` en todas | Esquema + Repasa/Alcancía (puente del celular) + Minuta (mensaje plano mientras cambia) |
 | `tema` | 0.1.0 | Un solo juego de tokens CSS (`--texto-suave`, `--panel-2`…), pares claro/oscuro con `light-dark()`, selector «Apariencia» | Esquema (`data-tema`) + los nombres comunes de Graba, Corta, Repasa y Alcancía; tabla de nombres viejos → nuevos en su README |
 | `componentes` | 0.1.0 | Diálogo con foco atrapado y Esc, confirmar, avisos en cola, filas de Tu IA, fila de actualización «Paso n de 3», Acerca de, comentarios a GitHub | Esquema + Alcancía («Cómo instalarla», error de la IA traducido) + Minuta (comentarios → issue prellenado) |
+| `catalogo` | 0.1.0 | Contenido de la comunidad: índice validado por el validador de la app, SHA-256 obligatorio, sin redirecciones; Py + Swift + Electron | Esquema `plantillas.py` + `Catalogo.swift` + `catalogo.js` + Corta (`origen`, categoría = carpeta, un tipo por cosa) |
+| `red` | 0.1.0 | HTTPS desde los scripts: dominios permitidos, sin redirecciones, topes de tamaño y tiempo | Alcancía `bin/red.py` |
+| `cifrado` | 0.1.0 | PBKDF2 600k + AES-256-GCM con AAD, HMAC para nombres, verificador, archivos con versión | Repasa `motor/cifrado.js` + Alcancía `ui/copia.js` |
+| `transcribir` | 0.1.0 | whisper.cpp con modelos de huella fija, vocabulario por archivo privado, VAD, filtro de inventos y bucles | Minuta + Corta (`comando_transcribir`) + Graba |
+| `trabajos` | 0.1.0 | Trabajos largos: estado en disco, latido, «Detener», preguntas; lectores de progreso Swift y Electron | Esquema `bin/trabajos.py` + `LectorProgreso` / `lectorProgreso` |
+| `contenido` | 0.1.0 | Leer md, txt, pdf, docx, odt, epub y html con topes (zip bombas, XML sin entidades); capítulos sin IA | Esquema `bin/contenido.py` + Alcancía (`ArchivoNoValido`) |
 
 ## Por extraer, en este orden
 
 | # | Pieza | Tipo | Tomar de | Sumar de | Notas |
 |---|---|---|---|---|---|
-| 6 | `catalogo` (Py + host) | Py + (b) | Esquema `plantillas.py` + `Catalogo.swift` + `catalogo.js` | Corta (`origen`, categoría = carpeta) | SHA-256 **obligatorio** (en Corta es opcional) |
-| 7 | `red` (Py) | Py | Alcancía `bin/red.py` | — | HTTPS sin redirecciones, dominios permitidos |
 | 8 | `mcp` (Py) | Py | Alcancía `mcp_servidor.py` + `mcp_conectar.py` | — | `mcp.servir(nombre, …, herramientas)`; conectar a claude/codex/gemini/Claude Desktop |
-| 9 | `cifrado` (JS) | UI | Repasa `motor/cifrado.js` | Alcancía (límite, «versión más nueva») | PBKDF2 600k + AES-256-GCM |
-| 10 | `transcribir` (Swift + Py) | (c) + Py | Minuta (VAD, filtro de alucinaciones con bucles) | Corta (vocabulario por archivo, no como argumento) | Paquete Swift compartido + `ModeloWhisper` una sola vez |
 | 11 | `host-mac` (Swift) | (b) | Esquema `app/Sources/Esquema/` | Alcancía (secreto por stdin), Repasa (`conEntrada` con varios args) | Host genérico: lee `pieza.json`. **Agregar timeout** |
 | 12 | `host-escritorio` (Electron) | (b) | Esquema `escritorio/src/` | — | Ídem |
 | 13 | `empaquetado` | build | Esquema | — | `build.sh`, `empaquetar.sh`, `preparar.sh`, instaladores, `Package.swift`, `Info.plist` generados desde `app.json`. El Python portátil (CPython 3.13.16) ya es idéntico en las seis: un solo `python.lock` |
@@ -44,9 +46,10 @@ Después: la página pública (`docs/`), `revisar_privacidad.sh`, `generar_demo.
 | Graba, Minuta | Si el CLI de IA es viejo, **reintenta sin las protecciones** (`--strict-mcp-config`, sin herramientas): la IA corre con todo, con texto de afuera | `graba/bin/ia.py`, `minuta/bin/perfil.py` (`_opcion_desconocida`) | Reemplazar por la pieza `ia` |
 | Graba, Minuta | El puente no revisa que el mensaje venga del marco principal y del origen de la app | `graba/app/Sources/Graba/Ventana.swift`, `minuta/app/Sources/Minuta/VisorWeb.swift`, `graba/escritorio/src/main.js`, `minuta/escritorio/src/main.js` | Copiar la guarda de Esquema (`isMainFrame` + `securityOrigin`; `senderFrame === mainFrame` + origen) |
 | Graba | Las actualizaciones no validan que la descarga sea de su repo ni escapan la ruta en el script | `Actualizaciones.swift`, `escritorio/src/actualizaciones.js` | Pieza `actualizaciones` (lista) |
-| Corta | Instalar del catálogo acepta archivos sin SHA-256 | `corta/bin/plantillas.py` (`instalar`) | Hacerlo obligatorio |
+| Corta | Instalar del catálogo acepta archivos sin SHA-256 | `corta/bin/plantillas.py` (`instalar`) | Pieza `catalogo` (lista: obligatorio) |
 | Corta, Graba, Repasa, Minuta | La IA hereda las variables de la app | `bin/ia.py` | Pieza `ia` |
-| Graba, Minuta | El vocabulario de whisper va como argumento | `procesar.py` | Por archivo, como Corta |
+| Graba | Con `whisper-cli` (Windows y Linux) el vocabulario no se usa | `bin/procesar.py` | Pieza `transcribir` (lista: `whisper-cli @archivo`) |
+| Minuta | El catálogo de universos e idiomas no verifica SHA-256 ni tamaño | `Catalogo.swift` | Índice con `sha256`/`tamano` (`catalogo.py generar`) y pieza `catalogo` |
 | Alcancía, Corta, Repasa | `T()` mete valores sin escapar en HTML | `ui/app.js` | Pieza `i18n` (lista: `T` escapa, `Thtml` para HTML armado) |
 | Todas | Ningún `Procesador` tiene límite de tiempo | Swift/Electron | `limite` en el enchufe (#11, #12) |
 | Graba, Repasa | Rojo y verde bajo AA como texto en claro (Graba también el rojo en oscuro) | `ui/app.css` | Los pares del README de `tema` (mismo tono, un poco más oscuro) |

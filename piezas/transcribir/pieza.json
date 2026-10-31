@@ -1,13 +1,13 @@
 {
  "formato": 1,
  "id": "transcribir",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Transcribir",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "medios",
- "descripcion": "Audio a texto en el computador con whisper: modelos verificados, vocabulario por archivo, filtro de alucinaciones.",
+ "descripcion": "Audio a texto en el computador con whisper.cpp: modelos con huella fija, vocabulario por archivo privado (nunca como argumento), VAD y filtro de inventos y bucles.",
  "recomendar": {
   "cuando": "La app trabaja con voz, reuniones o videos.",
   "palabras": [
@@ -18,8 +18,9 @@
    "reunión"
   ]
  },
- "tomar_de": "minuta (VAD, filtro con bucles) + corta (vocabulario por archivo) + Sources/Transcribir y ModeloWhisper una vez",
- "requiere": [],
+ "requiere": [
+  "nucleo"
+ ],
  "plataformas": [
   "mac",
   "windows",
@@ -29,7 +30,7 @@
   {
    "donde": "Bienvenida",
    "nombre": "Modelo de voz",
-   "que": "descargar el modelo la primera vez, con avance"
+   "que": "descargar el modelo la primera vez, con avance (la descarga la hace el host con MODELOS)"
   },
   {
    "donde": "Ajustes",
@@ -41,6 +42,61 @@
   "huggingface.co"
  ],
  "config": {
-  "idioma_audio": "texto"
- }
+  "idioma_audio": {
+   "tipo": "texto",
+   "patron": "auto|[a-z]{2,3}"
+  },
+  "modelo": [
+   "turbo",
+   "small"
+  ]
+ },
+ "origen": "minuta/bin/procesar.py (VAD Silero, filtro de alucinaciones con bucles y energía, whisper-cli @archivo con rutas en la página de códigos de Windows) + corta/bin/importar.py (comando_transcribir: vocabulario en un temporal 0600 que se borra, --prompt-archivo o @archivo, una sola línea, rutas con salto de línea rechazadas; palabra por palabra con -ml 1 -sow) + graba/bin/procesar.py (lista más larga de inventos, marcas [música]). Modelos con tamaño y SHA-256 fijos, los mismos de las tres apps. Nuevo: whisper-cli también recibe el vocabulario (en Graba no), la transcripción va a una carpeta temporal y nada de la app adentro (el binario es <id>-transcribir).",
+ "archivos": {
+  "python/transcribir.py": "bin/transcribir.py"
+ },
+ "acciones": {
+  "modelosVoz": {
+   "script": "transcribir.py",
+   "args": [
+    "modelos"
+   ],
+   "entrada": null,
+   "datos": {},
+   "responde": "modelosVoz",
+   "limite": 30
+  }
+ },
+ "textos": {
+  "Falta el modelo de transcripción: descárgalo en Ajustes.": "The transcription model is missing: download it in Settings.",
+  "No encontré el transcriptor.": "I couldn't find the transcriber.",
+  "La transcripción falló.": "Transcription failed.",
+  "No puedo transcribir un archivo en una carpeta con saltos de línea en el nombre.": "I can't transcribe a file in a folder whose name has line breaks.",
+  "Preciso": "Accurate",
+  "Liviano": "Light",
+  "Detector de voz": "Voice detector",
+  "El mejor resultado; recomendado con 8 GB de RAM o más.": "The best result; recommended with 8 GB of RAM or more.",
+  "Más rápido y pequeño; para equipos con poca memoria.": "Faster and smaller; for computers with little memory.",
+  "Salta los silencios: menos inventos y más rápido.": "Skips silences: fewer made-up lines and faster."
+ },
+ "permisos": {
+  "mac": [
+   {
+    "clave": "NSMicrophoneUsageDescription",
+    "por": "solo si la app graba la voz que transcribe (la pieza solo lee archivos de audio)"
+   }
+  ]
+ },
+ "red_nota": "Solo para bajar los modelos de voz la primera vez (huggingface.co redirige a su almacenamiento); se verifican por tamaño y SHA-256. Transcribir no sale a internet.",
+ "compatible": {
+  "nucleo": ">=0.7.0 <1.0.0"
+ },
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "seguridad": true,
+   "resumen": "Primera versión: une Minuta, Corta y Graba; el vocabulario nunca va como argumento, tampoco con whisper-cli."
+  }
+ ]
 }

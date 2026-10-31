@@ -1,17 +1,16 @@
 {
  "formato": 1,
  "id": "cifrado",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Cifrado",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "datos",
- "descripcion": "Cifrar con una frase de la persona (PBKDF2 600k + AES-256-GCM) y nombres de archivo con HMAC.",
+ "descripcion": "Cifrar con una frase de la persona (PBKDF2-SHA256 600.000 + AES-256-GCM con AAD), nombres de archivo opacos con HMAC, verificador de frase y archivos con versión.",
  "recomendar": {
   "cuando": "Datos personales salen del computador (respaldo, celular, nube)."
  },
- "tomar_de": "repasa/motor/cifrado.js + alcancia/ui/copia.js",
  "requiere": [],
  "plataformas": [
   "mac",
@@ -19,5 +18,33 @@
   "linux",
   "ios",
   "android"
+ ],
+ "origen": "repasa/motor/cifrado.js (512 bits: AES + HMAC para nombres opacos, AAD que ata cada sobre a su lugar, verificador, NFC) + alcancia/ui/copia.js (llave guardada en vez de la frase, archivo con versión y «viene de una versión más nueva», tope de tamaño, fuerza de la frase, huella para no reescribir). Nuevo: un solo módulo con contexto por app (los archivos de Repasa y Alcancía se siguen abriendo), errores con código y plantilla con {app}, nunca menos de 100.000 vueltas.",
+ "archivos": {
+  "ui/cifrado.js": "ui/cifrado.js"
+ },
+ "config": {},
+ "acciones": {},
+ "permisos": {},
+ "red": [],
+ "textos": {
+  "La frase no es la correcta.": "That passphrase isn't right.",
+  "El archivo está dañado o se está copiando todavía. Prueba en un rato.": "The file is damaged or still being copied. Try again in a while.",
+  "Este archivo viene de una versión más nueva de {app}. Actualiza la app.": "This file comes from a newer version of {app}. Update the app.",
+  "Ese archivo no es una copia de {app}.": "That file isn't a {app} copy.",
+  "Este equipo no puede cifrar.": "This device can't encrypt.",
+  "Usa una frase de al menos 12 caracteres (por ejemplo, cuatro palabras).": "Use a passphrase of at least 12 characters (for example, four words).",
+  "Muy corta": "Too short",
+  "Aceptable": "Acceptable",
+  "Buena": "Good",
+  "Muy buena": "Very good"
+ },
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "seguridad": true,
+   "resumen": "Primera versión: une Repasa y Alcancía con los mismos formatos de archivo."
+  }
  ]
 }

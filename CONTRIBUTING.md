@@ -63,7 +63,7 @@ mira [`docs/catalogo.md`](docs/catalogo.md) y `python3 herramientas/pieza.py cat
    - Cada acción con `limite` (segundos) y `datos` cerrados. **Regla de oro:** un campo de tipo `texto` nunca va en `args`; va en
      el archivo de entrada (`"entrada": "archivo"`). `pieza.py revisar` lo rechaza.
 3. **Nada de una app adentro:** ni nombres, ni rutas, ni prefijos. Lo que cambia por app sale de `app.json` (`nucleo.app()`).
-4. **Pruebas** en `pruebas/test_piezas.py`, con la app ficticia «Prueba» y datos inventados.
+4. **Pruebas** en `pruebas/test_piezas.py` (o `pruebas/test_piezas_datos.py` si es de datos; las de JavaScript en `pruebas/piezas_js.mjs`), con la app ficticia «Prueba» y datos inventados.
 5. **Versión y cambios:** sube `version` (X.Y.Z) si cambia lo que la app recibe y anota en `cambios` (del más nuevo al más viejo)
    `{version, tipo, resumen}` con `tipo` = `arreglo`, `mejora` o `rompe`; un `rompe` trae `migrar` con los pasos, y si arregla
    una falla de seguridad, `seguridad: true`. Es lo que «Pieza al día» le avisa a cada app: escríbelo para quien lo va a leer.
