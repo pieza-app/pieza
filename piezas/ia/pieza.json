@@ -1,13 +1,13 @@
 {
  "formato": 1,
  "id": "ia",
- "version": "0.5.0",
+ "version": "0.6.0",
  "estado": "lista",
  "nombre": "Tu IA",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "ia",
- "descripcion": "La IA de la persona (Claude Code, Codex o Gemini) con su propia cuenta: sin herramientas, sin su memoria, el pedido nunca como argumento, material y revisión a fondo de solo lectura.",
+ "descripcion": "La IA de la persona (Claude Code, Codex o Gemini) con su propia cuenta: sin herramientas, sin su memoria, el pedido nunca como argumento, material y revisión a fondo de solo lectura, y en vivo (lo que lee y «Detener»).",
  "recomendar": {
   "cuando": "La app usa IA para algo (resumir, generar, ordenar, responder) con la cuenta de la persona.",
   "palabras": [
@@ -20,7 +20,7 @@
    "analizar"
   ]
  },
- "origen": "esquema/bin/ia.py + alcancia (pedido en archivo) + repasa (material) — corrige el reintento sin protecciones de graba y minuta",
+ "origen": "esquema/bin/ia.py + alcancia (pedido en archivo) + repasa (material) + esquema/bin/ia_vivo.py (preguntar_vivo: stream-json de Claude, --json de Codex, «Detener») — corrige el reintento sin protecciones de graba y minuta",
  "requiere": [
   "nucleo"
  ],
@@ -89,13 +89,19 @@
   "No conozco esa IA.": "I don't know that AI.",
   "Actualiza {ia} para usarla con {app}: tu versión no conoce las protecciones que necesitamos.": "Update {ia} to use it with {app}: your version doesn't know the protections we need.",
   "No encontré {ia} en este computador.": "I couldn't find {ia} on this computer.",
-  "{ia} no respondió.": "{ia} didn't answer."
+  "{ia} no respondió.": "{ia} didn't answer.",
+  "Detuviste a {ia}.": "You stopped {ia}."
  },
  "compatible": {
   "nucleo": ">=0.2.0 <1.0.0"
  },
  "red_nota": "La app no sale a internet: la IA de la persona se conecta a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
  "cambios": [
+  {
+   "version": "0.6.0",
+   "tipo": "mejora",
+   "resumen": "Lo que pidió Esquema: preguntar_vivo(prompt, al_evento, detener) cuenta en vivo lo que la IA lee (Claude con stream-json, Codex con --json) y se puede detener (código «detenido», ia.detenido(error)); usa el mismo armado del comando que ejecutar (_armar), así las protecciones están en un solo lugar (Esquema puede borrar bin/ia_vivo.py). A Claude solo se le prohíben las herramientas que su versión conoce: ya no avisa «Permission deny rule \"MultiEdit\" matches no known tool» (solo cuando conoce --tools, que igual deja fuera todo lo demás). preguntar y preguntar_vivo aceptan material y modelo por igual."
+  },
   {
    "version": "0.5.0",
    "tipo": "mejora",

@@ -18,6 +18,8 @@ if error:
 | `elegida()` / `nombre(ia)` | La IA de la config / su nombre visible |
 | `preguntar(prompt, *, ia, timeout, archivos, leer, no_leer, modelo)` | `(texto, None)` o `("", {codigo, valores})` |
 | `ejecutar(...)` | El `CompletedProcess`, para quien necesite más control |
+| `preguntar_vivo(prompt, *, ia, timeout, archivos, leer, no_leer, modelo, al_evento, detener)` | Como `preguntar`, contando en vivo lo que lee (`al_evento({"t": "lee", "ruta"})`, `{"t": "busca", "patron"}`) y cortando si `detener()` da True (código `detenido`) |
+| `detenido(error)` | Si el error es que la persona detuvo la IA (no es una falla) |
 | `probar(ia)` | `{ia, ok, codigo?, error?}` |
 
 Garantías (probadas en `pruebas/test_piezas.py`): el pedido nunca va como argumento; Claude corre sin MCP, sin herramientas
@@ -53,3 +55,16 @@ Las apps hoy tienen su propio `bin/ia.py`, así que `pieza.py agregar ia` no lo 
   así `pieza.py actualizar` puede traer las versiones nuevas sin chocar.
 - **Las IA falsas de tus pruebas** tienen que responder `--help` con `--strict-mcp-config` y `--disallowedTools` (como el Claude
   real): sin eso, desde la 0.3.0 la pieza no corre y responde `actualizar`.
+
+## En vivo (0.6.0)
+`preguntar_vivo` usa el **mismo** armado del comando que `ejecutar` (`_armar`): carpeta temporal, sin MCP ni memoria, sin
+herramientas o solo leer, `--tools`, `--setting-sources user`, «actualiza» si falta una protección. Claude cuenta lo que hace con
+`--output-format stream-json --verbose` (si lo conoce), Codex con `exec --json` (si `codex exec --help` lo conoce); Gemini solo
+responde. A Claude ya no se le prohíben herramientas que su versión no conoce (`MultiEdit` desde la 2.1, y las que avise él mismo
+con «Permission deny rule … matches no known tool», que se recuerdan en `<datos>/ia-herramientas.json`), solo cuando conoce
+`--tools`: ahí las demás herramientas ni se cargan. El aviso tampoco llega como detalle de un error.
+
+**Esquema:** borrar `bin/ia_vivo.py`; `ia_vivo.preguntar_vivo(prompt, timeout, ia_, leer, no_leer, al_evento, detener)` →
+`ia.preguntar_vivo(prompt, timeout=…, ia=…, leer=…, no_leer=…, al_evento=…, detener=…)` (todo con nombre; `ia_` pasa a `ia`),
+`ia_vivo.detenido` → `ia.detenido`, `ia_vivo.frase` → `ia.frase` (ahora suma la `ayuda` de `app.json` si la hay) y
+`ia_vivo.ERRORES` → `ia.ERRORES` (trae `detenido`). Las IA falsas de sus pruebas siguen sirviendo: con `--version` o sin él.
