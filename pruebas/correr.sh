@@ -6,6 +6,9 @@ python3 herramientas/pieza.py revisar
 python3 -W ignore -m unittest -q pruebas/test_piezas.py pruebas/test_piezas_datos.py
 # Las piezas de JavaScript (i18n, bienvenida, actualizaciones de Electron): Node, sin dependencias.
 node --test pruebas/piezas_js.mjs > /dev/null || node --test pruebas/piezas_js.mjs
+# El host de Windows y Linux en Node (Electron falso, Python de verdad) y, si ELECTRON apunta a uno, con Electron de verdad y Xvfb.
+node --test pruebas/host_escritorio.mjs > /dev/null || node --test pruebas/host_escritorio.mjs
+node pruebas/host_escritorio_electron.mjs
 # Las piezas de interfaz en un navegador de verdad (foco, CSP, tema, contraste, 390 px): Chromium con Playwright, instalado aparte
 # (PLAYWRIGHT=/ruta/a/node_modules/playwright). En GitHub corre en Linux; sin Playwright se avisa y se sigue.
 if PLAYWRIGHT="${PLAYWRIGHT:-playwright}" node -e 'require(process.env.PLAYWRIGHT)' 2>/dev/null; then

@@ -727,3 +727,119 @@ class PiezasDeInterfaz(unittest.TestCase):
                            ("componentes", ["ui/componentes.js", "ui/componentes.css"])):
             for ruta in rutas:
                 self.assertIsNone(re.search(r"esquema|minuta|graba|corta|repasa|alcanc", self.fuente(pid, ruta), re.I), f"{pid}/{ruta}")
+
+
+class HostGenerico(unittest.TestCase):
+    """host-mac y host-escritorio: pieza.py arma acciones.json con las acciones de las piezas y de app.json, y las reglas de
+    una acción son las mismas en pieza.py, en el host de Electron (enchufe.js) y en el de Mac (Enchufe.swift)."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.app = os.path.join(self.tmp.name, "prueba")
+        os.makedirs(os.path.join(self.app, "bin"))
+        self.assertEqual(correr(PIEZA, "iniciar", self.app, "prueba", "Prueba", "--plataformas=mac,linux").returncode, 0)
+        with open(os.path.join(self.app, ".gitignore"), "w") as f:
+            f.write("/*\n!/app.json\n!/piezas.json\n")
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def leer(self, *ruta):
+        with open(os.path.join(self.app, *ruta), encoding="utf-8") as f:
+            return json.load(f) if ruta[-1].endswith(".json") else f.read()
+
+    def test_agregar_arma_acciones_json_y_lista_blanca(self):
+        self.assertEqual(correr(PIEZA, "agregar", "ia", self.app).returncode, 0)
+        self.assertFalse(os.path.exists(os.path.join(self.app, "acciones.json")), "sin host, no hace falta")
+        r = correr(PIEZA, "agregar", "host-escritorio", self.app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        r = correr(PIEZA, "agregar", "host-mac", self.app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        a = self.leer("acciones.json")
+        self.assertEqual(a["formato"], 1)
+        self.assertEqual(a["acciones"]["probarIA"]["pieza"], "ia")
+        self.assertEqual(a["acciones"]["probarIA"]["script"], "ia.py")
+        self.assertIn("!/acciones.json", self.leer(".gitignore"))
+        for f in ("host.js", "enchufe.js", "procesador.js", "preload.js"):
+            self.assertTrue(os.path.isfile(os.path.join(self.app, "escritorio", "src", f)), f)
+        for f in ("Host", "Procesador", "Enchufe", "Puente"):
+            self.assertTrue(os.path.isfile(os.path.join(self.app, "app", "Sources", "PiezaHost", f + ".swift")), f)
+        # piezas.json guarda las acciones de la versión copiada: de ahí sale acciones.json aunque la base cambie.
+        self.assertIn("probarIA", self.leer("piezas.json")["piezas"]["ia"]["acciones"])
+
+    def test_acciones_propias_de_la_app(self):
+        self.assertEqual(correr(PIEZA, "agregar", "host-escritorio", self.app).returncode, 0)
+        app = self.leer("app.json")
+        app["acciones"] = {"exportar": {"script": "exportar.py", "args": ["$formato"], "entrada": "archivo", "limite": 60,
+                                        "datos": {"formato": {"tipo": "enum", "valores": ["svg", "png"]}, "texto": {"tipo": "texto", "max": 100}},
+                                        "responde": "exportado"}}
+        with open(os.path.join(self.app, "app.json"), "w") as f:
+            json.dump(app, f)
+        r = correr(PIEZA, "acciones", self.app)
+        self.assertNotEqual(r.returncode, 0, "el script tiene que estar en bin/")
+        open(os.path.join(self.app, "bin", "exportar.py"), "w").close()
+        r = correr(PIEZA, "acciones", self.app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(self.leer("acciones.json")["acciones"]["exportar"]["pieza"], "app")
+        # El texto de la persona como argumento, nunca.
+        app["acciones"]["exportar"]["args"] = ["$texto"]
+        with open(os.path.join(self.app, "app.json"), "w") as f:
+            json.dump(app, f)
+        r = correr(PIEZA, "acciones", self.app)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("enum o entero", r.stdout + r.stderr)
+        # Dos con el mismo nombre, tampoco.
+        app["acciones"] = {"probarIA": {"script": "exportar.py", "limite": 5}}
+        with open(os.path.join(self.app, "app.json"), "w") as f:
+            json.dump(app, f)
+        self.assertEqual(correr(PIEZA, "agregar", "ia", self.app).returncode, 1)
+
+    def test_mismas_reglas_en_python_js_y_swift(self):
+        sys.path.insert(0, os.path.join(BASE, "herramientas"))
+        import pieza
+        casos = [
+            {"script": "a.py", "limite": 5},
+            {"script": "a.py", "limite": 0},
+            {"script": "a.py", "limite": 5, "args": ["$t"], "datos": {"t": {"tipo": "texto", "max": 9}}, "entrada": "archivo"},
+            {"script": "a.py", "limite": 5, "args": ["$n"], "datos": {"n": {"tipo": "entero"}}},
+            {"script": "a.py", "limite": 5, "datos": {"t": {"tipo": "texto", "max": 9}}},
+            {"script": "a.py", "limite": 5, "datos": {"t": {"tipo": "texto"}}, "entrada": "archivo"},
+            {"script": "../a.py", "limite": 5},
+            {"script": "a.py", "limite": 5, "args": ["a b"]},
+            {"script": "a.py", "limite": 5, "inyectar": {"carpeta": "carpetaActual"}},
+            {"script": "a.py", "limite": 5, "inyectar": {"carpeta": "carpetaActual"}, "entrada": "archivo"},
+            {"script": "a.py", "limite": 5, "inyectar": {"c": "x"}, "datos": {"c": {"tipo": "bool"}}, "entrada": "archivo"},
+            {"script": "a.py", "limite": 5, "cola": "lectura"},
+            {"script": "a.py", "limite": 5, "eco": ["ia"], "despues": ["estado"], "responde": "listo", "progreso": "avance"},
+            {"script": "a.py", "limite": 5, "responde": "x();alert(1)"},
+            {"script": "a.py", "limite": 5, "datos": {"l": {"tipo": "lista", "de": {"tipo": "lista"}}}, "entrada": "archivo"},
+            {"script": "a.py", "limite": 5, "datos": {"e": {"tipo": "enum", "valores": ["a b"]}}, "entrada": "archivo"},
+            {"script": "a.py", "limite": 5, "datos": {"*": "pasar"}, "entrada": "archivo"},
+            {"script": "a.py", "limite": True},
+        ]
+        py = [not pieza.errores_accion("x", c, None) for c in casos]
+        js = subprocess.run(["node", "-e", "const E = require(process.argv[1]); const c = JSON.parse(process.argv[2]);"
+                             "console.log(JSON.stringify(c.map((a) => E.erroresAccion('x', a).length === 0)))",
+                             os.path.join(BASE, "piezas", "host-escritorio", "escritorio", "enchufe.js"), json.dumps(casos)],
+                            capture_output=True, text=True)
+        self.assertEqual(js.returncode, 0, js.stderr)
+        self.assertEqual(py, json.loads(js.stdout))
+        self.assertEqual(py[:4], [True, False, False, True])
+        # Swift no compila aquí: al menos las mismas frases (lo que ve quien escribe una acción) y los mismos tipos.
+        swift = open(os.path.join(BASE, "piezas", "host-mac", "mac", "Enchufe.swift"), encoding="utf-8").read()
+        for frase in ("solo puede ser un campo enum o entero", "lo pone el host", "«limite» (segundos) es obligatorio, entre 1 y 3600",
+                      "una lista de listas no", "«cola» solo puede ser"):
+            self.assertIn(frase, swift)
+        for tipo in pieza.TIPOS:
+            self.assertIn(f'"{tipo}"', swift)
+
+    def test_nada_de_una_app_en_el_host(self):
+        import re
+        for pid, carpeta in (("host-mac", "mac"), ("host-escritorio", "escritorio")):
+            d = os.path.join(BASE, "piezas", pid, carpeta)
+            for f in os.listdir(d):
+                t = open(os.path.join(d, f), encoding="utf-8").read()
+                for app in ("Esquema", "Graba", "Minuta", "Corta", "Repasa", "Alcancia", "Alcancía"):
+                    self.assertIsNone(re.search(rf"(^|[^\w]){app}(?!\w)", t), f"{pid}/{f}: {app}")
+                for marca in ("ESQUEMA_", "GRABA_", "MINUTA_", "CORTA_", "REPASA_", "ALCANCIA_", "-app/"):
+                    self.assertNotIn(marca, t, f"{pid}/{f}: {marca}")

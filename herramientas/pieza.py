@@ -17,6 +17,8 @@
   pieza.py aviso <app>                    En Markdown, lo que hay que actualizar a mano (cambios que rompen o archivos de la
                                           app) con los pasos para migrar. Es el cuerpo del issue que abre «Pieza al día».
   pieza.py diferencias <app> <pieza>      Lo que la app cambió de una pieza (para devolverlo a la base si es mejor).
+  pieza.py acciones <app>                 Arma acciones.json (lo lee el host genérico): las acciones de las piezas instaladas más
+                                          las de app.json → «acciones». agregar/actualizar lo hacen solos si la app tiene host.
   pieza.py revisar                        Valida todos los pieza.json de la base (formato y reglas de seguridad).
   pieza.py skills estado [codex|claude]   Qué versión de cada flujo (skill) tienes instalada y cuál trae esta Pieza.
   pieza.py skills instalar codex|claude   Instala o pone al día las skills (Codex: ~/.agents/skills; Claude Code: ~/.claude/skills)
@@ -206,6 +208,96 @@ def errores_forma(p):
     return e
 
 
+#: Lo que el host puede poner en una acción («inyectar»): las fuentes del host y las que registre la app (mismo formato).
+CAMPO = re.compile(r"^[A-Za-z_]\w{0,60}$")
+NOMBRE_ACCION = re.compile(r"^[A-Za-z][A-Za-z0-9]{0,60}$")
+
+
+def errores_accion(nombre, a, scripts=None):
+    """Las reglas de una acción declarada (docs/enchufe.md, «Una acción»). Las mismas revisan los hosts al cargar
+    acciones.json (enchufe.js de «host-escritorio» y Enchufe.swift de «host-mac»). `scripts`: los de la pieza (None: los de la app)."""
+    donde = f"acción «{nombre}»"
+    e = []
+    if not NOMBRE_ACCION.match(nombre):
+        e.append(f"{donde}: nombre raro (letras y números, empieza con letra)")
+    if not isinstance(a, dict):
+        return e + [f"{donde}: no es un objeto"]
+    if not SCRIPT.match(a.get("script", "") if isinstance(a.get("script"), str) else ""):
+        e.append(f"{donde}: «script» debe ser nombre.py")
+    elif scripts is not None and a["script"] not in scripts and not a.get("scriptDeLaApp"):
+        e.append(f"{donde}: el script {a['script']} no viene en la pieza (o marca scriptDeLaApp)")
+    datos, args = a.get("datos", {}), a.get("args", [])
+    if not isinstance(datos, dict) or not isinstance(args, list) or not all(isinstance(x, str) for x in args):
+        return e + [f"{donde}: «datos» es {{campo: regla}} y «args» una lista de textos"]
+    for campo, regla in datos.items():
+        if campo == "*":
+            if regla != "pasar":
+                e.append(f"{donde}: «*» solo puede ser \"pasar\"")
+            continue
+        if not CAMPO.match(campo) or campo in ("__proto__", "constructor", "prototype"):
+            e.append(f"{donde}: campo raro «{campo}»")
+        e += _errores_regla(f"{donde}: «{campo}»", regla)
+    for arg in args:
+        if arg.startswith("$"):
+            regla = datos.get(arg[1:], {})
+            # Regla de oro: lo que escribe la persona nunca va como argumento del proceso, solo por el archivo de entrada.
+            if not isinstance(regla, dict) or regla.get("tipo") not in ("enum", "entero"):
+                e.append(f"{donde}: el argumento {arg} solo puede ser un campo enum o entero")
+        elif not re.match(r"^[\w.-]+$", arg):
+            e.append(f"{donde}: argumento literal raro «{arg}»")
+    por_archivo = [k for k in datos if k == "*" or ("$" + k) not in args]
+    inyectar = a.get("inyectar", {})
+    if not isinstance(inyectar, dict) or not all(isinstance(k, str) and CAMPO.match(k) and isinstance(v, str) and CAMPO.match(v)
+                                                 for k, v in inyectar.items()):
+        e.append(f"{donde}: «inyectar» es {{campo: fuente}}")
+    else:
+        e += [f"{donde}: «{k}» lo pone el host: no puede venir también en «datos»" for k in inyectar if k in datos]
+        por_archivo += list(inyectar)
+    if por_archivo and a.get("entrada") != "archivo":
+        e.append(f"{donde}: {', '.join(por_archivo)} no van en args: necesita \"entrada\": \"archivo\"")
+    if a.get("entrada") not in (None, "archivo"):
+        e.append(f"{donde}: «entrada» es \"archivo\" o null")
+    if not isinstance(a.get("limite"), int) or isinstance(a.get("limite"), bool) or not 1 <= a["limite"] <= 3600:
+        e.append(f"{donde}: «limite» (segundos) es obligatorio, entre 1 y 3600")
+    for k in ("responde", "progreso"):
+        v = a.get(k)
+        if v is not None and not (isinstance(v, str) and NOMBRE_ACCION.match(v)):
+            e.append(f"{donde}: «{k}» es el nombre de una función")
+    for k, patron in (("eco", CAMPO), ("despues", NOMBRE_ACCION)):
+        v = a.get(k)
+        if v is not None and not (isinstance(v, list) and all(isinstance(x, str) and patron.match(x) for x in v)):
+            e.append(f"{donde}: «{k}» es una lista de nombres")
+    if a.get("cola") not in (None, "escritura"):
+        e.append(f"{donde}: «cola» solo puede ser \"escritura\"")
+    return e
+
+
+def _errores_regla(donde, r):
+    if not isinstance(r, dict) or r.get("tipo") not in TIPOS:
+        return [f"{donde}: tipo desconocido"]
+    e, t = [], r["tipo"]
+    entero = lambda x: isinstance(x, int) and not isinstance(x, bool)
+    if t == "texto" and not (entero(r.get("max")) and 0 < r["max"] <= 5 * 1024 * 1024):
+        e.append(f"{donde}: un texto necesita «max»")
+    if t == "enum" and not (isinstance(r.get("valores"), list) and r["valores"]
+                            and all(isinstance(x, str) and re.match(r"^[\w.-]+$", x) for x in r["valores"])):
+        e.append(f"{donde}: un enum necesita «valores» (textos simples)")
+    if t == "entero" and any(k in r and not entero(r[k]) for k in ("min", "max")):
+        e.append(f"{donde}: «min»/«max» son enteros")
+    if t == "base64" and not (entero(r.get("maxBytes")) and 0 < r["maxBytes"] <= 5 * 1024 * 1024):
+        e.append(f"{donde}: base64 necesita «maxBytes»")
+    if t == "rutaRelativa" and "extensiones" in r and not (isinstance(r["extensiones"], list)
+                                                          and all(isinstance(x, str) and re.match(r"^\.\w{1,10}$", x) for x in r["extensiones"])):
+        e.append(f"{donde}: «extensiones» es una lista como [\".md\"]")
+    if t == "lista":
+        if "max" in r and not (entero(r["max"]) and 0 < r["max"] <= 10000):
+            e.append(f"{donde}: «max» de una lista es un entero")
+        if "de" in r:
+            e += [f"{donde}: una lista de listas no"] if isinstance(r["de"], dict) and r["de"].get("tipo") == "lista" \
+                else _errores_regla(f"{donde} (cada uno)", r["de"])
+    return e
+
+
 def destino_seguro(app, relativa):
     ruta = os.path.realpath(os.path.join(app, relativa))
     if os.path.isabs(relativa) or not ruta.startswith(os.path.realpath(app) + os.sep):
@@ -310,32 +402,7 @@ def errores_pieza(pid, p, ids, carpeta="local"):
             e.append(f"destino inválido {destino}: va dentro de {', '.join(PREFIJOS_DESTINO)} (nunca carpetas que empiezan con punto)")
     scripts = {os.path.basename(d) for d in p.get("archivos", {}).values()}
     for nombre, a in p.get("acciones", {}).items():
-        donde = f"acción «{nombre}»"
-        if not SCRIPT.match(a.get("script", "")):
-            e.append(f"{donde}: «script» debe ser nombre.py")
-        elif a["script"] not in scripts and not a.get("scriptDeLaApp"):
-            e.append(f"{donde}: el script {a['script']} no viene en la pieza (o marca scriptDeLaApp)")
-        datos = a.get("datos", {})
-        for campo, regla in datos.items():
-            if campo == "*":
-                continue
-            if regla.get("tipo") not in TIPOS:
-                e.append(f"{donde}: «{campo}» con tipo desconocido")
-            if regla.get("tipo") == "texto" and not isinstance(regla.get("max"), int):
-                e.append(f"{donde}: «{campo}» de texto necesita «max»")
-        for arg in a.get("args", []):
-            if arg.startswith("$"):
-                regla = datos.get(arg[1:], {})
-                # Regla de oro: lo que escribe la persona nunca va como argumento del proceso, solo por el archivo de entrada.
-                if regla.get("tipo") not in ("enum", "entero"):
-                    e.append(f"{donde}: el argumento {arg} solo puede ser un campo enum o entero")
-            elif not re.match(r"^[\w.-]+$", arg):
-                e.append(f"{donde}: argumento literal raro «{arg}»")
-        por_archivo = [k for k in datos if k == "*" or ("$" + k) not in a.get("args", [])]
-        if por_archivo and a.get("entrada") != "archivo":
-            e.append(f"{donde}: {', '.join(por_archivo)} no van en args: necesita \"entrada\": \"archivo\"")
-        if not isinstance(a.get("limite"), int) or not 1 <= a["limite"] <= 3600:
-            e.append(f"{donde}: «limite» (segundos) es obligatorio, entre 1 y 3600")
+        e += errores_accion(nombre, a, scripts)
     return e
 
 
@@ -480,10 +547,75 @@ def copiar(pid, app, forzar=False, lock=None):
                            **({"sin_config": sin_config} if sin_config else {}),
                            # Lo que la app aceptó: si una versión nueva pide más (otra pieza, permisos, red), no se aplica sola.
                            "ficha": {k: p.get(k, [] if k != "permisos" else {}) for k in ("requiere", "permisos", "red")}}
+    # Las acciones de la versión que quedó copiada (si la app no aceptó la nueva, siguen las de antes): de aquí sale acciones.json.
+    acciones = p.get("acciones") if not saltados else antes.get("acciones", p.get("acciones"))
+    if acciones:
+        lock["piezas"][pid]["acciones"] = acciones
     if pid in _FUENTE:
         lock["piezas"][pid]["fuente"] = _FUENTE[pid]
     escribir(os.path.join(app, "piezas.json"), lock)
     return saltados
+
+
+#: Las piezas que leen acciones.json (el host genérico). Con alguna de ellas en la app, agregar/actualizar lo arman solos.
+HOSTS = ("host-mac", "host-escritorio")
+
+
+def armar_acciones(app, forzar=False):
+    """acciones.json en la raíz de la app: las acciones de las piezas instaladas (las de la versión copiada, guardadas en
+    piezas.json) más las de app.json → «acciones» (las propias de la app, con su script en bin/). Lo lee el host genérico; va
+    dentro de la app junto a app.json. Dos acciones con el mismo nombre o una que no pasa las reglas detienen todo."""
+    lock = candado(app)
+    ruta = os.path.join(app, "acciones.json")
+    if not forzar and not os.path.exists(ruta) and not any(h in lock["piezas"] for h in HOSTS):
+        return None
+    todas_a, origen, errores = {}, {}, []
+    fuentes = []
+    for pid, info in sorted(lock["piezas"].items()):
+        acciones = info.get("acciones")
+        if acciones is None and not info.get("fuente"):
+            # Instalada antes de que piezas.json guardara las acciones: las de la base, si es la misma versión.
+            base = todas().get(pid) or {}
+            if base.get("version") == info.get("version"):
+                acciones = base.get("acciones")
+            elif base.get("acciones"):
+                print(f"    ! {pid} {info.get('version')}: no sé sus acciones (la base tiene {base.get('version')}); actualízala")
+        fuentes.append((pid, acciones or {}))
+    a = leer(os.path.join(app, "app.json"), {}) or {}
+    propias = a.get("acciones") or {}
+    if not isinstance(propias, dict):
+        sys.exit("app.json: «acciones» es {nombre: acción}.")
+    scripts_app = set(os.listdir(os.path.join(app, "bin"))) if os.path.isdir(os.path.join(app, "bin")) else set()
+    for pid, acciones in fuentes + [("app", propias)]:
+        for nombre, accion in acciones.items():
+            e = errores_accion(nombre, accion, scripts_app if pid == "app" else None)
+            if pid == "app" and not e and accion["script"] not in scripts_app:
+                e.append(f"acción «{nombre}»: no está bin/{accion['script']}")
+            if nombre in todas_a:
+                e.append(f"acción «{nombre}»: la declaran {origen[nombre]} y {pid}")
+            errores += [f"{pid}: {x}" for x in e]
+            if not e:
+                todas_a[nombre] = {k: v for k, v in accion.items() if k != "scriptDeLaApp"}
+                origen[nombre] = pid
+    if errores:
+        sys.exit("No armé acciones.json:\n  " + "\n  ".join(errores))
+    escribir(ruta, {"formato": 1, "acciones": {k: {**todas_a[k], "pieza": origen[k]} for k in sorted(todas_a)}})
+    _lista_blanca(app, ["!/acciones.json"])
+    return ruta
+
+
+def _lista_blanca(app, entradas):
+    """Muchas apps tienen un .gitignore de lista blanca («/*» y luego «!…»): ahí un archivo nuevo de la raíz quedaría fuera."""
+    gi = os.path.join(app, ".gitignore")
+    if not os.path.isfile(gi):
+        return
+    lineas = [l.strip() for l in open(gi, encoding="utf-8")]
+    if "/*" in lineas or "*" in lineas:
+        faltan = [x for x in entradas if x not in lineas and x.replace("/", "", 1) not in lineas]
+        if faltan:
+            with open(gi, "a", encoding="utf-8") as f:
+                f.write("\n# Pieza: archivos de la raíz que usa la app\n" + "\n".join(faltan) + "\n")
+            print(f"~ {gi}: agregué {', '.join(faltan)} (es una lista blanca)")
 
 
 def agregar(pid, app, sin_revisar=False):
@@ -511,6 +643,8 @@ def agregar(pid, app, sin_revisar=False):
                 print(f"    · sumé «{k}» a app.json: {cuando} Si no, vuelve a agregarla con --sin-config={k}.")
         for s in saltados:
             print(f"    ! {s} ya existía en la app y no lo pisé. Compara con: pieza.py diferencias {app} {p}")
+    if armar_acciones(app):
+        print("~ acciones.json (lo lee el host: va dentro de la app junto a app.json)")
 
 
 def estado_app(app):
@@ -592,6 +726,8 @@ def actualizar(app, solo=None, forzar=False, automatico=False):
         print(f"↑ {pid} {x['actual']} → {pieza(pid)['version']}" + (" (seguridad)" if x["seguridad"] else ""))
         for s in saltados:
             print(f"    ! no actualicé {s}: la app lo cambió. Revisa: pieza.py diferencias {app} {pid}")
+    if armar_acciones(app):
+        print("~ acciones.json al día")
 
 
 def aviso(app):
@@ -797,6 +933,8 @@ def main(a):
         automatico = "--automatico" in resto
         resto = [x for x in resto if x != "--automatico"]
         actualizar(os.path.abspath(resto[0]), resto[1] if len(resto) == 2 else None, forzar, automatico)
+    elif orden == "acciones" and len(resto) == 1:
+        print(armar_acciones(os.path.abspath(resto[0]), forzar=True))
     elif orden == "diferencias" and len(resto) == 2:
         diferencias(os.path.abspath(resto[0]), resto[1])
     else:

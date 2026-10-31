@@ -1,27 +1,96 @@
 {
  "formato": 1,
  "id": "host-escritorio",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "App de Windows y Linux",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "plataforma",
- "descripcion": "Host genérico en Electron con la misma API que el de Mac.",
+ "descripcion": "Host genérico en Electron con la misma API que el de Mac: ventana con sandbox, protocolo propio solo para ui/, puente con guardas, acciones declaradas con datos validados y límite de tiempo, config, idioma, menús y apariencia.",
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre que haya app de Windows o Linux."
  },
- "tomar_de": "esquema escritorio/src",
+ "origen": "esquema (escritorio/src/main.js: sandbox, contextIsolation, <id>://ui/ solo con archivos de ui/, ipcMain solo del marco principal con el origen propio, will-navigate/will-redirect/setWindowOpenHandler, permisos negados, una sola instancia, guardar al salir; servicios.js: Config, Idioma, Procesador sin variables <ID>_*, EnOrden; rutas.js: absoluta) + graba (<id>://video con rangos, permisos que la app puede abrir) + alcancia (secreto por la entrada estándar). Nuevo: nada de la app adentro (id, nombre y carpeta de datos de app.json; el preload recibe el id del host), acciones declaradas (acciones.json) validadas al cargar y en cada mensaje, límite de tiempo que corta también lo que lanzó el script (su grupo de procesos), carpeta temporal propia 0700 para entrada y salida, nativeTheme.themeSource según config.tema, y todo probado en Node y con Electron de verdad.",
  "requiere": [
-  "host-ui",
-  "nucleo"
+  "nucleo",
+  "host-ui"
  ],
+ "compatible": {
+  "nucleo": ">=0.7.0 <1.0.0",
+  "host-ui": ">=0.2.0 <1.0.0"
+ },
  "plataformas": [
   "windows",
   "linux"
  ],
+ "archivos": {
+  "escritorio/host.js": "escritorio/src/host.js",
+  "escritorio/enchufe.js": "escritorio/src/enchufe.js",
+  "escritorio/procesador.js": "escritorio/src/procesador.js",
+  "escritorio/preload.js": "escritorio/src/preload.js"
+ },
+ "solo": {
+  "escritorio/host.js": [
+   "windows",
+   "linux"
+  ],
+  "escritorio/enchufe.js": [
+   "windows",
+   "linux"
+  ],
+  "escritorio/procesador.js": [
+   "windows",
+   "linux"
+  ],
+  "escritorio/preload.js": [
+   "windows",
+   "linux"
+  ]
+ },
+ "config": {},
+ "acciones": {},
+ "textos": {
+  "No entendí lo que pediste. Intenta de nuevo.": "I didn't understand that request. Try again.",
+  "Falta algo para hacer esto.": "Something is missing to do this.",
+  "Tardó demasiado y lo detuve. Intenta de nuevo.": "It took too long, so I stopped it. Try again.",
+  "No pude terminar. Intenta de nuevo.": "I couldn't finish. Try again.",
+  "Archivo": "File",
+  "Edición": "Edit",
+  "Ver": "View",
+  "Ayuda": "Help",
+  "Deshacer": "Undo",
+  "Rehacer": "Redo",
+  "Cortar": "Cut",
+  "Copiar": "Copy",
+  "Pegar": "Paste",
+  "Seleccionar todo": "Select All",
+  "Pantalla completa": "Full Screen",
+  "Ajustes…": "Settings…",
+  "Salir de {app}": "Quit {app}",
+  "Sitio de {app}": "{app} website",
+  "Código": "Source code",
+  "Espera a que termine lo que está haciendo y vuelve a intentarlo.": "Wait until it finishes what it's doing and try again."
+ },
+ "pantallas": [
+  {
+   "donde": "Ventana",
+   "nombre": "La app",
+   "que": "la interfaz de ui/ en una ventana que recuerda su tamaño, con los menús de siempre en el idioma elegido"
+  }
+ ],
+ "permisos": {},
+ "red": [],
  "tareas_persona": [
   "Opcional: certificado de firma para Windows"
+ ],
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "seguridad": true,
+   "resumen": "Primera versión: Host genérico en Electron con la misma API que el de Mac: ventana con sandbox, protocolo propio solo para ui/, puente con guardas, acciones declaradas con datos validados y límite de tiempo, config, idioma, menús y apariencia."
+  }
  ]
 }

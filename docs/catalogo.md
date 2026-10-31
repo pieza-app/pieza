@@ -24,6 +24,8 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | `cifrado` | 0.1.0 | PBKDF2 600k + AES-256-GCM con AAD, HMAC para nombres, verificador, archivos con versión | Repasa `motor/cifrado.js` + Alcancía `ui/copia.js` |
 | `transcribir` | 0.1.0 | whisper.cpp con modelos de huella fija, vocabulario por archivo privado, VAD, filtro de inventos y bucles | Minuta + Corta (`comando_transcribir`) + Graba |
 | `trabajos` | 0.1.0 | Trabajos largos: estado en disco, latido, «Detener», preguntas; lectores de progreso Swift y Electron | Esquema `bin/trabajos.py` + `LectorProgreso` / `lectorProgreso` |
+| `host-mac` | 0.1.0 | App de Mac genérica (target `PiezaHost`): ventana, puente con guardas, acciones declaradas con límite de tiempo, config/idioma de `app.json`, menús, apariencia de `tema` | Esquema `app/Sources/Esquema/` + Alcancía (secreto por stdin) + Repasa (`conEntrada` con varios args) + Corta (`Medios.swift`) |
+| `host-escritorio` | 0.1.0 | Lo mismo en Electron, con `nativeTheme.themeSource` según `config.tema` | Esquema `escritorio/src/` + Graba (medios con rangos, permisos que abre la app) + Alcancía (secreto por stdin) |
 | `contenido` | 0.1.0 | Leer md, txt, pdf, docx, odt, epub y html con topes (zip bombas, XML sin entidades); capítulos sin IA | Esquema `bin/contenido.py` + Alcancía (`ArchivoNoValido`) |
 
 ## Por extraer, en este orden
@@ -31,9 +33,7 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | # | Pieza | Tipo | Tomar de | Sumar de | Notas |
 |---|---|---|---|---|---|
 | 8 | `mcp` (Py) | Py | Alcancía `mcp_servidor.py` + `mcp_conectar.py` | — | `mcp.servir(nombre, …, herramientas)`; conectar a claude/codex/gemini/Claude Desktop |
-| 11 | `host-mac` (Swift) | (b) | Esquema `app/Sources/Esquema/` | Alcancía (secreto por stdin), Repasa (`conEntrada` con varios args) | Host genérico: lee `pieza.json`. **Agregar timeout**. **Pendiente de la fase 1:** que la ventana siga la apariencia elegida en la pieza `tema` (`NSWindow.appearance` = `.aqua`/`.darkAqua`/nil según `config.tema`), no solo la del sistema |
-| 12 | `host-escritorio` (Electron) | (b) | Esquema `escritorio/src/` | — | Ídem. **Pendiente de la fase 1:** `nativeTheme.themeSource` = `system`/`light`/`dark` según `config.tema` (barra de título, menús y fondo mientras carga) |
-| 13 | `empaquetado` | build | Esquema | — | `build.sh`, `empaquetar.sh`, `preparar.sh`, instaladores, `Package.swift`, `Info.plist` generados desde `app.json`. El Python portátil (CPython 3.13.16) ya es idéntico en las seis: un solo `python.lock` |
+| 13 | `empaquetado` | build | Esquema | — | Copiar `acciones.json` junto a `app.json` (hoy cada app lo agrega a mano: ver los README de los hosts). `build.sh`, `empaquetar.sh`, `preparar.sh`, instaladores, `Package.swift`, `Info.plist` generados desde `app.json`. El Python portátil (CPython 3.13.16) ya es idéntico en las seis: un solo `python.lock` |
 | 14 | `github` | repo | Esquema | — | Plantillas de issues/PR, `dependabot`, workflows reutilizables (`workflow_call`) para revisar y publicar |
 | 15 | `universos` | Py + UI | Minuta (`universo.py`, galería) | Catálogo (#6) | Lo que pediste como ejemplo: tras #6 queda casi listo |
 
@@ -51,7 +51,7 @@ Después: la página pública (`docs/`), `revisar_privacidad.sh`, `generar_demo.
 | Graba | Con `whisper-cli` (Windows y Linux) el vocabulario no se usa | `bin/procesar.py` | Pieza `transcribir` (lista: `whisper-cli @archivo`) |
 | Minuta | El catálogo de universos e idiomas no verifica SHA-256 ni tamaño | `Catalogo.swift` | Índice con `sha256`/`tamano` (`catalogo.py generar`) y pieza `catalogo` |
 | Alcancía, Corta, Repasa | `T()` mete valores sin escapar en HTML | `ui/app.js` | Pieza `i18n` (lista: `T` escapa, `Thtml` para HTML armado) |
-| Todas | Ningún `Procesador` tiene límite de tiempo | Swift/Electron | `limite` en el enchufe (#11, #12) |
+| Todas | Ningún `Procesador` tiene límite de tiempo | Swift/Electron | Piezas `host-mac` y `host-escritorio` (listas: `limite` obligatorio, corta también a los descendientes) |
 | Graba, Repasa | Rojo y verde bajo AA como texto en claro (Graba también el rojo en oscuro) | `ui/app.css` | Los pares del README de `tema` (mismo tono, un poco más oscuro) |
 | Graba, Corta, Repasa, Alcancía, Minuta | `probarIA` manda `{id}`; Esquema y la pieza `ia`, `{ia}` | `ui/app.js` + `Ventana.swift`/`VisorWeb.swift`, Electron y `movil/host/host.js` | Pieza `host-ui` (lista): `{ia}` en todas |
 | Minuta | Sus ventanas (`.galeria-caja`, `role="dialog"`) no tienen `aria-modal` ni atrapan el foco | `ui/app.js` | Pieza `componentes` (lista) |

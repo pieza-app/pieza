@@ -1,6 +1,22 @@
 # Cambios
 
 ## Sin publicar
+- **El host genérico (fase 3 de «todo como si hubiéramos partido con Pieza»):** `host-mac` 0.1.0 (Swift, target propio
+  `PiezaHost`) y `host-escritorio` 0.1.0 (Electron) son la app nativa que cada app repetía: ventana, puente que solo atiende el
+  marco principal con la página propia, navegación solo dentro de `ui/`, `<id>://` para la interfaz y los medios (con rangos),
+  config e idioma desde `app.json`, menús en el idioma elegido, la apariencia de la pieza `tema` (`NSApp.appearance` y
+  `nativeTheme.themeSource`) y los scripts de `bin/` **con límite de tiempo** (hoy ninguna app lo tenía; corta también lo que
+  lanzó el script), sin variables `<ID>_*` de afuera, la entrada en una carpeta temporal propia y el secreto por stdin. Las
+  acciones que solo corren un script se **declaran** (en el `pieza.json` de una pieza o en `app.json` → `acciones`) y el host las
+  valida y las enruta solo; las propias de cada app se registran (`Puente.registrar` / `host.acciones.registrar`), así una app
+  migra de a poco. Cada README dice qué se borra en cada app.
+- `pieza.py`: arma `acciones.json` (las acciones de las piezas instaladas, guardadas en `piezas.json` con la versión copiada, más
+  las de `app.json`) al agregar o actualizar si la app tiene host, y con `pieza.py acciones <app>`; lo suma a la lista blanca del
+  `.gitignore`. Las reglas de una acción son las mismas en `pieza.py`, en Electron y en Swift (una prueba lo compara), con los
+  campos nuevos `progreso`, `requerido`, `recortar`, `extensiones` y `de`.
+- Pruebas: `pruebas/host_escritorio.mjs` (Node, con un Electron falso y Python de verdad: guardas del puente, datos, límite de
+  tiempo que corta a los hijos, secreto, protocolo con rangos), `pruebas/host_escritorio_electron.mjs` (Electron de verdad con
+  Xvfb, si `ELECTRON` apunta a uno) y `pruebas/swift/revisar_host_mac.sh` (en un Mac: compila la pieza y la prueba sin ventana).
 - **Piezas de interfaz 0.2 con lo que encontraron las apps al migrar** (Graba, Repasa, Minuta, Corta, Esquema y Alcancía):
   `componentes` 0.2.0 (seguridad: `confirmar({peligro})` enfoca «Cancelar»; el error ya no sale gris en un diálogo; el foco va al
   título y se queda donde estaba al repintar; `envolver` para un diálogo de la app; avisos con botón; un solo botón principal en

@@ -40,6 +40,14 @@ menos tokens: elegir piezas, no reescribirlas.
 - **Nada personal en el código**: ejemplos y pruebas con datos ficticios (Ana Pérez, Matías Soto).
 - **Liviano**: poco consumo, sin sacrificar que se vea bien.
 
+## El host (app nativa)
+
+`host-mac` (Swift) y `host-escritorio` (Electron) son la app nativa genérica. Una acción que solo corre un script **no se programa
+en el host**: se declara en el `pieza.json` de la pieza (o en `app.json` → `acciones` si es de la app) y `pieza.py` arma
+`acciones.json`. Lo nativo propio se registra en la app. Si cambias las reglas de una acción, cámbialas en los tres lados
+(`errores_accion` de `pieza.py`, `enchufe.js` y `Enchufe.swift`): `test_piezas.py` (`HostGenerico`) los compara. Swift no compila
+aquí: imita código que ya compila y deja anotado qué revisar en el Mac (`pruebas/swift/revisar_host_mac.sh`).
+
 ## Cuando una app mejora una pieza
 
 Las piezas se copian y la app es dueña de su copia. Si en una app se arregla o mejora una pieza:
@@ -63,7 +71,7 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 | Ruta | Qué es |
 |---|---|
 | `piezas/<id>/` | Cada pieza: `pieza.json` + código + README |
-| `herramientas/pieza.py` | `listar`, `catalogo`, `ficha`, `iniciar`, `agregar`, `estado`, `actualizar`, `aviso`, `diferencias`, `revisar`, `skills estado/instalar` |
+| `herramientas/pieza.py` | `listar`, `catalogo`, `ficha`, `iniciar`, `agregar`, `estado`, `actualizar`, `aviso`, `diferencias`, `revisar`, `acciones` (arma `acciones.json` para el host), `skills estado/instalar` |
 | `docs/enchufe.md` | El contrato: `pieza.json`, `app.json`, `piezas.json`, reglas de seguridad, host genérico |
 | `docs/catalogo.md` | Qué piezas hay, cuáles faltan y en qué orden, y brechas encontradas en las apps |
 | `comunidad/catalogo.json`, `herramientas/comunidad.py`, `.github/workflows/comunidad.yml` | El catálogo de la comunidad: piezas en repos de otras personas (topic `pieza-comunidad`), validadas cada día (ícono incluido) y con su estado de revisión fijado a un commit y a la huella de cada archivo. Guía en `docs/comunidad.md` |
@@ -81,6 +89,6 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 | `.github/` | `workflows/` (`revisar.yml`, `pagina.yml`: actions fijadas por SHA, permisos mínimos, `persist-credentials: false`), `ISSUE_TEMPLATE/` (error, idea, pieza, probar; seguridad y Discussions en `config.yml`), `pull_request_template.md` (checklist) y `dependabot.yml` (solo actions, con `cooldown`) |
 | `herramientas/revisar_privacidad.sh` | Busca datos personales antes de cada commit (`.terminos-privados`, local y nunca versionado); `--generico` corre en `pruebas/correr.sh` |
 | `.claude/agents/` | `pieza-revisor` (revisar PRs: regla de oro, ficha honesta, versión y cambios, brechas conocidas; nunca junta sin aprobación) y `pieza-privacidad` (antes de cada commit) |
-| `pruebas/` | `correr.sh` (valida los `pieza.json`, la versión de cada flujo, que toda action esté fijada por SHA y que la plantilla «Pieza al día» use las mismas versiones, la privacidad, `test_piezas.py`: una app ficticia con CLIs de IA falsos, y `test_piezas_datos.py`: red, catálogo, transcribir, trabajos, contenido e IA en vivo con servidores, whisper y CLIs falsos), `piezas_js.mjs` (las piezas de JavaScript en Node) e `interfaz.mjs` (las piezas de interfaz en Chromium con Playwright, con la CSP de las apps: foco, tema, contraste AA, 390 px; sin Playwright se salta) |
+| `pruebas/` | `correr.sh` (valida los `pieza.json`, la versión de cada flujo, que toda action esté fijada por SHA y que la plantilla «Pieza al día» use las mismas versiones, la privacidad, `test_piezas.py`: una app ficticia con CLIs de IA falsos, y `test_piezas_datos.py`: red, catálogo, transcribir, trabajos, contenido e IA en vivo con servidores, whisper y CLIs falsos), `piezas_js.mjs` (las piezas de JavaScript en Node), `host_escritorio.mjs` (el host de Electron en Node, con un Electron falso) y `host_escritorio_electron.mjs` (con Electron de verdad y Xvfb, si `ELECTRON` apunta a uno), `swift/revisar_host_mac.sh` (solo en un Mac: compila y prueba `host-mac`) e `interfaz.mjs` (las piezas de interfaz en Chromium con Playwright, con la CSP de las apps: foco, tema, contraste AA, 390 px; sin Playwright se salta) |
 
 Licencia AGPL-3.0, como las apps.

@@ -84,12 +84,13 @@ completa antes de crearla. Agregar una pieza (o un campo nuevo a una) la hace ap
 | `script` | `nombre.py`, dentro de `bin/`. Si es de la app y no de la pieza: `"scriptDeLaApp": true`. |
 | `args` | Literales, o `$campo` **solo si el campo es `enum` o `entero`** ya validado. |
 | `entrada` | `"archivo"` si hay datos que no van en `args`: el host los escribe en un JSON temporal y lo pasa antes de la salida. |
-| `datos` | Esquema cerrado de lo que manda la UI. Tipos: `texto{max}`, `enum{valores}`, `bool`, `entero{min,max}`, `rutaRelativa`, `base64{maxBytes}`, `lista`. Lo no declarado se descarta (salvo `"*": "pasar"`, cuando el script valida todo). |
-| `inyectar` | Valores que pone el host y nunca la UI: `{"carpeta": "carpetaActual"}`, `{"idioma": "idiomaUI"}`. |
+| `datos` | Esquema cerrado de lo que manda la UI. Tipos: `texto{max, recortar?}`, `enum{valores}`, `bool`, `entero{min?,max?}`, `rutaRelativa{extensiones?}` (relativa, sin `..`), `base64{maxBytes}`, `lista{max?, de?}` (sin `de`: textos de hasta 2000). `"requerido": true` en cualquiera; un campo de `args` siempre lo es. Un valor que no calza **no corre** el script (responde `codigo: "datos"`); `recortar` corta un texto largo en vez de rechazarlo. Lo no declarado se descarta (salvo `"*": "pasar"`, cuando el script valida todo). |
+| `inyectar` | Valores que pone el host y nunca la UI: `{"carpeta": "carpetaActual"}`, `{"idioma": "idiomaUI"}`. El host trae `idiomaUI` y `carpetaDatos`; las demás fuentes las registra la app. Sin valor, no corre (`codigo: "falta"`). Un campo inyectado no puede estar también en `datos`. |
 | `responde` | Función `window.<App>.<responde>(json)` a la que va el resultado. `null` = no responde. |
 | `eco` | Campos de la entrada que vuelven en la respuesta (ej. `orden`). |
 | `cola` | `"escritura"` = va en la fila `EnOrden` (nunca dos escrituras a la vez). |
-| `despues` | Lo que corre el host al terminar, ej. `["estado"]`. |
+| `despues` | Acciones que corre el host al terminar, ej. `["estado"]` (registradas por la app o declaradas). |
+| `progreso` | Función que recibe `{eventos}` mientras corre (pieza «trabajos»: el script escribe en `<ID>_PROGRESO`). |
 | `limite` | Segundos. **Obligatorio**: hoy ningún `Procesador` tiene timeout. |
 | `movil` | `{"motor": "modulo.funcion"}` para correrlo en JS en el celular, o `{"soloEscritorio": true}`. |
 
@@ -153,29 +154,48 @@ dice cuál es el ícono de la app para la lista de proyectos de la página de Pi
 Con eso `pieza.py estado` sabe qué cambió la app (huella distinta) y qué trae la base de nuevo (versión distinta), y
 `actualizar` nunca pisa un cambio de la app.
 
-## El host genérico (fase 2)
+## El host genérico (`host-mac` y `host-escritorio`)
 
-Cuando exista, cada host hace esto al arrancar y en cada mensaje, sin código por acción:
+`pieza.py agregar`/`actualizar` arman **`acciones.json`** en la raíz de la app (si tiene un host; o a mano con `pieza.py acciones
+<app>`): las `acciones` de cada pieza instalada (las de la versión copiada, guardadas en `piezas.json`) más las de `app.json` →
+`"acciones"`, las propias de la app (mismo formato; su script tiene que estar en `bin/`). Dos con el mismo nombre o una que no
+cumple las reglas detienen todo. Va dentro de la app junto a `app.json` (en `empaquetar.sh` y en `extraResources`).
 
-1. Lee los `pieza.json` de las piezas instaladas (dentro del paquete firmado de la app, nunca de afuera).
-2. Llega `{accion, datos}` desde el marco principal y con el origen de la app (si no, se ignora).
-3. Si la acción es una capacidad común o una pieza nativa, la atiende ese código.
-4. Si es de un `pieza.json`: valida `datos` → agrega `inyectar` → (fila si `cola`) → escribe la entrada → corre el script con
-   `limite` → traduce el error → agrega `eco` → `window.<App>.<responde>(r)` → corre `despues`.
-5. Si no está en ninguna parte, se ignora (igual que el `default: break` de hoy).
+```json
+{"formato": 1, "acciones": {"probarIA": {"script": "ia.py", "args": ["probar"], "entrada": "archivo",
+  "datos": {"ia": {"tipo": "enum", "valores": ["claude", "codex", "gemini"]}}, "responde": "iaProbada", "limite": 120, "pieza": "ia"}}}
+```
 
-`pruebas/contrato.py` pasa a ser uno solo para todas las apps: lee los `pieza.json` y revisa que la UI, la simulación del navegador,
-los scripts y los tres hosts digan lo mismo.
+Cada host, al arrancar y en cada mensaje, sin código por acción:
 
-## Capacidades comunes que traerá la base
+1. Lee `app.json` y `acciones.json` de **dentro del paquete** de la app (nunca de afuera) y vuelve a revisar cada acción con las
+   mismas reglas que `pieza.py` (`errores_accion`, `enchufe.js`, `Enchufe.swift`: una prueba compara los tres). Lo que no pasa no
+   se carga.
+2. Llega `{accion, datos}` del marco principal con la página propia (si no, se ignora).
+3. Primero lo que **registró la app** (`Puente.registrar` / `host.acciones.registrar`: lo nativo propio, y lo que todavía no se
+   migró), después lo que **trae el host** (`listo`, `config`, `abrirEnlace`, `copiar`; en Electron también las actualizaciones si se
+   le pasan) y al final lo **declarado**.
+4. Una declarada: valida `datos` → agrega `inyectar` → (fila si `cola`) → escribe la entrada en una carpeta temporal 0700 → corre
+   el script con `limite` (al cumplirse, corta también lo que lanzó) → agrega `eco` → `window.<App>.<responde>(r)` → corre `despues`.
+5. Si no está en ninguna parte, se ignora.
+
+Errores del host: `{ok: false, codigo: "datos" | "falta" | "limite" | "fallo", campo?, texto, valores, error}` (`texto` en español
+con marcadores para `T()`; `error` ya traducido para las interfaces de antes).
+
+`pruebas/contrato.py` puede pasar a ser uno solo para todas las apps: lee `acciones.json` y revisa que la UI, la simulación del
+navegador y los scripts digan lo mismo (pendiente: hoy cada app tiene el suyo).
+
+## Capacidades comunes
 
 `estado` · `config.guardar` · `idioma` · `dialogo.carpeta` (con marcador y vigilante) · `dialogo.archivos` ·
 `dialogo.guardarComo` · `portapapeles.copiar` · `enlace.abrir` (solo https) · `finder.mostrar` · `papelera.mover` ·
 `notificaciones` · `actualizaciones.revisar/instalar` · `catalogo.listar/descargar` · `descarga.verificada` (url + sha256) ·
 `ventana` (menú, cerrar, minimizar, zoom) · `soltar` · `secretos` (llavero / safeStorage).
 
-La referencia para cada una es la versión de Esquema (Swift `app/Sources/Esquema/` y Electron `escritorio/src/`), la más
-completa y la única con todas las guardas.
+Ya en los hosts: `estado`, `config.guardar`, `idioma`, `dialogo.carpeta` y `dialogo.archivos` (sin marcador ni vigilante: eso
+sigue en cada app), `dialogo.guardarComo`, `portapapeles.copiar`, `enlace.abrir`, `papelera.mover`, `ventana` (menú y apariencia),
+medios con rangos y, en Electron, `actualizaciones`. Pendientes: `finder.mostrar`, `notificaciones`, `soltar`, `secretos`
+(llavero / safeStorage), `catalogo` y `descarga.verificada` como capacidades del host (hoy son piezas aparte o código de la app).
 
 ## Versiones y actualizaciones
 
