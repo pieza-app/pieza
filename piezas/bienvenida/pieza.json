@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "bienvenida",
- "version": "0.2.0",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "Bienvenida",
  "icono": "icono.svg",
@@ -61,6 +61,16 @@
   "i18n": ">=0.1.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.3.0",
+   "tipo": "rompe",
+   "resumen": "Los botones de los pasos usan las clases de «componentes» (.pz-pie, .pz-boton, .pz-principal, .pz-izq) en vez de .pie-dialogo, .boton, .principal e .izq (lo pidió Esquema: tenía que copiar los estilos). Sin «componentes», bienvenida.css los dibuja con :where(). Cada paso trae data-pz-clave para que el foco vaya a su título al cambiar de paso dentro de ui.envolver(bv.html(), {id: \"t-bv\"}). Variable nueva --bv-sobre-acento (con «tema», conectada).",
+   "migrar": [
+    "Borra de tu app.css lo que dibujaba .pieza-bv .boton, .pieza-bv .pie-dialogo e .izq (con «componentes» ya se ven como el resto).",
+    "En tus pruebas: `.pieza-bv .boton.principal` → `.pieza-bv .pz-boton.pz-principal`, `.pie-dialogo` → `.pz-pie`.",
+    "Si envolvías bv.html() en tu propio <div class=\"capa\"><div class=\"dialogo\" …>, usa ui.envolver(bv.html(), {id: \"t-bv\", sinEsc: true})."
+   ]
+  },
   {
    "version": "0.2.0",
    "tipo": "rompe",

@@ -59,6 +59,7 @@ enruten solos.
 | `archivos` | Origen en la pieza → destino en la app. `pieza.py agregar` los copia y anota su huella. El destino va dentro de `bin/`, `ui/`, `app/`, `escritorio/`, `movil/`, `docs/`, `pruebas/` o `herramientas/`, nunca en carpetas que empiezan con punto (`.github/`, `.git/`, `.claude/`: ahí un archivo ejecuta código), y sin enlaces. |
 | `requiere` | Otras piezas que se agregan antes, solas. |
 | `config` | Claves que la pieza necesita en `app.json` (lista = valores posibles; `"bool"`, `"texto"`, `"numero"` = tipo). Se suman sin pisar. |
+| `config_opcional` | `{clave: "cuándo"}`: claves de `config` que solo sirven si la app ofrece algo (p. ej. `tema`: «Apariencia» en Ajustes). Se suman igual, salvo `pieza.py agregar … --sin-config=tema`; esa decisión queda en `piezas.json` (`sin_config`) y `actualizar` la respeta. |
 | `acciones` | Las acciones tipo (a) que trae la pieza (abajo). |
 | `textos` | Frases en español → inglés. Se suman al `ui/idiomas/en.json` de la app si faltan. |
 | `estado` | `lista` (trae código) o `planeada` (aún por extraer: sin `archivos`, con `tomar_de`). |

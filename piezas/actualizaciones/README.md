@@ -37,14 +37,16 @@ Actualizaciones.revisarCadaRato { r in Ventana.shared.llamar("actualizacionRevis
 Instalación de desarrollo (build.sh dejó la ruta del checkout en `archivoDesarrollo`): `git pull --ff-only` + `herramientas/empaquetar.sh`.
 
 ## Lo que llega a la interfaz (una sola forma)
-- `actualizacionRevisada`: `{hay, version, notas, sinConexion, texto: "Versión {v}", valores: {v}}`.
+- `actualizacionRevisada`: `{hay, version, notas, sinConexion, texto: "Versión {v}", valores: {v}, desarrollo}`.
 - `disponible` (lo que la app manda en su estado, p. ej. `estado.actualizacion`): lo mismo, sin `sinConexion`.
 - `actualizacionProgreso`: `{paso: "1"|"2"|"3"|"error", codigo, texto, valores: {app}, total: 3, pct?}` (`aviso(paso, codigo)`
   lo arma en Swift y en Electron).
 
 `texto` es la frase en español con marcadores (una clave de `ui/idiomas`): la interfaz la muestra con `T(texto, valores)` (pieza
 `i18n`); `notas` son las del Release, tal cual (con `esc()`). Nunca se traduce en la app nativa ni se manda un texto ya traducido.
-En una instalación de desarrollo (Mac) `hay` puede venir sin versión: `texto` vacío y en `notas` los commits nuevos.
+En una instalación de desarrollo (Mac) `hay` puede venir sin versión: `desarrollo: true`, `texto` vacío y en `notas` los commits
+nuevos (la fila de `componentes` lo muestra como «Hay cambios nuevos en el código de {app}»). Una interfaz de antes que esperaba
+`detalle` puede seguir: `componentes` 0.2.0 lee `notas` o `detalle`.
 
 Si la app suma un aviso propio (por ejemplo «espera a que termine de guardar»), usa la misma forma, con su frase en español en
 `texto` y su inglés en `ui/idiomas/en.json`:
@@ -63,3 +65,9 @@ las llamadas por las de arriba (`revisar` ahora devuelve un diccionario; `instal
 texto), mandar `disponible` en el estado tal cual y mostrar `texto` con `T()` (si la interfaz esperaba un `detalle` ya traducido,
 ahora son `texto`/`valores` + `notas`). En Mac, `Actualizaciones.version` sirve para el estado o un User-Agent. Graba no valida
 el origen de la descarga: pasarla primero.
+
+## Si venías de 0.2.0
+
+| Qué cambió | Qué hacer en la app |
+|---|---|
+| `desarrollo` en la respuesta de revisar y en `disponible` | Nada: lo lee la fila de `componentes` 0.2.0. Si tu interfaz mostraba «Versión» vacía en una instalación de desarrollo, ya no. |

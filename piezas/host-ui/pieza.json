@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "host-ui",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Puente de la interfaz",
  "icono": "icono.svg",
@@ -32,6 +32,14 @@
  "permisos": {},
  "red": [],
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "mejora",
+   "resumen": "Lo que pidieron Graba, Repasa y Minuta al migrar: host.responder({…}) también acepta objetos (como `_pruebas`, para las pruebas de la app; antes se ignoraban en silencio) y avisa lo que no es función ni objeto; si la app hace `window.<App> = {…}` después de crearHost, se avisa en la consola y lo nuevo se suma al mismo objeto (antes se perdían las respuestas de las piezas).",
+   "migrar": [
+    "Nada obligatorio. Si tu app hacía `window.<App>._pruebas = …` o `Object.assign(window.<App>, …)`, sigue igual; si hacía `window.<App> = {…}`, cámbialo por host.responder({…}) para no ver el aviso."
+   ]
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

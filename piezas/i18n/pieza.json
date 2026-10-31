@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "i18n",
- "version": "0.2.0",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "Idiomas",
  "icono": "icono.svg",
@@ -44,6 +44,14 @@
  "permisos": {},
  "red": [],
  "cambios": [
+  {
+   "version": "0.3.0",
+   "tipo": "mejora",
+   "resumen": "Lo que pidió Minuta: traducirDOM traduce el placeholder, title y aria-label de un <textarea> (su texto, el de la persona, no), y crear({noTraducirAtributos}) traduce los atributos también dentro de las zonas de noTraducir (un botón «Abrir nota» en una lista de notas) menos donde diga ese selector.",
+   "migrar": [
+    "Si tu app recorría el DOM a mano para traducir esos atributos (Minuta), pásale tu selector de zonas sin atributos a crear({noTraducirAtributos}) y borra el recorrido."
+   ]
+  },
   {
    "version": "0.2.0",
    "tipo": "mejora",

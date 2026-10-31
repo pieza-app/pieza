@@ -13,12 +13,12 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 |---|---|---|---|
 | `nucleo` | 0.7.0 | `app.json`, carpeta de datos, config validada, escritura atómica, `ruta_en`, contrato de scripts | Esquema `bin/comun.py` + Alcancía/Repasa |
 | `ia` | 0.6.0 | La IA de la persona con su cuenta, segura; en vivo (lo que lee y «Detener») | Esquema `bin/ia.py` + `ia_vivo.py` + Alcancía (pedido en archivo) + Repasa (material) |
-| `i18n` | 0.2.0 | `T`/`Tp`/`Thtml`/`tr`/`traducirDOM`, paquetes de idioma validados | Minuta (`tr`) + Esquema (`T` que escapa, `traducirDOM`) + Alcancía (`Thtml`) + Graba (prioridad) |
-| `bienvenida` | 0.2.0 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
-| `actualizaciones` | 0.2.0 | Releases del propio repo, `.sha256` obligatorio, Mac (target propio) y Electron | Esquema + Repasa (URL sin puerto ni `..`, PATH fijo, textos que traduce la interfaz) |
-| `host-ui` | 0.1.0 | `crearHost({nombre, global, simular})`: `host.enviar` y `window.<App>.*` iguales en Mac, Electron, celular y navegador; `probarIA {ia}` en todas | Esquema + Repasa/Alcancía (puente del celular) + Minuta (mensaje plano mientras cambia) |
-| `tema` | 0.1.0 | Un solo juego de tokens CSS (`--texto-suave`, `--panel-2`…), pares claro/oscuro con `light-dark()`, selector «Apariencia» | Esquema (`data-tema`) + los nombres comunes de Graba, Corta, Repasa y Alcancía; tabla de nombres viejos → nuevos en su README |
-| `componentes` | 0.1.0 | Diálogo con foco atrapado y Esc, confirmar, avisos en cola, filas de Tu IA, fila de actualización «Paso n de 3», Acerca de, comentarios a GitHub | Esquema + Alcancía («Cómo instalarla», error de la IA traducido) + Minuta (comentarios → issue prellenado) |
+| `i18n` | 0.3.0 | `T`/`Tp`/`Thtml`/`tr`/`traducirDOM`, paquetes de idioma validados | Minuta (`tr`) + Esquema (`T` que escapa, `traducirDOM`) + Alcancía (`Thtml`) + Graba (prioridad) |
+| `bienvenida` | 0.3.0 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
+| `actualizaciones` | 0.3.0 | Releases del propio repo, `.sha256` obligatorio, Mac (target propio) y Electron | Esquema + Repasa (URL sin puerto ni `..`, PATH fijo, textos que traduce la interfaz) |
+| `host-ui` | 0.2.0 | `crearHost({nombre, global, simular})`: `host.enviar` y `window.<App>.*` iguales en Mac, Electron, celular y navegador; `probarIA {ia}` en todas | Esquema + Repasa/Alcancía (puente del celular) + Minuta (mensaje plano mientras cambia) |
+| `tema` | 0.2.0 | Un solo juego de tokens CSS (`--texto-suave`, `--panel-2`…), pares claro/oscuro con `light-dark()`, selector «Apariencia» | Esquema (`data-tema`, ahora `data-pz-modo`) + los nombres comunes de Graba, Corta, Repasa y Alcancía; tabla de nombres viejos → nuevos en su README |
+| `componentes` | 0.2.0 | Diálogo con foco atrapado y Esc (`envolver` para uno de la app), confirmar, avisos en cola, filas de Tu IA, fila de actualización «Paso n de 3», Acerca de, comentarios a GitHub | Esquema + Alcancía («Cómo instalarla», error de la IA traducido) + Minuta (comentarios → issue prellenado) |
 | `catalogo` | 0.1.0 | Contenido de la comunidad: índice validado por el validador de la app, SHA-256 obligatorio, sin redirecciones; Py + Swift + Electron | Esquema `plantillas.py` + `Catalogo.swift` + `catalogo.js` + Corta (`origen`, categoría = carpeta, un tipo por cosa) |
 | `red` | 0.1.0 | HTTPS desde los scripts: dominios permitidos, sin redirecciones, topes de tamaño y tiempo | Alcancía `bin/red.py` |
 | `cifrado` | 0.1.0 | PBKDF2 600k + AES-256-GCM con AAD, HMAC para nombres, verificador, archivos con versión | Repasa `motor/cifrado.js` + Alcancía `ui/copia.js` |
@@ -31,8 +31,8 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | # | Pieza | Tipo | Tomar de | Sumar de | Notas |
 |---|---|---|---|---|---|
 | 8 | `mcp` (Py) | Py | Alcancía `mcp_servidor.py` + `mcp_conectar.py` | — | `mcp.servir(nombre, …, herramientas)`; conectar a claude/codex/gemini/Claude Desktop |
-| 11 | `host-mac` (Swift) | (b) | Esquema `app/Sources/Esquema/` | Alcancía (secreto por stdin), Repasa (`conEntrada` con varios args) | Host genérico: lee `pieza.json`. **Agregar timeout** |
-| 12 | `host-escritorio` (Electron) | (b) | Esquema `escritorio/src/` | — | Ídem |
+| 11 | `host-mac` (Swift) | (b) | Esquema `app/Sources/Esquema/` | Alcancía (secreto por stdin), Repasa (`conEntrada` con varios args) | Host genérico: lee `pieza.json`. **Agregar timeout**. **Pendiente de la fase 1:** que la ventana siga la apariencia elegida en la pieza `tema` (`NSWindow.appearance` = `.aqua`/`.darkAqua`/nil según `config.tema`), no solo la del sistema |
+| 12 | `host-escritorio` (Electron) | (b) | Esquema `escritorio/src/` | — | Ídem. **Pendiente de la fase 1:** `nativeTheme.themeSource` = `system`/`light`/`dark` según `config.tema` (barra de título, menús y fondo mientras carga) |
 | 13 | `empaquetado` | build | Esquema | — | `build.sh`, `empaquetar.sh`, `preparar.sh`, instaladores, `Package.swift`, `Info.plist` generados desde `app.json`. El Python portátil (CPython 3.13.16) ya es idéntico en las seis: un solo `python.lock` |
 | 14 | `github` | repo | Esquema | — | Plantillas de issues/PR, `dependabot`, workflows reutilizables (`workflow_call`) para revisar y publicar |
 | 15 | `universos` | Py + UI | Minuta (`universo.py`, galería) | Catálogo (#6) | Lo que pediste como ejemplo: tras #6 queda casi listo |

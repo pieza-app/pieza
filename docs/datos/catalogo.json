@@ -7,7 +7,7 @@
    "nombre": "Actualizaciones",
    "categoria": "plataforma",
    "estado": "lista",
-   "version": "0.2.0",
+   "version": "0.3.0",
    "descripcion": "Avisa dentro de la app, descarga solo de los Releases del repo, verifica sha256 y actualiza en un clic sin tocar los datos.",
    "plataformas": [
     "mac",
@@ -32,6 +32,11 @@
    "requiere": [],
    "cambios": [
     {
+     "version": "0.3.0",
+     "tipo": "mejora",
+     "resumen": "La respuesta de revisar y `disponible` traen `desarrollo` (true en una instalación de desarrollo del Mac: sin versión y con los commits nuevos en `notas`), y la fila de «componentes» lo muestra como «Hay cambios nuevos en el código». La interfaz que esperaba `detalle` puede seguir: «componentes» 0.2.0 acepta `notas` o `detalle`."
+    },
+    {
      "version": "0.2.0",
      "tipo": "mejora",
      "resumen": "Una sola forma para la interfaz: `disponible` (lo que la app manda en su estado) trae `texto` y `valores` igual que la respuesta de revisar, Electron suma `aviso(paso, codigo)` como Swift y Swift deja ver `Actualizaciones.version`. Lo pidió Esquema: su interfaz esperaba un `detalle` ya traducido."
@@ -53,7 +58,7 @@
    "nombre": "Bienvenida",
    "categoria": "interfaz",
    "estado": "lista",
-   "version": "0.2.0",
+   "version": "0.3.0",
    "descripcion": "Primer uso por pasos, con el idioma SIEMPRE primero; cada pieza puede sumar su paso.",
    "plataformas": [
     "mac",
@@ -83,6 +88,16 @@
     "i18n": ">=0.1.0 <1.0.0"
    },
    "cambios": [
+    {
+     "version": "0.3.0",
+     "tipo": "rompe",
+     "resumen": "Los botones de los pasos usan las clases de «componentes» (.pz-pie, .pz-boton, .pz-principal, .pz-izq) en vez de .pie-dialogo, .boton, .principal e .izq (lo pidió Esquema: tenía que copiar los estilos). Sin «componentes», bienvenida.css los dibuja con :where(). Cada paso trae data-pz-clave para que el foco vaya a su título al cambiar de paso dentro de ui.envolver(bv.html(), {id: \"t-bv\"}). Variable nueva --bv-sobre-acento (con «tema», conectada).",
+     "migrar": [
+      "Borra de tu app.css lo que dibujaba .pieza-bv .boton, .pieza-bv .pie-dialogo e .izq (con «componentes» ya se ven como el resto).",
+      "En tus pruebas: `.pieza-bv .boton.principal` → `.pieza-bv .pz-boton.pz-principal`, `.pie-dialogo` → `.pz-pie`.",
+      "Si envolvías bv.html() en tu propio <div class=\"capa\"><div class=\"dialogo\" …>, usa ui.envolver(bv.html(), {id: \"t-bv\", sinEsc: true})."
+     ]
+    },
     {
      "version": "0.2.0",
      "tipo": "rompe",
@@ -278,7 +293,7 @@
    "nombre": "Componentes",
    "categoria": "interfaz",
    "estado": "lista",
-   "version": "0.1.0",
+   "version": "0.2.0",
    "descripcion": "Diálogo accesible, confirmar, avisos (toast) en cola, filas de Tu IA, actualizaciones «Paso n de 3», Acerca de y comentarios a GitHub.",
    "plataformas": [
     "mac",
@@ -318,9 +333,23 @@
    ],
    "compatible": {
     "i18n": ">=0.2.0 <1.0.0",
-    "tema": ">=0.1.0 <1.0.0"
+    "tema": ">=0.2.0 <1.0.0"
    },
    "cambios": [
+    {
+     "version": "0.2.0",
+     "tipo": "rompe",
+     "seguridad": true,
+     "resumen": "Seguridad: confirmar({peligro: true}) pone el foco en «Cancelar», así un Enter apurado ya no borra (lo encontró Graba). Lo que encontraron las cinco apps al migrar. Arreglos: el texto de error (.pz-error-texto) ya no sale gris dentro de un diálogo (las reglas sobre p y h2 van con :where() y solo para los p directos); el aviso y el botón de peligro usan --sobre-texto y --sobre-rojo (se leen con fondos transparentes); el foco al abrir va al título (no al pie, que desplazaba el diálogo) y, si la app vuelve a pintar con el diálogo abierto, vuelve al control donde estaba; pasos con el mismo título pero otra `clave` mueven el foco; un enlace en una fila de IA ya no deja un hueco a 390 px; .pz-boton parte el texto en vez de salirse; .pz-seg no se parte en varias líneas y se ve sobre --panel-2. Nuevo: ui.envolver(html, {id}) para un diálogo con su propio <h2>; dialogo({antes, tituloHTML}) y sin título; ui.aviso con botón ({accion: {texto, f}}) y con frases ya armadas (tr); acercaDe({extra}); filasIA con `detalle`, «Revisar de nuevo» para una no instalada y un solo botón principal (`principal`); crear({version}) acepta una función; actualizacionRevisada/Disponible aceptan `detalle` y {pintar: false}; fila de actualización en modo desarrollo; confirmar({sinElegir}) para que Esc no sea «no»; --pz-boton-alto, --pz-chip-alto y --pz-tactil para el alto de lo que se toca.",
+     "migrar": [
+      "El foco al abrir un diálogo va al título. Si pusiste data-autofoco en un botón del pie solo para que el foco entrara, quítalo (déjalo solo en un campo donde se escribe).",
+      "filasIA: ahora solo la primera IA instalada lleva pz-principal cuando ninguna está en uso. Para la forma de antes: filasIA({…, principal: \"todas\"}). Una no instalada muestra «Revisar de nuevo» (pz-plano): si tus pruebas contaban los botones, ajústalas.",
+      "Si tu app.css forzaba 44 px sobre .pz-boton/.pz-chip/.pz-seg button, cámbialo por `:root { --pz-boton-alto: 44px }` (o --pz-tactil); si les ponía `white-space: normal` o `flex-wrap: nowrap`, ya no hace falta.",
+      "Si tu app.css corregía `.pz-dialogo p` (margen o gris) o el color de .pz-error-texto en un diálogo, bórralo.",
+      "Si convertías `detalle` en `notas` antes de llamar ui.actualizacionRevisada (Repasa, Esquema), ya no hace falta.",
+      "Si armabas tu propio diálogo para tener un <h2> propio, puntos antes del título o un título bilingüe, pasa a ui.envolver(html, {id}) o a dialogo({antes, tituloHTML})."
+     ]
+    },
     {
      "version": "0.1.0",
      "tipo": "inicial",
@@ -569,7 +598,7 @@
    "nombre": "Puente de la interfaz",
    "categoria": "interfaz",
    "estado": "lista",
-   "version": "0.1.0",
+   "version": "0.2.0",
    "descripcion": "host.enviar(accion, datos) y las respuestas window.<App>.*, igual en Mac, Electron, móvil y navegador (modo demo).",
    "plataformas": [
     "mac",
@@ -582,6 +611,14 @@
    "red": [],
    "requiere": [],
    "cambios": [
+    {
+     "version": "0.2.0",
+     "tipo": "mejora",
+     "resumen": "Lo que pidieron Graba, Repasa y Minuta al migrar: host.responder({…}) también acepta objetos (como `_pruebas`, para las pruebas de la app; antes se ignoraban en silencio) y avisa lo que no es función ni objeto; si la app hace `window.<App> = {…}` después de crearHost, se avisa en la consola y lo nuevo se suma al mismo objeto (antes se perdían las respuestas de las piezas).",
+     "migrar": [
+      "Nada obligatorio. Si tu app hacía `window.<App>._pruebas = …` o `Object.assign(window.<App>, …)`, sigue igual; si hacía `window.<App> = {…}`, cámbialo por host.responder({…}) para no ver el aviso."
+     ]
+    },
     {
      "version": "0.1.0",
      "tipo": "inicial",
@@ -598,7 +635,7 @@
    "nombre": "Idiomas",
    "categoria": "interfaz",
    "estado": "lista",
-   "version": "0.2.0",
+   "version": "0.3.0",
    "descripcion": "Traducciones con la frase en español como clave, plantillas {n}, escape seguro y traducir la página entera.",
    "plataformas": [
     "mac",
@@ -618,6 +655,14 @@
    "red": [],
    "requiere": [],
    "cambios": [
+    {
+     "version": "0.3.0",
+     "tipo": "mejora",
+     "resumen": "Lo que pidió Minuta: traducirDOM traduce el placeholder, title y aria-label de un <textarea> (su texto, el de la persona, no), y crear({noTraducirAtributos}) traduce los atributos también dentro de las zonas de noTraducir (un botón «Abrir nota» en una lista de notas) menos donde diga ese selector.",
+     "migrar": [
+      "Si tu app recorría el DOM a mano para traducir esos atributos (Minuta), pásale tu selector de zonas sin atributos a crear({noTraducirAtributos}) y borra el recorrido."
+     ]
+    },
     {
      "version": "0.2.0",
      "tipo": "mejora",
@@ -1026,7 +1071,7 @@
    "nombre": "Tema claro y oscuro",
    "categoria": "interfaz",
    "estado": "lista",
-   "version": "0.1.0",
+   "version": "0.2.0",
    "descripcion": "Sistema, claro u oscuro con un solo juego de tokens CSS y light-dark(): cada color se escribe una vez.",
    "plataformas": [
     "mac",
@@ -1046,6 +1091,17 @@
    "red": [],
    "requiere": [],
    "cambios": [
+    {
+     "version": "0.2.0",
+     "tipo": "rompe",
+     "resumen": "El atributo de <html> pasa de data-tema a data-pz-modo (en Minuta, un closest(\"[data-tema]\") de la app encontraba <html>). --sombra ya no usa light-dark() (solo acepta colores: en Chromium la sombra quedaba en «none»; lo encontró Esquema): se elige por modo con selectores y los pares --sombra-claro/--sombra-oscuro siguen igual. Tokens sólidos nuevos --sobre-rojo y --sobre-texto (texto sobre el rojo y sobre --texto: el aviso y el botón de peligro ya no usan --fondo/--panel, que Graba hace transparentes). Un diálogo enfocado no dibuja el anillo alrededor de toda la caja. pieza.py agregar … --sin-config=tema no suma «tema» a app.json.",
+     "migrar": [
+      "En app.css y app.js: `[data-tema=` → `[data-pz-modo=` y `dataset.tema` → `dataset.pzModo` donde leías el modo de <html> (mejor: `tema.valor` o `tema.resuelto()`, o `alCambiar(resuelto, valor)` en crear). Los `data-tema` de tus propios elementos no cambian.",
+      "Si tu app redefinía `--sombra` para arreglar la sombra (Esquema), bórralo: con los pares --sombra-claro/--sombra-oscuro basta.",
+      "Si tu app quitaba el anillo de foco de la caja del diálogo (Minuta: `[aria-modal]:focus-visible { outline: none }`), ya lo trae la pieza: bórralo.",
+      "Una app sin «Apariencia» (Minuta): saca «tema» de app.json → config; al volver a agregarla usa --sin-config=tema."
+     ]
+    },
     {
      "version": "0.1.0",
      "tipo": "inicial",

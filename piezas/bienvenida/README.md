@@ -21,8 +21,10 @@ bv.abrir({ config: E.config, forzar: new URLSearchParams(location.search).has("b
 
 function pintar() {
   if (bv.soloIdioma) { raiz.innerHTML = bv.html(); bv.enfocar(); return; }   // nada más detrás
-  raiz.innerHTML = app() + (bv.activa ? `<div class="capa"><div class="dialogo" role="dialog" aria-modal="true" aria-labelledby="t-bv">${bv.html()}</div></div>` : "");
+  // Con la pieza «componentes»: la caja accesible (foco, Tab, sin Esc). Cada paso trae data-pz-clave: el foco va a su título.
+  raiz.innerHTML = app() + (bv.activa ? ui.envolver(bv.html(), { id: "t-bv", sinEsc: true }) : "") + ui.capas();
   i18n.traducirDOM(raiz);
+  ui.despuesDePintar();
 }
 document.addEventListener("click", (ev) => { if (bv.manejarClic(ev)) return; /* … */ });
 document.addEventListener("keydown", (ev) => { if (bv.manejarTecla(ev)) return; /* … */ });
@@ -48,3 +50,16 @@ La app nativa tampoco muestra ni pide nada (permisos, actualizaciones) antes de 
 - `sumarPaso({…, saltable: false})` quita «Lo hago después» en un paso que la app necesita sí o sí (por defecto, se puede saltar).
 - Los atributos son `data-bv-idioma`, `.opciones-idioma` y `.opcion-idioma`. Si tu app o sus pruebas usaban otros (`data-idioma`,
   `.idiomas`), cámbialos al adoptar la pieza.
+
+## Botones (0.3.0)
+
+Los botones de los pasos usan las clases de la pieza `componentes`: `.pz-pie`, `.pz-boton`, `.pz-principal` y `.pz-izq` («Atrás»).
+Con `componentes` se ven como el resto de la app; sin ella, `bienvenida.css` los dibuja con `:where()` (especificidad 0) y los
+colores `--bv-*` (más `--bv-sobre-acento`, el texto del botón principal). Cada paso lleva `data-pz-clave="bv-<id>"`.
+
+## Si venías de 0.2.0
+
+| Qué cambió | Qué hacer en la app |
+|---|---|
+| `.pie-dialogo`, `.boton`, `.principal`, `.izq` → `.pz-pie`, `.pz-boton`, `.pz-principal`, `.pz-izq` | Borra de tu `app.css` lo que dibujaba `.pieza-bv .boton`/`.pie-dialogo`/`.izq` (Esquema lo copiaba de `componentes`). En tus pruebas: `.pieza-bv .boton.principal` → `.pieza-bv .pz-boton.pz-principal`. |
+| La caja la pone `ui.envolver` | Si armabas `<div class="capa"><div class="dialogo" role="dialog" …>` alrededor de `bv.html()`, cámbialo por `ui.envolver(bv.html(), {id: "t-bv", sinEsc: true})`. |

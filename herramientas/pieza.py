@@ -4,10 +4,11 @@
   pieza.py listar                         Las piezas disponibles.
   pieza.py iniciar <app> <id> <Nombre> [--plataformas=mac,windows,linux] [--datos=sistema|visible]
                                           Crea app.json en una app que aún no lo tiene.
-  pieza.py agregar <pieza> <app> [--sin-revisar]
+  pieza.py agregar <pieza> <app> [--sin-revisar] [--sin-config=clave,…]
                                           Copia la pieza (y lo que requiere) a la app y la anota en piezas.json. Oficial o de la
                                           comunidad: las de la comunidad revisadas se verifican con su huella; las que aún no se
-                                          revisan solo con --sin-revisar (bajo tu responsabilidad).
+                                          revisan solo con --sin-revisar (bajo tu responsabilidad). --sin-config=tema no suma
+                                          esa clave opcional a app.json (p. ej. una app sin «Apariencia» en Ajustes).
   pieza.py estado <app> [--json]          Qué piezas tiene la app, qué versiones nuevas hay, de qué tipo (arreglo, mejora,
                                           rompe, seguridad), qué archivos cambió la app y qué se puede actualizar solo.
   pieza.py actualizar <app> [pieza] [--automatico] [--forzar]
@@ -173,7 +174,8 @@ def ruta_relativa_ok(r):
 #: La forma de cada campo, antes de mirar su contenido (un pieza.json de afuera puede traer cualquier cosa).
 FORMA = {"version": str, "estado": str, "nombre": str, "icono": str, "categoria": str, "descripcion": str, "recomendar": dict,
          "requiere": list, "compatible": dict, "plataformas": list, "pantallas": list, "permisos": dict, "red": list,
-         "red_nota": str, "tareas_persona": list, "archivos": dict, "solo": dict, "config": dict, "acciones": dict, "textos": dict,
+         "red_nota": str, "tareas_persona": list, "archivos": dict, "solo": dict, "config": dict, "config_opcional": dict,
+         "acciones": dict, "textos": dict,
          "cambios": list, "tomar_de": (str, list), "origen": str}
 
 
@@ -191,6 +193,8 @@ def errores_forma(p):
         e.append("cada cambio es un objeto")
     if not all(isinstance(k, str) and isinstance(v, str) for k, v in p.get("archivos", {}).items()):
         e.append("«archivos» es {origen: destino} con textos")
+    if not all(isinstance(k, str) and k in p.get("config", {}) and isinstance(v, str) for k, v in p.get("config_opcional", {}).items()):
+        e.append("«config_opcional» es {clave de «config»: cuándo la suma la app}")
     if not all(isinstance(v, str) for v in p.get("compatible", {}).values()):
         e.append("«compatible» es {pieza: rango}")
     for a in p.get("acciones", {}).values():
@@ -409,6 +413,10 @@ def _textos_en(app):
     return ruta if os.path.isfile(ruta) else None
 
 
+#: Claves opcionales de config que no se suman a app.json (`agregar … --sin-config=tema`). Se guardan en piezas.json, por pieza.
+_SIN_CONFIG = set()
+
+
 def copiar(pid, app, forzar=False, lock=None):
     p = pieza(pid)
     lock = lock or candado(app)
@@ -439,11 +447,16 @@ def copiar(pid, app, forzar=False, lock=None):
             print(f"    ! ya no es de la pieza: {viejo} (bórralo si la app no lo usa)")
     # Config: suma las claves que la pieza necesita a app.json. Una clave que ya existe no se pisa, pero si es una lista de
     # valores posibles se le suman los nuevos (si no, la app descartaría en silencio un valor que la pieza ahora acepta).
+    # Una clave de `config_opcional` (p. ej. «tema»: solo si la app ofrece «Apariencia») se salta con --sin-config, y la
+    # decisión queda en piezas.json para que `actualizar` no la vuelva a sumar.
+    sin_config = sorted(set(antes.get("sin_config", [])) | (_SIN_CONFIG & set(p.get("config_opcional", {}))))
     ruta_app = os.path.join(app, "app.json")
     a = leer(ruta_app)
     if a is not None and p.get("config"):
         a.setdefault("config", {})
         for k, v in p["config"].items():
+            if k in sin_config and k in p.get("config_opcional", {}):
+                continue
             actual = a["config"].setdefault(k, v)
             if isinstance(actual, list) and isinstance(v, list):
                 actual.extend(x for x in v if x not in actual)
@@ -464,6 +477,7 @@ def copiar(pid, app, forzar=False, lock=None):
     # Si algún archivo quedó sin actualizar (la app lo cambió), la versión anotada no avanza: estado sigue avisando.
     version = p["version"] if not saltados else antes.get("version", "0.0.0")
     lock["piezas"][pid] = {"version": version, "archivos": copiados,
+                           **({"sin_config": sin_config} if sin_config else {}),
                            # Lo que la app aceptó: si una versión nueva pide más (otra pieza, permisos, red), no se aplica sola.
                            "ficha": {k: p.get(k, [] if k != "permisos" else {}) for k in ("requiere", "permisos", "red")}}
     if pid in _FUENTE:
@@ -490,6 +504,11 @@ def agregar(pid, app, sin_revisar=False):
             continue
         saltados = copiar(p, app, lock=lock)
         print(f"+ {p} {pieza(p)['version']}")
+        for k, cuando in pieza(p).get("config_opcional", {}).items():
+            if k in _SIN_CONFIG:
+                print(f"    · no sumé «{k}» a app.json (--sin-config)")
+            else:
+                print(f"    · sumé «{k}» a app.json: {cuando} Si no, vuelve a agregarla con --sin-config={k}.")
         for s in saltados:
             print(f"    ! {s} ya existía en la app y no lo pisé. Compara con: pieza.py diferencias {app} {p}")
 
@@ -764,8 +783,11 @@ def main(a):
         plats = next((x.split("=", 1)[1].split(",") for x in resto if x.startswith("--plataformas=")), None)
         datos = next((x.split("=", 1)[1] for x in resto if x.startswith("--datos=")), "sistema")
         iniciar(*[x for x in resto if not x.startswith("--")], plataformas=plats, datos=datos)
-    elif orden == "agregar" and len([x for x in resto if x != "--sin-revisar"]) == 2:
-        libres = [x for x in resto if x != "--sin-revisar"]
+    elif orden == "agregar" and len([x for x in resto if x != "--sin-revisar" and not x.startswith("--sin-config=")]) == 2:
+        libres = [x for x in resto if x != "--sin-revisar" and not x.startswith("--sin-config=")]
+        for x in resto:
+            if x.startswith("--sin-config="):
+                _SIN_CONFIG.update(k for k in x.split("=", 1)[1].split(",") if k)
         agregar(libres[0], os.path.abspath(libres[1]), "--sin-revisar" in resto)
     elif orden == "estado" and len(resto) == 1:
         estado(os.path.abspath(resto[0]), como_json)

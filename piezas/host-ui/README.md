@@ -34,7 +34,7 @@ if (host.esWeb) …                              // también esEscritorio, esMov
 |---|---|
 | `crearHost({nombre, global, simular, ventana?, plano?, canales?})` | `nombre`: id en minúsculas (el de `app.json`); `global`: el objeto de respuestas. Un nombre que no calza lanza un error. |
 | `enviar(accion, datos)` | `accion` validada (`^[A-Za-z][A-Za-z0-9]*$`); `datos` siempre un objeto (otra cosa viaja como `{}`). En la vista previa los datos van como copia JSON: la simulación nunca comparte objetos con la interfaz, igual que en la app. Una acción sin simular no hace nada. |
-| `responder({funcion})` | Suma funciones a `window.<Global>` sin reemplazar el objeto (nunca `__proto__` ni `constructor`). |
+| `responder({funcion})` | Suma funciones a `window.<Global>` sin reemplazar el objeto (nunca `__proto__` ni `constructor`). También acepta objetos (`_pruebas`, lo que leen las pruebas de la app); otra cosa se avisa en la consola. Si la app hace `window.<Global> = {…}` después de `crearHost`, se avisa y lo nuevo se **suma** al mismo objeto (la app nativa y las piezas tienen sus respuestas ahí). |
 | `llamar(funcion, json)` | Lo que hace la app: llama `window.<Global>.<funcion>` con una copia JSON. La simulación lo recibe como `ctx.responder`. |
 | `luego(ms, f)`, `cancelarPendientes()` | Esperas de la simulación (y cortarlas en las pruebas). |
 | `simulacionesComunes({espera?})` | Las respuestas de vista previa que toda app repetía. |
@@ -62,3 +62,10 @@ función); dentro, `A.x(…)` puede seguir siendo `window.<App>.x(…)` o pasar 
 | Repasa | Igual que Graba en `Ventana.swift`, **y** `movil/host/host.js` (`probarIA(d)`: `d.ia`, responde `{ia, …}`; la IA del teléfono sigue llamándose `"telefono"`). |
 | Alcancía | Igual que Graba en `Ventana.swift`; en `movil/host/host.js` `probarIA` sigue en `SOLO_MAC`. |
 | Minuta | Su mensaje es plano (`{accion, ...datos}`) y su preload se llama `minutaHost`: mientras `VisorWeb.swift`, `BarraMenu.swift` y `escritorio/src/main.js` no cambien, `crearHost({nombre: "minuta", global: "Minuta", plano: true, canales: {escritorio: "minutaHost"}})`. Quita la rama de Tauri (ya no se usa). No tiene `simular`: hoy pregunta `E.plataforma === "web"` en cada lugar; al pasar, junta esas ramas en `simular`. Luego cambia los hosts a `{accion, datos}` y quita `plano`. `probarIA` igual que Graba. |
+
+## Si venías de 0.1.0
+
+| Qué cambió | Qué hacer en la app |
+|---|---|
+| `responder` acepta objetos | Puedes pasar `host.responder({ _pruebas: {…} })` en vez de asignarlo aparte. Lo que no es función ni objeto se avisa. |
+| Reasignar `window.<App>` avisa y suma | Si tu app hacía `window.<App> = {…}` después de `crearHost`, ya no pierde las respuestas de las piezas, pero cámbialo por `host.responder({…})` para no ver el aviso. `window.<App>.x = …` sigue igual. |

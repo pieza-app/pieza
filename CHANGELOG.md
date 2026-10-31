@@ -1,6 +1,14 @@
 # Cambios
 
 ## Sin publicar
+- **Piezas de interfaz 0.2 con lo que encontraron las apps al migrar** (Graba, Repasa, Minuta, Corta, Esquema y Alcancía):
+  `componentes` 0.2.0 (seguridad: `confirmar({peligro})` enfoca «Cancelar»; el error ya no sale gris en un diálogo; el foco va al
+  título y se queda donde estaba al repintar; `envolver` para un diálogo de la app; avisos con botón; un solo botón principal en
+  «Tu IA», con `detalle` y «Revisar de nuevo»; `--pz-boton-alto` y `--pz-tactil`), `tema` 0.2.0 (`<html data-pz-modo>` en vez de
+  `data-tema`, sombra que ya no queda en «none», `--sobre-rojo` y `--sobre-texto`, `pieza.py agregar tema … --sin-config=tema`),
+  `host-ui` 0.2.0 (`responder` con objetos y aviso si la app reasigna `window.<App>`), `bienvenida` 0.3.0 (botones `pz-`),
+  `i18n` 0.3.0 (placeholder de textarea y `noTraducirAtributos`) y `actualizaciones` 0.3.0 (`desarrollo`). Cada README dice qué
+  cambia para una app que ya las usa («Si venías de…»).
 - **6 piezas de datos listas (fase 2 de «todo como si hubiéramos partido con Pieza»):** `catalogo` 0.1.0 (contenido de la
   comunidad: dominio fijo, sin redirecciones, tope de tamaño, SHA-256 obligatorio y el id buscado solo en el último índice
   validado; el validador lo pone cada app; Python, Swift y Electron), `red` 0.1.0 (HTTPS solo a dominios permitidos, sin

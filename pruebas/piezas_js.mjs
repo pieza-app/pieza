@@ -358,7 +358,7 @@ test("actualizaciones: revisar encuentra la versión y solo acepta URLs propias"
   assert.match(r.notas, /Ahora puedes algo/);
   assert.deepEqual(r.valores, { v: "0.2.0" });
   // Lo que la app manda en su estado tiene la misma forma (sin «sinConexion»): la interfaz usa una sola función.
-  assert.deepEqual(act.disponible, { hay: true, version: "0.2.0", notas: r.notas, texto: "Versión {v}", valores: { v: "0.2.0" } });
+  assert.deepEqual(act.disponible, { hay: true, version: "0.2.0", notas: r.notas, texto: "Versión {v}", valores: { v: "0.2.0" }, desarrollo: false });
   assert.deepEqual(act.aviso("error", "errorBajar"), { paso: "error", codigo: "errorBajar", texto: Act.TEXTOS.errorBajar, valores: { app: "Ana" }, total: 3 });
   assert.equal(act.aviso("1", "inventado").codigo, "errorArmar", "un código desconocido no inventa un texto");
   assert.equal(s.pedidos[0], `https://api.github.com/repos/${REPO}/releases/latest`);
@@ -369,7 +369,7 @@ test("actualizaciones: revisar encuentra la versión y solo acepta URLs propias"
   // Sin conexión
   const sin = Act.crear({ app: s.app, net: { fetch: async () => { throw new Error("x"); } }, repo: REPO, nombre: "Ana", plataforma: "linux", entorno: { APPIMAGE: appimage } });
   assert.deepEqual([(await sin.revisar()).hay, (await sin.revisar()).sinConexion], [false, true]);
-  assert.deepEqual(sin.disponible, { hay: false, version: "", notas: "", texto: "", valores: { v: "" } });
+  assert.deepEqual(sin.disponible, { hay: false, version: "", notas: "", texto: "", valores: { v: "" }, desarrollo: false });
   fs.rmSync(s.tmp, { recursive: true, force: true });
 });
 
@@ -551,14 +551,16 @@ function temaFalso(oscuroSistema = false) {
   const tema = PiezaTema.crear({ ventana, documento, guardar: (v) => guardados.push(v), alCambiar: (r, v) => cambios.push([r, v]) });
   return { tema, documento, guardados, cambios, escuchas };
 }
-test("tema: aplicar pone o quita data-tema; un valor raro es «sistema»", () => {
+test("tema: aplicar pone o quita data-pz-modo (nunca data-tema, que puede ser de la app); un valor raro es «sistema»", () => {
   const { tema, documento, cambios } = temaFalso(true);
   assert.equal(tema.aplicar("oscuro"), "oscuro");
-  assert.equal(documento.documentElement.dataset.tema, "oscuro");
+  assert.equal(documento.documentElement.dataset.pzModo, "oscuro");
+  assert.equal("tema" in documento.documentElement.dataset, false, "data-tema queda libre para la app");
+  assert.equal(PiezaTema.ATRIBUTO, "data-pz-modo");
   assert.equal(tema.aplicar("claro"), "claro");
   assert.equal(tema.resuelto(), "claro");
   assert.equal(tema.aplicar("morado"), "sistema");
-  assert.equal("tema" in documento.documentElement.dataset, false);
+  assert.equal("pzModo" in documento.documentElement.dataset, false);
   assert.equal(tema.resuelto(), "oscuro", "el sistema está oscuro");
   assert.deepEqual(cambios.at(-1), ["oscuro", "sistema"]);
 });
@@ -573,7 +575,7 @@ test("tema: elegir sigue ?tema= > config > sistema, y el selector guarda", () =>
   assert.match(h, /class="pz-seg" role="group" aria-label="Apariencia"/);
   assert.match(h, /data-pz-tema="claro" aria-pressed="true">Claro</);
   assert.match(h, /data-pz-tema="sistema" aria-pressed="false">Como el sistema</);
-  const clic = (v) => ({ preventDefault() {}, target: { closest: (s) => (s === "[data-pz-tema]" && v ? { getAttribute: () => v } : null) } });
+  const clic = (v) => ({ preventDefault() {}, target: { closest: (s) => (s === "button[data-pz-tema]" && v ? { getAttribute: () => v } : null) } });
   assert.equal(tema.manejarClic(clic("oscuro")), true);
   assert.equal(tema.manejarClic(clic("rojo")), false);
   assert.equal(tema.manejarClic(clic(null)), false);
@@ -642,7 +644,7 @@ test("componentes: la fila de actualización sigue la forma de la pieza actualiz
   assert.match(ui.filaActualizacion(), /Buscando…[\s\S]*disabled/);
   ui.actualizacionRevisada({ hay: false, sinConexion: true });
   assert.match(ui.filaActualizacion(), /No pude revisar: sin conexión/);
-  ui.actualizacionRevisada({ hay: true, version: "0.2.0", notas: "• <script>x</script>", texto: "Versión {v}", valores: { v: "0.2.0" } });
+  ui.actualizacionRevisada({ hay: true, version: "0.2.0", notas: "• <script>x</script>", texto: "Versión {v}", valores: { v: "0.2.0" }, desarrollo: false });
   let h = ui.filaActualizacion();
   assert.match(h, /There&#39;s a new version of Ana &lt;b&gt;/);
   assert.match(h, /&lt;script&gt;x&lt;\/script&gt;/);
@@ -672,7 +674,8 @@ test("componentes: diálogo, confirmar, Acerca de y enlaces solo https", async (
   assert.match(ui.dialogo({ id: "x", titulo: "T", sinEsc: true }), /data-pz-sin-esc/);
   assert.throws(() => ui.dialogo({ id: "a\" onclick=\"x", titulo: "T" }));
   const p = ui.confirmar({ titulo: "¿Borrar «{x}»?", valores: { x: "<b>nota</b>" }, si: "Borrar", peligro: true });
-  assert.match(ui.capas(), /role="alertdialog"[\s\S]*&lt;b&gt;nota&lt;\/b&gt;[\s\S]*pz-principal pz-peligro" data-pz-confirmar="si" data-autofoco/);
+  assert.match(ui.capas(), /role="alertdialog"[\s\S]*&lt;b&gt;nota&lt;\/b&gt;[\s\S]*data-pz-confirmar="no" data-autofoco[\s\S]*pz-principal pz-peligro" data-pz-confirmar="si" data-sin/,
+    "con peligro, el foco empieza en «Cancelar»");
   assert.equal(ui.hayCapa, true);
   ui.manejarClic(clicEn({ "data-pz-confirmar": "si" }));
   assert.equal(await p, true);
@@ -740,6 +743,158 @@ test("componentes: avisos en cola, uno a la vez, sin repetir y esperando la bien
   for (let i = 0; i < 9; i++) ui.aviso(`Aviso ${i}`, { traducido: true });
   assert.deepEqual(ui.avisos.enCola, ["Aviso 5", "Aviso 6", "Aviso 7", "Aviso 8"], "si se juntan muchos quedan los últimos");
   ui.avisos.limpiar();
+});
+
+test("componentes 0.2: dialogo con «antes», título propio o sin título; envolver", () => {
+  const { ui } = componentes();
+  const d = ui.dialogo({ id: "t-bv", antes: '<div class="puntos"></div>', tituloHTML: '<span lang="es">Elige</span> · <span lang="en">Choose</span>', cuerpo: "<p>c</p>", clave: "paso-1" });
+  assert.match(d, /data-pz-clave="paso-1">\s*<div class="puntos"><\/div><div class="pz-cabeza"><h2 id="t-bv" tabindex="-1" data-sin-traducir><span lang="es">Elige<\/span>/, "lo de antes va antes del título; el título propio va tal cual");
+  const sin = ui.dialogo({ id: "t-x", cuerpo: '<h2 id="t-x">Mío</h2>', cerrable: false });
+  assert.doesNotMatch(sin, /pz-cabeza/, "sin título ni ✕, no hay cabecera");
+  assert.match(sin, /aria-labelledby="t-x"[\s\S]*<h2 id="t-x">Mío<\/h2>/);
+  const e = ui.envolver('<h2 id="t-propio">Propio</h2><p>x</p>', { id: "t-propio", clase: "pz-ancho", sinEsc: true });
+  assert.match(e, /class="pz-capa" data-pz-capa><div class="pz-dialogo pz-ancho" role="dialog" aria-modal="true" aria-labelledby="t-propio" tabindex="-1" data-pz-sin-esc>/);
+  assert.doesNotMatch(e, /data-pz-cerrar/);
+  assert.match(ui.envolver("<h2 id='a'>A</h2>", { id: "a", cerrable: true }), /data-pz-cerrar/);
+  assert.throws(() => ui.envolver("<p>sin id</p>", {}));
+  assert.doesNotMatch(ui.dialogo({ id: "t", titulo: "T", clave: 'x" onclick="y' }), /onclick/, "una clave rara no entra");
+});
+
+test("componentes 0.2: confirmar sin peligro enfoca «sí»; con sinElegir, Esc y el velo no son «no»", async () => {
+  const { ui } = componentes();
+  const p = ui.confirmar({ titulo: "¿Seguro?" });
+  assert.match(ui.capas(), /data-pz-confirmar="no" data-sin-traducir[\s\S]*data-pz-confirmar="si" data-autofoco/);
+  ui.manejarClic(clicEn({ "data-pz-cerrar": "" }));
+  assert.equal(await p, false);
+  const q = ui.confirmar({ titulo: "¿Guardar los cambios?", si: "Guardar", no: "No guardar", sinElegir: null });
+  ui.manejarClic(clicEn({ "data-pz-cerrar": "" }));
+  assert.equal(await q, null, "Esc o el velo: ni sí ni no");
+  const r = ui.confirmar({ titulo: "Uno", sinElegir: null });
+  const r2 = ui.confirmar({ titulo: "Otro" });
+  assert.equal(await r, null, "una confirmación que reemplaza a otra la deja sin elegir");
+  ui.manejarClic(clicEn({ "data-pz-confirmar": "no" }));
+  assert.equal(await r2, false);
+});
+
+test("componentes 0.2: aviso con botón, frases ya armadas (tr) y #toast listo desde el inicio", (t) => {
+  t.mock.timers.enable({ apis: ["setTimeout"] });
+  const clases = new Set(), hijos = [], atributos = {};
+  const el = { textContent: "", setAttribute: (a, v) => { atributos[a] = v; }, appendChild: (h) => hijos.push(h),
+    classList: { add: (...c) => c.forEach((x) => clases.add(x)), remove: (...c) => c.forEach((x) => clases.delete(x)), toggle: (c, s) => (s ? clases.add(c) : clases.delete(c)) } };
+  let escuchas = {};
+  const documento = { getElementById: (id) => (id === "toast" ? el : null),
+    createElement: (tag) => ({ tag, type: "", className: "", textContent: "", addEventListener: (e, f) => { escuchas[e] = f; } }) };
+  const i18n = i18nEn();
+  i18n.usar({ codigo: "en", nombre: "English", textos: { ...EN.textos, "Quedan {n} días": "{n} days left", "Deshacer": "Undo", "Borré «{x}»": "Deleted «{x}»" } });
+  const ui = PiezaComponentes.crear({ i18n, app: "Ana", documento, duracion: 1000, pausa: 100 });
+  assert.ok(clases.has("pz-toast") && "data-sin-traducir" in atributos, "#toast queda con pz-toast y data-sin-traducir al crear");
+  ui.aviso("Quedan 3 días");                // ya armada en español: va por tr
+  assert.equal(el.textContent, "3 days left");
+  t.mock.timers.tick(5000); t.mock.timers.tick(100);
+  let deshecho = 0;
+  ui.aviso("Borré «{x}»", { valores: { x: "Nota <b>" }, accion: { texto: "Deshacer", f: () => deshecho++ } });
+  assert.equal(el.textContent, "Deleted «Nota <b>»");
+  assert.equal(hijos.length, 1);
+  assert.equal(hijos[0].tag, "button");
+  assert.equal(hijos[0].textContent, "Undo", "el botón se traduce y va como texto");
+  assert.ok(clases.has("pz-con-accion"));
+  t.mock.timers.tick(4000);
+  assert.ok(clases.has("visible"), "con botón dura más (al menos 6 s)");
+  escuchas.click({ preventDefault() {} });
+  assert.equal(deshecho, 1);
+  assert.equal(clases.has("visible"), false, "tocar el botón cierra el aviso");
+  t.mock.timers.tick(200);
+  assert.equal(ui.avisos.actual, null);
+  assert.equal(clases.has("pz-con-accion"), false);
+  ui.aviso("Hecho", { traducido: true, accion: { texto: "Ver", f: () => deshecho++ } });
+  assert.equal(ui.avisos.accionar(), true, "un atajo de la app puede tocar el botón");
+  assert.equal(deshecho, 2);
+  assert.equal(ui.avisos.accionar(), false);
+  ui.aviso("Sin f", { traducido: true, accion: { texto: "X" } });
+  assert.equal(hijos.length, 2, "un botón sin función no se pinta");
+  ui.avisos.limpiar();
+});
+
+test("componentes 0.2: filasIA con detalle, «Revisar de nuevo» y un solo botón principal", () => {
+  const { ui, enviados } = componentes();
+  const ias = [{ id: "claude", nombre: "Claude", instalada: true }, { id: "codex", nombre: "Codex", instalada: true },
+    { id: "telefono", nombre: "Este teléfono", instalada: false, detalle: "Comentarios" }];
+  let h = ui.filasIA({ ias });
+  assert.equal((h.match(/pz-principal/g) || []).length, 1, "sin ninguna en uso, solo la primera instalada es principal");
+  assert.match(h, /data-sin-traducir>Comments<\/span>/, "el detalle se traduce con tr");
+  assert.match(h, /pz-boton pz-plano" data-pz-probar-ia="telefono" >Revisar de nuevo/);
+  assert.equal((ui.filasIA({ ias, principal: "todas" }).match(/pz-principal/g) || []).length, 2, "la forma de 0.1.0");
+  assert.equal((ui.filasIA({ ias, principal: false }).match(/pz-principal/g) || []).length, 0);
+  assert.equal((ui.filasIA({ ias, elegida: "codex" }).match(/pz-principal/g) || []).length, 0, "con una en uso, ninguna grita");
+  ui.manejarClic(clicEn({ "data-pz-probar-ia": "telefono" }));
+  assert.deepEqual(enviados.at(-1), ["probarIA", { ia: "telefono" }]);
+  ui.iaProbada({ ia: "telefono", ok: true });
+  h = ui.filasIA({ ias, elegida: "telefono" });
+  assert.match(h, /data-pz-probar-ia="telefono" >Probar otra vez/, "probó bien: ahora cuenta como instalada");
+  assert.doesNotMatch(h, /Comments/);
+});
+
+test("componentes 0.2: versión como función, Acerca de con enlaces extra, actualizaciones con detalle, desarrollo y sin pintar", () => {
+  let version = "";
+  const { ui, pintadas } = componentes({ version: () => version });
+  version = "2.1";
+  const a = ui.acercaDe({ enlaces: {}, extra: [{ texto: "Guía de la IA", url: "https://ana-app.github.io/ana/ia.html" }, { texto: "Mal", url: "javascript:x" }, { texto: "", url: "https://x.cl" }] });
+  assert.match(a, /Ana &lt;b&gt; 2\.1 · Gratis/, "la versión se lee al pintar");
+  assert.match(a, /data-pz-enlace="https:\/\/ana-app.github.io\/ana\/ia.html">Guía de la IA</);
+  assert.doesNotMatch(a, /javascript|>Mal<|x\.cl/);
+  assert.equal(ui.datosComentario({ tipo: "otro", titulo: "t", texto: "", sistema: true, version: version }).cuerpo.includes("2.1"), true);
+  const antes = pintadas();
+  ui.actualizacionDisponible({ hay: true, version: "2.2", detalle: "Notas <de antes>", texto: "Versión {v}", valores: { v: "2.2" } }, { pintar: false });
+  assert.equal(pintadas(), antes, "{pintar: false} solo lo anota");
+  assert.match(ui.filaActualizacion(), /Notas &lt;de antes&gt;/, "detalle sirve como notas");
+  ui.actualizacionRevisada({ hay: true, version: "", texto: "", notas: "• arreglo", desarrollo: true }, { pintar: false });
+  assert.equal(pintadas(), antes);
+  const h = ui.filaActualizacion();
+  assert.match(h, /Hay cambios nuevos en el código de Ana &lt;b&gt;/);
+  assert.match(h, /• arreglo/);
+  ui.actualizacionRevisada({ hay: false });
+  assert.equal(pintadas(), antes + 1);
+});
+
+test("host-ui 0.2: responder acepta objetos; reasignar window.<App> avisa y suma al mismo objeto", () => {
+  const avisos = [];
+  const v = ventanaFalsa({ console: { warn: (m) => avisos.push(m) } });
+  const host = PiezaHost.crearHost({ nombre: "ana", global: "Ana", ventana: v });
+  const respuestas = v.Ana;
+  host.responder({ estado() {}, _pruebas: { sumar: (a, b) => a + b }, numero: 3 });
+  assert.equal(v.Ana._pruebas.sumar(1, 2), 3);
+  assert.equal("numero" in v.Ana, false);
+  assert.match(avisos.at(-1), /numero no es una función/);
+  assert.equal(host.llamar("_pruebas", {}), undefined, "un objeto nunca es una respuesta");
+  v.Ana = { tarde() { return "ok"; } };
+  assert.equal(v.Ana, respuestas, "el objeto es el mismo");
+  assert.equal(typeof v.Ana.estado, "function", "lo de antes sigue");
+  assert.equal(v.Ana.tarde(), "ok", "lo nuevo se sumó");
+  assert.match(avisos.at(-1), /no reasignes window\.Ana/);
+});
+
+test("i18n 0.3: placeholder de un textarea y atributos en zonas sin traducir (noTraducirAtributos)", () => {
+  const i = i18nEn();
+  const area = el("textarea", { placeholder: "Comentarios", title: "Guardar" }, ["Guardar"]);
+  const nuevaZona = () => el("div", { "data-nota": "" }, ["Guardar", el("button", { title: "Guardar" }, ["Guardar"]), el("i", { "data-propio": "", title: "Guardar" })]);
+  let zona = nuevaZona();
+  const raiz = el("div", {}, [area, zona]);
+  i.traducirDOM(raiz);
+  assert.equal(area.attrs.placeholder, "Comments", "el placeholder es de la app");
+  assert.equal(area.attrs.title, "Save");
+  assert.equal(area.childNodes[0].nodeValue, "Guardar", "lo escrito en el textarea es de la persona");
+  const sin = PiezaI18n.crear({ noTraducir: "[data-nota]" });
+  sin.usar(EN);
+  zona = nuevaZona();
+  sin.traducirDOM(el("section", {}, [zona]));
+  assert.equal(zona.childNodes[1].attrs.title, "Guardar", "sin la opción, una zona sin traducir tampoco traduce atributos (como antes)");
+  const con = PiezaI18n.crear({ noTraducir: "[data-nota]", noTraducirAtributos: "[data-propio]" });
+  con.usar(EN);
+  zona = nuevaZona();
+  con.traducirDOM(el("section", {}, [zona]));
+  assert.equal(zona.childNodes[0].nodeValue, "Guardar", "el texto de la zona no se traduce");
+  assert.equal(zona.childNodes[1].attrs.title, "Save", "el title de un botón de la app, sí");
+  assert.equal(zona.childNodes[2].attrs.title, "Guardar", "lo que diga noTraducirAtributos, no");
 });
 
 test("componentes, tema y host-ui: sin eval, sin innerHTML, sin estilos ni manejadores en línea, nada de una app adentro", () => {

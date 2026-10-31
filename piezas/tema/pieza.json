@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "tema",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Tema claro y oscuro",
  "icono": "icono.svg",
@@ -50,9 +50,23 @@
  "red": [],
  "cambios": [
   {
+   "version": "0.2.0",
+   "tipo": "rompe",
+   "resumen": "El atributo de <html> pasa de data-tema a data-pz-modo (en Minuta, un closest(\"[data-tema]\") de la app encontraba <html>). --sombra ya no usa light-dark() (solo acepta colores: en Chromium la sombra quedaba en «none»; lo encontró Esquema): se elige por modo con selectores y los pares --sombra-claro/--sombra-oscuro siguen igual. Tokens sólidos nuevos --sobre-rojo y --sobre-texto (texto sobre el rojo y sobre --texto: el aviso y el botón de peligro ya no usan --fondo/--panel, que Graba hace transparentes). Un diálogo enfocado no dibuja el anillo alrededor de toda la caja. pieza.py agregar … --sin-config=tema no suma «tema» a app.json.",
+   "migrar": [
+    "En app.css y app.js: `[data-tema=` → `[data-pz-modo=` y `dataset.tema` → `dataset.pzModo` donde leías el modo de <html> (mejor: `tema.valor` o `tema.resuelto()`, o `alCambiar(resuelto, valor)` en crear). Los `data-tema` de tus propios elementos no cambian.",
+    "Si tu app redefinía `--sombra` para arreglar la sombra (Esquema), bórralo: con los pares --sombra-claro/--sombra-oscuro basta.",
+    "Si tu app quitaba el anillo de foco de la caja del diálogo (Minuta: `[aria-modal]:focus-visible { outline: none }`), ya lo trae la pieza: bórralo.",
+    "Una app sin «Apariencia» (Minuta): saca «tema» de app.json → config; al volver a agregarla usa --sin-config=tema."
+   ]
+  },
+  {
    "version": "0.1.0",
    "tipo": "inicial",
    "resumen": "Primera versión: tokens comunes con light-dark() y respaldo para navegadores sin él, selector «Apariencia» y data-tema en <html>. La tabla para pasar de los nombres de cada app está en el README."
   }
- ]
+ ],
+ "config_opcional": {
+  "tema": "Solo si la app ofrece «Apariencia» en Ajustes (Minuta no: el modo lo decide cada universo)."
+ }
 }

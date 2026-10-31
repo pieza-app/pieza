@@ -2,7 +2,8 @@
 
 `ui/tema.css` define los colores de toda la interfaz como **tokens** en `:root`. Cada color se escribe una vez, como par
 (`--fondo-claro`, `--fondo-oscuro`), y el token (`--fondo`) lo elige con `light-dark()` según `color-scheme`. `ui/tema.js` pone
-`<html data-tema="claro|oscuro">` (o lo quita para seguir al sistema) y trae el selector «Apariencia» de Ajustes. Sin
+`<html data-pz-modo="claro|oscuro">` (o lo quita para seguir al sistema) y trae el selector «Apariencia» de Ajustes. El atributo
+lleva prefijo: un `data-tema` de la app (en una tarjeta, en un universo) nunca choca con el de la pieza. Sin
 dependencias; sin estilos ni código en línea.
 
 ```html
@@ -24,10 +25,11 @@ document.addEventListener("click", (ev) => { if (tema.manejarClic(ev)) return pi
 
 | API | |
 |---|---|
-| `crear({guardar?, alCambiar?(resuelto, valor), documento?, ventana?})` | |
+| `crear({guardar?, alCambiar?(resuelto, valor), documento?, ventana?})` | `alCambiar` avisa cada vez que se aplica (para lo que la app pinta con colores fijos). |
 | `aplicar(valor)` | `"sistema"`, `"claro"` u `"oscuro"` (otro valor = sistema). Devuelve el que quedó. |
 | `elegir({config, url?})` | `?tema=` > lo guardado > sistema. |
-| `valor`, `resuelto()` | Lo elegido y cómo se ve ahora (`"claro"`/`"oscuro"`). |
+| `valor`, `resuelto()` | Lo elegido y cómo se ve ahora (`"claro"`/`"oscuro"`). Así se lee el tema desde la app: no leas el atributo de `<html>`. |
+| `ATRIBUTO` | `"data-pz-modo"`: para el CSS propio que cambia con el modo elegido (`:root[data-pz-modo="oscuro"] .x { … }`). |
 | `selectorHTML()`, `manejarClic(ev)` | Tres botones `data-pz-tema` con `aria-pressed` (clase `.pz-seg`, de la pieza `componentes`). |
 | `escuchar(fn)` | Avisa cuando el sistema cambia y está en «sistema» (para un lienzo o un SVG que pinta con colores fijos). |
 
@@ -44,14 +46,24 @@ document.addEventListener("click", (ev) => { if (tema.manejarClic(ev)) return pi
 | `--tenue` | decoración, deshabilitado. **Nunca texto que haya que leer** | `--tenue-claro/-oscuro` |
 | `--acento`, `--sobre-acento` | el único color de acción, y el texto encima | `--acento-claro/-oscuro`, `--sobre-acento-claro/-oscuro` |
 | `--rojo`, `--verde` | error/atrasado y listo/lo que entra (AA como texto) | `--rojo-claro/-oscuro`, `--verde-claro/-oscuro` |
-| `--sombra` | sombra de lo que flota | `--sombra-claro/-oscuro` |
+| `--sobre-rojo` | texto sobre `--rojo` (botón de peligro, aviso de error). Sólido: nunca `--panel`, que una app puede hacer transparente | `--sobre-rojo-claro/-oscuro` |
+| `--sobre-texto` | texto sobre `--texto` (el aviso). Sólido, por lo mismo | `--sobre-texto-claro/-oscuro` |
+| `--sombra` | sombra de lo que flota. **No** va con `light-dark()` (solo acepta colores: con una sombra entera queda en `none`); la pieza la elige por modo con selectores | `--sombra-claro/-oscuro` (sombras enteras; `none` vale) |
 | `--hover`, `--acento-suave`, `--rojo-suave`, `--verde-suave`, `--velo` | derivados con `color-mix()`: **no se redefinen** | — |
 | `--foco` | contorno de `:focus-visible` (= `--acento`) | — |
 | `--radio`, `--radio-chico`, `--fuente`, `--mono` | forma y letra | se redefinen directo |
 
 Además conecta las variables de la pieza `bienvenida` (`--bv-acento`, `--bv-linea`, `--bv-panel`, `--bv-texto-suave`): con `tema`
 no hay que definirlas. En navegadores sin `light-dark()` (Safari < 17.5, Chrome < 123) un bloque `@supports not` elige los
-mismos pares con `prefers-color-scheme`: nada que hacer en la app.
+mismos pares con `prefers-color-scheme`: nada que hacer en la app con los tokens de la pieza. **Un token propio** que escribas con
+`light-dark()` (`--lienzo: light-dark(#fbfcfd, #12171f)`) no tiene ese respaldo: en esos navegadores queda sin valor. Si importa,
+repítelo como en `tema.css`: el claro en `:root`, el oscuro en `@media (prefers-color-scheme: dark) { :root:not([data-pz-modo="claro"]) }`
+y en `:root[data-pz-modo="oscuro"]`, dentro de `@supports not (color: light-dark(#000, #fff))`. Y `light-dark()` nunca con algo
+que no sea un color (sombras, tamaños): para eso, los mismos selectores.
+
+**La ventana nativa** (barra de título, menús, el fondo mientras carga) sigue al sistema aunque se elija claro u oscuro: que la
+siga a la apariencia elegida (`NSWindow.appearance` en Mac, `nativeTheme.themeSource` en Electron) queda para las piezas
+`host-mac` y `host-escritorio` (ver `docs/catalogo.md`). Mientras, la app puede hacerlo con `alCambiar`.
 
 ## Nombre viejo en cada app → token nuevo
 
@@ -71,7 +83,7 @@ mismos pares con `prefers-color-scheme`: nada que hacer en la app.
 | `--acento-suave`, `--rojo-suave`, `--verde-suave` | derivados: borra el valor | ídem | ídem | ídem | ídem | ídem |
 | `--radio-c` | — | — | — | — | — | `--radio-chico` |
 | `--mono` | `--mono` | — | — | — | — | — |
-| `data-tema="claro\|oscuro"` | igual | (no tenía) | (no tenía) | (no tenía) | (no tenía) | `data-modo` → `data-tema` |
+| `data-tema="claro\|oscuro"` (en `<html>`) | `data-pz-modo` | (no tenía) | (no tenía) | (no tenía) | (no tenía) | `data-modo` → `data-pz-modo` |
 
 Lo que no está en la tabla es de la app y se queda en su `app.css` (Esquema `--lienzo`, `--punto`, `--d-*`; Corta `--corte`,
 `--escenario`, `--violeta*`, `--azul*`; Repasa `--cuadricula`, `--destacador`, los colores de cada ramo; Alcancía `--barra-alto`;
@@ -131,16 +143,26 @@ texto: aquí van con el mismo tono, un poco más oscuro.
 
 ## Pasar una app a esta pieza
 
-En todas: `pieza.py agregar tema <app>`, `<link rel="stylesheet" href="tema.css">` antes de `app.css` en `ui/index.html`, cambiar su
+En todas: `pieza.py agregar tema <app>` (`--sin-config=tema` si la app no ofrece «Apariencia»: así no suma `tema` a `app.json`), `<link rel="stylesheet" href="tema.css">` antes de `app.css` en `ui/index.html`, cambiar su
 `:root` y su `@media (prefers-color-scheme: dark)` por su bloque de arriba, y renombrar con la tabla (en `app.css` y en los
 `var(--…)` de `app.js`; `sed -i 's/var(--suave)/var(--texto-suave)/g'` en todas menos Esquema). Borrar `html, body {background;
 color}`, `:focus-visible` y `color-scheme`, que ya trae la pieza.
 
 | App | Además (lo que no es mecánico) |
 |---|---|
-| Esquema | El orden importa: primero `--suave` → `--panel-2`, después `--gris` → `--texto-suave` (si no, se mezclan). `--borde` → `--linea`. Su `data-tema` ya es el mismo: cambia su `dataset.tema` a mano por `tema.aplicar(E.config.tema)` y el selector de Ajustes por `tema.selectorHTML()` (`data-tema` → `data-pz-tema`). Sus `--d-*` pasan a `light-dark()`. |
+| Esquema | El orden importa: primero `--suave` → `--panel-2`, después `--gris` → `--texto-suave` (si no, se mezclan). `--borde` → `--linea`. Cambia su `dataset.tema` a mano por `tema.aplicar(E.config.tema)`, sus `[data-tema=…]` del CSS por `[data-pz-modo=…]` y el selector de Ajustes por `tema.selectorHTML()` (botones `data-pz-tema`). Sus `--d-*` pasan a `light-dark()` (sin respaldo `@supports`: ver arriba). |
 | Graba | `html.vidrio` redefine `--panel`, `--lateral` y `--linea` con transparencias: cámbialo a `--panel-2`/`--linea` y deja `--campo`/`--solido` como propios. Recién ahora puede ofrecer «Apariencia» (antes solo seguía al sistema): suma `tema` a `app.json` → `config`. |
 | Corta | Era oscura por defecto y clara con `prefers-color-scheme: light`; con «sistema» se ve igual. Su `--lateral` queda propio (con `light-dark`). Suma «Apariencia» si quiere. |
 | Repasa | `--papel` queda propio; el fondo cuadriculado sigue en `body`. El celular (`movil/`) usa la misma `ui/`: nada aparte. |
 | Alcancía | `--barra-alto` queda propio; su `#toast` pasa a `--pz-toast-abajo: calc(var(--barra-alto) + 16px)` si usa `componentes`. |
-| Minuta | Cada universo trae sus colores y su modo: al cargar un universo, `tema.aplicar(universo.modo)` (en vez de `dataset.modo`) y sus colores van **directo a los tokens** (`--fondo`, `--panel`, `--acento`…, ya resueltos para ese modo) en vez de los pares. `:root[data-modo="claro"]` → `:root[data-tema="claro"]`. No ofrece «Apariencia» (lo decide el universo). |
+| Minuta | Cada universo trae sus colores y su modo: al cargar un universo, `tema.aplicar(universo.modo)` (en vez de `dataset.modo`) y sus colores van **directo a los tokens** (`--fondo`, `--panel`, `--acento`…, ya resueltos para ese modo) en vez de los pares. `:root[data-modo="claro"]` → `:root[data-pz-modo="claro"]`. No ofrece «Apariencia» (lo decide el universo): `pieza.py agregar tema minuta --sin-config=tema`. |
+
+## Si venías de 0.1.0
+
+| Qué cambió | Qué hacer en la app |
+|---|---|
+| `<html data-tema>` → `<html data-pz-modo>` | En `app.css`: `:root[data-tema=` → `:root[data-pz-modo=`. En `app.js`: deja de leer `document.documentElement.dataset.tema`; usa `tema.valor` / `tema.resuelto()` (o `alCambiar`). Los `data-tema` de tus propios elementos no cambian, y un `closest("[data-tema]")` ya no encuentra `<html>`. |
+| `--sombra` ya no usa `light-dark()` | Si la redefinías para arreglarla (`--sombra: 0 8px 28px light-dark(…)`), bórralo: los pares `--sombra-claro`/`--sombra-oscuro` ya funcionan. |
+| Tokens nuevos `--sobre-rojo`, `--sobre-texto` | Nada: los usa `componentes` 0.2.0. Si tu app pinta texto sobre `--rojo` o `--texto`, úsalos en vez de `--panel`/`--fondo`. |
+| El anillo de foco no rodea la caja de un diálogo enfocado | Borra tu regla `[aria-modal]:focus-visible { outline: none }` si la tenías. |
+| `pieza.py agregar … --sin-config=tema` | Si tu app no ofrece «Apariencia» (Minuta), saca `tema` de `app.json` → `config`; `actualizar` no lo vuelve a sumar si la agregaste con el flag (o anota `"sin_config": ["tema"]` en `piezas.json` → `tema`). |

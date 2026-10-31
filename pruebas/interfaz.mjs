@@ -38,7 +38,7 @@ fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><html lang="es"><
 fs.writeFileSync(path.join(dir, "prueba.js"), `"use strict";
 window._faltantes = new Set();
 const i18n = PiezaI18n.crear({ faltantes: window._faltantes });
-const E = { ajustes: false, ia: null, enlaces: [] };
+const E = { ajustes: false, ia: null, enlaces: [], propio: null, paso: 1, deshecho: 0 };
 const IAS = [{ id: "claude", nombre: "Claude Code", instalada: true }, { id: "codex", nombre: "Codex <i>", instalada: false }];
 const host = PiezaHost.crearHost({ nombre: "prueba", global: "Prueba", simular: {
   ...PiezaHost.simulacionesComunes({ espera: 40 }),
@@ -47,16 +47,24 @@ const host = PiezaHost.crearHost({ nombre: "prueba", global: "Prueba", simular: 
 } });
 const raiz = document.getElementById("app");
 const ui = PiezaComponentes.crear({ i18n, host, app: "Prueba", repo: "ana-app/ana", version: "1.0", pintar, duracion: 300, pausa: 50,
-  cerrar: () => { E.ajustes = false; pintar(); } });
+  cerrar: () => { E.ajustes = false; E.propio = null; pintar(); } });
 const tema = PiezaTema.crear({ guardar: (v) => host.enviar("config", { tema: v }) });
 host.responder({ iaProbada: (r) => ui.iaProbada(r), actualizacionRevisada: (r) => ui.actualizacionRevisada(r), actualizacionProgreso: (a) => ui.actualizacionProgreso(a) });
 function ajustes() {
   return "<h3>Apariencia</h3>" + tema.selectorHTML() + "<h3>Tu IA</h3>" + ui.filasIA({ ias: IAS, elegida: E.ia, guia: "https://ana-app.github.io/ana/ia.html" })
     + ui.filaActualizacion() + ui.acercaDe({ version: "1.0", enlaces: { codigo: "https://github.com/ana-app/ana" } });
 }
+// Un diálogo armado por la app (envolver), con pasos que comparten el título y un campo: el foco va al título al abrir y al
+// cambiar de paso, y se queda en el campo si la app vuelve a pintar.
+function propio() {
+  return ui.envolver('<h2 id="t-propio">Ajustes</h2><p class="pz-error-texto" id="error">Abrir</p><label class="pz-campo"><span>Abrir</span><input id="campo" type="text"></label>'
+    + '<div class="pz-pie"><button type="button" class="pz-boton" id="paso" data-paso-siguiente>Un botón</button><button type="button" class="pz-boton pz-principal" data-pz-cerrar>Listo</button></div>',
+    { id: "t-propio", clave: "paso-" + E.paso });
+}
 function pintar() {
-  raiz.innerHTML = '<main><button type="button" class="pz-boton" id="abrir">Ajustes</button> <button type="button" class="pz-boton" data-otro="1">Un botón</button></main>'
+  raiz.innerHTML = '<main data-tema="de-la-app"><button type="button" class="pz-boton" id="abrir">Ajustes</button> <button type="button" class="pz-boton" data-otro="1">Un botón</button> <button type="button" class="pz-boton" id="abrir-propio">Abrir</button></main>'
     + (E.ajustes ? ui.dialogo({ id: "t-aj", titulo: "Ajustes", cuerpo: ajustes(), pie: '<button type="button" class="pz-boton pz-principal" id="listo" data-pz-cerrar data-autofoco>Listo</button>' }) : "")
+    + (E.propio ? propio() : "")
     + ui.capas();
   i18n.traducirDOM(raiz);
   ui.despuesDePintar();
@@ -65,6 +73,9 @@ document.addEventListener("click", (ev) => {
   if (tema.manejarClic(ev)) return pintar();
   if (ui.manejarClic(ev)) return;
   if (ev.target.closest("#abrir")) { E.ajustes = true; pintar(); }
+  if (ev.target.closest("#abrir-propio")) { E.propio = true; E.paso = 1; pintar(); }
+  if (ev.target.closest("[data-paso-siguiente]")) { E.paso++; pintar(); }
+  E.temaApp = ev.target.closest("[data-tema]")?.getAttribute("data-tema") || null;
 });
 document.addEventListener("keydown", (ev) => { ui.manejarTecla(ev); });
 window.prueba = { ui, tema, host, i18n, pintar, E };
@@ -95,7 +106,7 @@ const URL_BASE = `http://127.0.0.1:${servidor.address().port}/index.html`;
 // ── Contraste ──
 const lum = ([r, g, b]) => { const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
 const contraste = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
-const PARES = [["texto", "fondo"], ["texto", "panel"], ["texto", "panel-2"], ["texto-suave", "fondo"], ["texto-suave", "panel"], ["texto-suave", "panel-2"],
+const PARES = [["sobre-rojo", "rojo"], ["sobre-texto", "texto"], ["texto", "fondo"], ["texto", "panel"], ["texto", "panel-2"], ["texto-suave", "fondo"], ["texto-suave", "panel"], ["texto-suave", "panel-2"],
   ["acento", "panel"], ["acento", "fondo"], ["sobre-acento", "acento"], ["rojo", "fondo"], ["rojo", "panel"], ["verde", "fondo"], ["verde", "panel"], ["fondo", "texto"]];
 async function colores(page) {
   return page.evaluate((tokens) => {
@@ -108,7 +119,7 @@ async function colores(page) {
     }
     el.remove();
     return r;
-  }, ["fondo", "panel", "panel-2", "texto", "texto-suave", "acento", "sobre-acento", "rojo", "verde"]);
+  }, ["fondo", "panel", "panel-2", "texto", "texto-suave", "acento", "sobre-acento", "rojo", "verde", "sobre-rojo", "sobre-texto"]);
 }
 async function revisarContraste(page, donde) {
   const malos = [];
@@ -159,15 +170,23 @@ await caso("diálogo: el foco entra, Tab y Mayús+Tab dan la vuelta adentro, Esc
   assert.equal(await page.locator('[role="dialog"]').count(), 0, "el velo cierra");
 });
 
-await caso("confirmar: Esc es «no», el botón principal es «sí», el foco en «sí»", async (page) => {
+await caso("confirmar: con peligro el foco empieza en «Cancelar» (Enter no borra), Esc es «no»; sin peligro, en «sí»", async (page) => {
   await abrir(page);
   await page.evaluate(() => { window.r1 = window.prueba.ui.confirmar({ titulo: "¿Borrar «{x}»?", valores: { x: "<b>nota</b>" }, si: "Aceptar", peligro: true }); });
   assert.equal(await page.locator('[role="alertdialog"] h2 b').count(), 0, "el valor va escapado");
   assert.match(await page.locator('[role="alertdialog"] h2').innerText(), /<b>nota<\/b>/);
-  assert.equal(await page.evaluate(() => document.activeElement.dataset.pzConfirmar), "si");
+  assert.equal(await page.evaluate(() => document.activeElement.dataset.pzConfirmar), "no");
+  await page.keyboard.press("Enter");
+  assert.equal(await page.evaluate(() => window.r1), false, "un Enter apurado responde «no»");
+  await page.evaluate(() => { window.r3 = window.prueba.ui.confirmar({ titulo: "¿Borrar?", peligro: true }); });
   await page.keyboard.press("Escape");
-  assert.equal(await page.evaluate(() => window.r1), false);
+  assert.equal(await page.evaluate(() => window.r3), false);
+  const peligro = await page.evaluate(() => { window.prueba.ui.confirmar({ titulo: "¿Borrar?", si: "Aceptar", peligro: true });
+    const b = document.querySelector(".pz-principal.pz-peligro"), c = getComputedStyle(b); return [c.color, c.backgroundColor]; });
+  assert.notEqual(peligro[0], peligro[1], "el texto del botón de peligro se ve");
+  await page.keyboard.press("Escape");
   await page.evaluate(() => { window.r2 = window.prueba.ui.confirmar({ titulo: "¿Seguro?" }); });
+  assert.equal(await page.evaluate(() => document.activeElement.dataset.pzConfirmar), "si");
   await page.click('[data-pz-confirmar="si"]');
   assert.equal(await page.evaluate(() => window.r2), true);
   assert.equal(await page.locator('[role="alertdialog"]').count(), 0);
@@ -221,17 +240,18 @@ await caso("tema: elegido gana al sistema; «sistema» sigue al sistema; ?tema= 
   assert.equal(await fondo(), "rgb(16, 20, 27)", "sistema oscuro");
   await page.click("#abrir");
   await page.click('[data-pz-tema="claro"]');
-  assert.equal(await page.evaluate(() => document.documentElement.dataset.tema), "claro");
+  assert.equal(await page.evaluate(() => document.documentElement.dataset.pzModo), "claro");
+  assert.equal(await page.evaluate(() => "tema" in document.documentElement.dataset), false, "data-tema queda para la app");
   assert.equal(await fondo(), "rgb(246, 247, 249)");
   assert.equal(await page.locator('[data-pz-tema="claro"]').getAttribute("aria-pressed"), "true");
   await page.click('[data-pz-tema="sistema"]');
-  assert.equal(await page.evaluate(() => "tema" in document.documentElement.dataset), false);
+  assert.equal(await page.evaluate(() => "pzModo" in document.documentElement.dataset), false);
   await page.emulateMedia({ colorScheme: "light" });
   assert.equal(await fondo(), "rgb(246, 247, 249)", "sigue al sistema cuando cambia");
   const otra = await contexto.newPage();
   await otra.goto(URL_BASE + "?tema=oscuro");
   await otra.waitForFunction(() => window.listo === true);
-  assert.equal(await otra.evaluate(() => document.documentElement.dataset.tema), "oscuro");
+  assert.equal(await otra.evaluate(() => document.documentElement.dataset.pzModo), "oscuro");
 });
 
 await caso("contraste AA de los tokens en claro y oscuro: los de la pieza y los pares de cada app", async (page) => {
@@ -245,6 +265,61 @@ await caso("contraste AA de los tokens en claro y oscuro: los de la pieza y los 
   assert.deepEqual(malos, []);
 });
 
+
+await caso("tema 0.2: la sombra es válida en claro y oscuro, y un closest(\"[data-tema]\") de la app no llega a <html>", async (page) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await abrir(page, "?tema=oscuro");
+  await page.click("#abrir");
+  for (const m of ["oscuro", "claro", "sistema"]) {
+    await page.evaluate((x) => window.prueba.tema.aplicar(x), m);
+    const sombra = await page.evaluate(() => getComputedStyle(document.querySelector(".pz-dialogo")).boxShadow);
+    assert.notEqual(sombra, "none", `sombra en ${m}`);
+  }
+  await page.keyboard.press("Escape");
+  await page.click('[data-otro="1"]');
+  assert.equal(await page.evaluate(() => window.prueba.E.temaApp), "de-la-app", "encuentra el data-tema de la app");
+  await page.mouse.click(1000, 700);
+  assert.equal(await page.evaluate(() => window.prueba.E.temaApp), null, "fuera de él, no encuentra <html>");
+});
+
+await caso("componentes 0.2: envolver: foco al título, se queda en el campo al repintar, el paso nuevo lo lleva al título; error rojo; sin anillo en la caja", async (page) => {
+  await abrir(page);
+  await page.click("#abrir-propio");
+  assert.equal((await activo(page)).id, "t-propio", "al abrir, el foco va al título");
+  const c = await page.evaluate(() => {
+    const rojo = getComputedStyle(document.getElementById("error")).color;
+    const el = document.createElement("i"); el.style.setProperty("color", "var(--rojo)"); document.body.appendChild(el);
+    const r = getComputedStyle(el).color; el.remove(); return [rojo, r];
+  });
+  assert.equal(c[0], c[1], "un .pz-error-texto dentro del diálogo es rojo, no gris");
+  await page.click("#campo");
+  await page.keyboard.type("hola");
+  await page.evaluate(() => window.prueba.pintar());
+  assert.equal((await activo(page)).id, "campo", "repintar con el diálogo abierto no saca el foco del campo");
+  await page.click("#paso");
+  assert.equal((await activo(page)).id, "t-propio", "otro paso (otra clave, mismo título): el foco va al título");
+  assert.equal(await page.evaluate(() => { const d = document.querySelector(".pz-dialogo"); d.focus(); return getComputedStyle(d).outlineStyle; }), "none");
+  await page.keyboard.press("Escape");
+  assert.equal((await activo(page)).id, "abrir-propio");
+});
+
+await caso("componentes 0.2: aviso con botón y avisos legibles con fondos transparentes", async (page) => {
+  await abrir(page, "?idioma=en");
+  await page.evaluate(() => { document.documentElement.style.setProperty("--fondo-claro", "transparent"); document.documentElement.style.setProperty("--panel-claro", "transparent");
+    window.prueba.tema.aplicar("claro");
+    window.prueba.ui.aviso("Guardar", { accion: { texto: "Abrir", f: () => { window.prueba.E.deshecho++; } } }); });
+  const t = page.locator("#toast");
+  await page.waitForFunction(() => document.getElementById("toast").classList.contains("visible"));
+  assert.equal(await page.locator("#toast button.pz-toast-accion").innerText(), "Open");
+  const [color, fondo] = await page.evaluate(() => { const c = getComputedStyle(document.getElementById("toast")); return [c.color, c.backgroundColor]; });
+  assert.notEqual(color, "rgba(0, 0, 0, 0)", "el texto del aviso es sólido");
+  assert.notEqual(color, fondo);
+  await page.click("#toast button.pz-toast-accion");
+  assert.equal(await page.evaluate(() => window.prueba.E.deshecho), 1);
+  await page.waitForFunction(() => !document.getElementById("toast").classList.contains("visible"));
+  assert.match(await t.getAttribute("class"), /pz-toast/);
+});
+
 await caso("celular (390 px): botones de 44 px, el diálogo sale desde abajo, nada se sale de ancho", async (page, contexto) => {
   await page.setViewportSize({ width: 390, height: 780 });
   await abrir(page);
@@ -256,6 +331,11 @@ await caso("celular (390 px): botones de 44 px, el diálogo sale desde abajo, na
     ancho: document.documentElement.scrollWidth, vista: innerWidth,
   }));
   assert.ok(r.min >= 44, `el más chico mide ${r.min}px`);
+  const seg = await page.evaluate(() => { const s = document.querySelector('[role="dialog"] .pz-seg'); const b = [...s.querySelectorAll("button")].map((x) => Math.round(x.getBoundingClientRect().top)); return new Set(b).size; });
+  assert.equal(seg, 1, "el selector segmentado queda en una línea");
+  const largo = await page.evaluate(() => { const b = document.createElement("button"); b.className = "pz-boton"; b.textContent = "Un texto muy largo para un botón que en un celular no cabe en una sola línea";
+    document.querySelector('[role="dialog"] .pz-pie').appendChild(b); const r = b.getBoundingClientRect(); return [r.right, innerWidth]; });
+  assert.ok(largo[0] <= largo[1], "un botón con texto largo se parte en vez de salirse");
   assert.equal(r.abajo, r.alto, "hoja pegada abajo");
   assert.ok(r.ancho <= r.vista, `${r.ancho} > ${r.vista}`);
 });

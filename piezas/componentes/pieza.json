@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "componentes",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Componentes",
  "icono": "icono.svg",
@@ -95,16 +95,32 @@
   "Incluir la versión de la app, el idioma y el sistema": "Include the app version, language and system",
   "Ayuda a entender el contexto. Nunca se incluye nada tuyo.": "It helps us understand the context. Nothing of yours is ever included.",
   "Abrir en GitHub": "Open in GitHub",
-  "Se abrió GitHub: revisa y publica": "GitHub is open: review and post"
+  "Se abrió GitHub: revisa y publica": "GitHub is open: review and post",
+  "Revisar de nuevo": "Check again",
+  "Hay cambios nuevos en el código de {app}": "There are new changes in {app}'s code"
  },
  "permisos": {},
  "red": [],
  "red_nota": "Los comentarios abren github.com en el navegador de la persona; la app no sale a internet.",
  "compatible": {
   "i18n": ">=0.2.0 <1.0.0",
-  "tema": ">=0.1.0 <1.0.0"
+  "tema": ">=0.2.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "rompe",
+   "seguridad": true,
+   "resumen": "Seguridad: confirmar({peligro: true}) pone el foco en «Cancelar», así un Enter apurado ya no borra (lo encontró Graba). Lo que encontraron las cinco apps al migrar. Arreglos: el texto de error (.pz-error-texto) ya no sale gris dentro de un diálogo (las reglas sobre p y h2 van con :where() y solo para los p directos); el aviso y el botón de peligro usan --sobre-texto y --sobre-rojo (se leen con fondos transparentes); el foco al abrir va al título (no al pie, que desplazaba el diálogo) y, si la app vuelve a pintar con el diálogo abierto, vuelve al control donde estaba; pasos con el mismo título pero otra `clave` mueven el foco; un enlace en una fila de IA ya no deja un hueco a 390 px; .pz-boton parte el texto en vez de salirse; .pz-seg no se parte en varias líneas y se ve sobre --panel-2. Nuevo: ui.envolver(html, {id}) para un diálogo con su propio <h2>; dialogo({antes, tituloHTML}) y sin título; ui.aviso con botón ({accion: {texto, f}}) y con frases ya armadas (tr); acercaDe({extra}); filasIA con `detalle`, «Revisar de nuevo» para una no instalada y un solo botón principal (`principal`); crear({version}) acepta una función; actualizacionRevisada/Disponible aceptan `detalle` y {pintar: false}; fila de actualización en modo desarrollo; confirmar({sinElegir}) para que Esc no sea «no»; --pz-boton-alto, --pz-chip-alto y --pz-tactil para el alto de lo que se toca.",
+   "migrar": [
+    "El foco al abrir un diálogo va al título. Si pusiste data-autofoco en un botón del pie solo para que el foco entrara, quítalo (déjalo solo en un campo donde se escribe).",
+    "filasIA: ahora solo la primera IA instalada lleva pz-principal cuando ninguna está en uso. Para la forma de antes: filasIA({…, principal: \"todas\"}). Una no instalada muestra «Revisar de nuevo» (pz-plano): si tus pruebas contaban los botones, ajústalas.",
+    "Si tu app.css forzaba 44 px sobre .pz-boton/.pz-chip/.pz-seg button, cámbialo por `:root { --pz-boton-alto: 44px }` (o --pz-tactil); si les ponía `white-space: normal` o `flex-wrap: nowrap`, ya no hace falta.",
+    "Si tu app.css corregía `.pz-dialogo p` (margen o gris) o el color de .pz-error-texto en un diálogo, bórralo.",
+    "Si convertías `detalle` en `notas` antes de llamar ui.actualizacionRevisada (Repasa, Esquema), ya no hace falta.",
+    "Si armabas tu propio diálogo para tener un <h2> propio, puntos antes del título o un título bilingüe, pasa a ui.envolver(html, {id}) o a dialogo({antes, tituloHTML})."
+   ]
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "actualizaciones",
- "version": "0.2.0",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "Actualizaciones",
  "icono": "icono.svg",
@@ -53,6 +53,11 @@
  "permisos": {},
  "red_nota": "Solo pregunta a GitHub por la última versión del repo de la app (al abrir y cada 6 horas) y baja de sus Releases; GitHub redirige la descarga a su almacenamiento. Sin datos de la persona.",
  "cambios": [
+  {
+   "version": "0.3.0",
+   "tipo": "mejora",
+   "resumen": "La respuesta de revisar y `disponible` traen `desarrollo` (true en una instalación de desarrollo del Mac: sin versión y con los commits nuevos en `notas`), y la fila de «componentes» lo muestra como «Hay cambios nuevos en el código». La interfaz que esperaba `detalle` puede seguir: «componentes» 0.2.0 acepta `notas` o `detalle`."
+  },
   {
    "version": "0.2.0",
    "tipo": "mejora",

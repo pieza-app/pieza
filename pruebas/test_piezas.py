@@ -664,11 +664,27 @@ class PiezasDeInterfaz(unittest.TestCase):
         self.assertEqual(sorted(lock), ["componentes", "i18n", "tema"])
         config = json.load(open(os.path.join(self.app, "app.json")))["config"]
         self.assertEqual(config["tema"], ["sistema", "claro", "oscuro"])
+        self.assertIn("--sin-config=tema", r.stdout, "avisa cuándo no hace falta «tema»")
         en = json.load(open(os.path.join(self.app, "ui", "idiomas", "en.json")))["textos"]
         self.assertEqual(en["Usar y probar"], "Use and test")
         self.assertEqual(en["Como el sistema"], "Match system")
         self.assertEqual(correr(PIEZA, "agregar", "host-ui", self.app).returncode, 0)
         self.assertTrue(os.path.isfile(os.path.join(self.app, "ui", "host.js")))
+
+    def test_tema_sin_apariencia_no_suma_tema_a_la_config_ni_al_actualizar(self):
+        r = correr(PIEZA, "agregar", "tema", self.app, "--sin-config=tema")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("no sumé «tema»", r.stdout)
+        self.assertNotIn("tema", json.load(open(os.path.join(self.app, "app.json")))["config"])
+        lock = json.load(open(os.path.join(self.app, "piezas.json")))["piezas"]
+        self.assertEqual(lock["tema"]["sin_config"], ["tema"])
+        # Al actualizar (forzar la copia de nuevo) la decisión se respeta.
+        lock["tema"]["version"] = "0.0.1"
+        with open(os.path.join(self.app, "piezas.json"), "w") as f:
+            json.dump({"formato": 1, "piezas": lock}, f)
+        self.assertEqual(correr(PIEZA, "actualizar", self.app, "tema", "--forzar").returncode, 0)
+        self.assertNotIn("tema", json.load(open(os.path.join(self.app, "app.json")))["config"])
+        self.assertEqual(json.load(open(os.path.join(self.app, "piezas.json")))["piezas"]["tema"]["sin_config"], ["tema"])
 
     def test_cada_frase_visible_de_las_piezas_de_interfaz_tiene_su_ingles(self):
         import re
