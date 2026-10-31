@@ -274,11 +274,20 @@
     // Si la persona sale del campo (Tab, un clic en otro lado), ya no se vuelve a él; si lo borró una pintada (el campo ya no está
     // en el documento), sí. Cambiar a otra ventana no cuenta como salir. Se mira después (Chromium también avisa focusout al
     // quitar el campo con innerHTML, y en ese momento aún está en el documento).
+    // La ventana se fue (otra app al frente): se sabe con blur/focus de la ventana, no con hasFocus(), que en algunos navegadores
+    // (y sin pantalla) dice false aunque la persona siga ahí. Si la ventana se fue antes de mirar, no se olvida el campo; si no
+    // alcanza a saberse, al volver el navegador mismo devuelve el foco al campo.
+    let ventanaFuera = false;
+    const vista = doc0?.defaultView;
+    vista?.addEventListener?.("blur", () => { ventanaFuera = true; });
+    vista?.addEventListener?.("focus", () => { ventanaFuera = false; });
     doc0?.addEventListener?.("focusout", (ev) => {
       const t = ev.target;
-      if (!t?.matches?.(CAMPO) || doc0.hasFocus?.() === false) return;
+      if (!t?.matches?.(CAMPO)) return;
       const sel = descriptor(t);
-      setTimeout(() => { if (t.isConnected && documento()?.activeElement !== t && campo?.sel === sel) campo = null; }, 0);
+      // En una microtarea: si fue una pintada (innerHTML), ya terminó y el campo ya no está; si fue la persona, el campo sigue ahí.
+      // (Un setTimeout llegaría tarde: la app puede volver a pintar antes.)
+      Promise.resolve().then(() => { if (!ventanaFuera && t.isConnected && documento()?.activeElement !== t && campo?.sel === sel) campo = null; });
     });
     /** Deja el cursor donde estaba (si es el mismo campo) o al final. */
     function ponerCursor(el) {
