@@ -28,7 +28,7 @@ Variables que entiende: `<ID>_RECURSOS` (raíz de la app) y `<ID>_DATOS` (carpet
 ```
 
 Una lista = valores posibles; `"bool"`, `"texto"` (hasta 2000 caracteres) o `"numero"` = tipo; `{"tipo": "texto", "max": 200000}`
-para un texto más largo; `guardar_config` conserva en el archivo las claves que no conoce. `{"tipo": …, "interfaz": false}` = una
+para un texto más largo, `{"tipo": "texto", "patron": "auto|[a-z]{2,3}"}` para uno que tiene que calzar entero (un valor que va a otro programa); `guardar_config` conserva en el archivo las claves que no conoce. `{"tipo": …, "interfaz": false}` = una
 clave que la interfaz no puede cambiar (la cambia el host después de algo que hizo la persona en el sistema, como elegir una carpeta).
 
 ### Datos a la vista (`"datos": "visible"`)

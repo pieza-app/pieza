@@ -5,7 +5,7 @@ description: "Lanzar un proyecto open source completo desde una idea: entrevista
 
 # Lanzar un proyecto open source con Pieza
 
-Versión del flujo: 9
+Versión del flujo: 10
 
 Quien mantiene el proyecto dice "creemos una aplicación para…" y espera el paquete completo, no preguntas una por una. Este flujo
 sale de lanzar Minuta, Graba, Corta, Alcancía, Repasa y Esquema. Trabaja por fases, con lista de tareas visible, y entrega algo usable al final de cada fase.
@@ -117,7 +117,7 @@ Construye primero lo mínimo que funcione de punta a punta en una plataforma, mu
 En todo el diseño y la construcción aplica la skill **diseno-y-calidad-de-producto** (viene con Pieza: criterios UX/UI y buenas prácticas).
 
 ## 7. Calidad automática desde el día uno
-- `pruebas/correr.sh` + workflow `revisar.yml` en `push` a main **y** `pull_request`: sintaxis, privacidad, pruebas de lógica, contrato
+- `pruebas/correr.sh` (con `set -eo pipefail`: un `| tail` tapa las fallas) + workflow `revisar.yml` en `push` a main **y** `pull_request`: sintaxis, privacidad, pruebas de lógica, contrato
   entre interfaz y apps (si hay varias), pruebas de interfaz con Playwright en todos los idiomas y capturas como artefacto.
 - Privacidad: `herramientas/revisar_privacidad.sh` que busca términos de un archivo local **nunca versionado** (`.terminos-privados`:
   nombres, empresas, correos y rutas reales) + correos y rutas `/Users/…`. Córrelo antes de cada commit. Ejemplos solo con datos

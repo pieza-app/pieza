@@ -1,6 +1,12 @@
 # Cambios
 
-## Sin publicar
+## 0.8.0 — 2026-10-30
+- **Las seis apps usan Pieza:** Graba, Repasa, Minuta, Alcancía y Corta se suman a Esquema (cada una con `nucleo` e `ia`, y casi todas
+  con `i18n`). Al migrarlas se cerraron huecos: los hosts que probaban la IA lanzándola directo, sin protecciones, ahora usan
+  `ia.py probar`; el vocabulario del transcriptor va en un archivo privado y no en los argumentos.
+- **Lo que pidió Corta:** `nucleo` 0.7.0 (texto de config con `patron`, que calza entero) e `ia` 0.5.0 (`"ia": {"ayuda": …}` en
+  `app.json` suma la frase de la app a los errores sin copiar la tabla; la lista de IA instaladas sale de `ia.py lista`). El flujo
+  de crear (versión 10) pide `set -eo pipefail` en las pruebas de la app.
 - **Lo que pidieron Repasa y Minuta al migrar:** `nucleo` 0.6.0 (carpeta visible recién creada en 0700, `<ID>_CARPETA` para las
   pruebas, `"privado": true` para dejar todo en 0600 y `"datos": {"carpeta": "~/…"}` para una carpeta propia), `ia` 0.4.0 (frases
   de error sin nombrar menús, «no respondió» sin detalle con su propia frase, variables de la app quitadas sin importar mayúsculas)

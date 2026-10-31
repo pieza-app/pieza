@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "ia",
- "version": "0.4.0",
+ "version": "0.5.0",
  "estado": "lista",
  "nombre": "Tu IA",
  "icono": "icono.svg",
@@ -96,6 +96,11 @@
  },
  "red_nota": "La app no sale a internet: la IA de la persona se conecta a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
  "cambios": [
+  {
+   "version": "0.5.0",
+   "tipo": "mejora",
+   "resumen": "Lo que pidió Corta: \"ia\": {\"ayuda\": \"Revisa en Ajustes → Tu IA.\"} en app.json suma a los errores no_instalada y actualizar la frase de la app (campo «ayuda», que la interfaz traduce con su en.json) sin copiar la tabla de errores. Para saber qué IA están instaladas, el host usa ia.py lista (acción listaIA) en vez de buscarlas por su cuenta."
+  },
   {
    "version": "0.4.0",
    "tipo": "mejora",

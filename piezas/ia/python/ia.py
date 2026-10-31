@@ -48,6 +48,15 @@ ERRORES = {
 }
 
 
+#: Errores que la persona arregla en la app: a estos se les suma la «ayuda» que declara app.json.
+CON_AYUDA = ("no_instalada", "actualizar")
+
+
+def ayuda():
+    """`"ia": {"ayuda": "Revisa en Ajustes → Tu IA."}` en app.json: dónde se elige la IA en esta app. Solo texto corto."""
+    a = nucleo.app().get("ia")
+    t = a.get("ayuda") if isinstance(a, dict) else None
+    return t if isinstance(t, str) and 0 < len(t) <= 200 and not re.search(r"[<>{}]", t) else ""
 
 
 class VersionVieja(Exception):
@@ -234,7 +243,11 @@ def preguntar(prompt, **opciones):
     plantilla es la frase en español, clave de traducción) y no necesita copiar ERRORES; frase(error) la da en español."""
     ia = opciones.get("ia") or elegida()
     valores = {"ia": nombre(ia), "detalle": "", "app": nucleo.app()["nombre"]}
-    error = lambda codigo: {"codigo": codigo, "plantilla": ERRORES[codigo], "valores": valores}  # noqa: E731
+    def error(codigo):
+        e = {"codigo": codigo, "plantilla": ERRORES[codigo], "valores": valores}
+        if codigo in CON_AYUDA and ayuda():
+            e["ayuda"] = ayuda()  # la frase propia de la app («Revisa en Ajustes → Tu IA.»), su clave en el en.json de la app
+        return e
     try:
         r = ejecutar(prompt, **opciones)
     except FileNotFoundError:
@@ -256,7 +269,7 @@ def frase(error):
     texto = ERRORES[error["codigo"]]
     for k, v in error.get("valores", {}).items():
         texto = texto.replace("{" + k + "}", str(v))
-    return texto.strip()
+    return (texto.strip() + " " + error.get("ayuda", "")).strip()
 
 
 def probar(ia):
@@ -265,8 +278,7 @@ def probar(ia):
                 "error": ERRORES["desconocida"]}
     _, error = preguntar("Responde solo con la palabra: listo", ia=ia, timeout=120)
     if error:
-        return {"ia": ia, "ok": False, "codigo": error["codigo"], "plantilla": error["plantilla"], "valores": error["valores"],
-                "error": frase(error)}
+        return {"ia": ia, "ok": False, **error, "error": frase(error)}
     return {"ia": ia, "ok": True}
 
 

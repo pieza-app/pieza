@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "nucleo",
- "version": "0.6.0",
+ "version": "0.7.0",
  "estado": "lista",
  "nombre": "Núcleo",
  "icono": "icono.svg",
@@ -26,6 +26,11 @@
  "acciones": {},
  "textos": {},
  "cambios": [
+  {
+   "version": "0.7.0",
+   "tipo": "mejora",
+   "resumen": "Lo que pidió Corta: un texto de config con patrón ({\"tipo\": \"texto\", \"patron\": \"auto|[a-z]{2,3}\"}): el valor entero tiene que calzar, así un valor que va a otro programa (el idioma del transcriptor) no necesita validarse a mano."
+  },
   {
    "version": "0.6.0",
    "tipo": "mejora",

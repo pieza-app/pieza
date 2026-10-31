@@ -43,6 +43,10 @@ Las apps hoy tienen su propio `bin/ia.py`, así que `pieza.py agregar ia` no lo 
   `{"ok": false, "codigo": …, "plantilla": …, "valores": …}` y la interfaz muestra `Tp(r.plantilla, r.valores)`: la plantilla es la
   frase en español (clave de `en.json`, ya viene en `textos` de la pieza), así nadie copia la tabla `ERRORES`. Decide por `codigo`
   (`no_instalada` → ofrecer instalarla; `actualizar` → pedir actualizar el CLI). `ia.frase(error)` la da en español para registros.
+- **Dónde se elige la IA en tu app:** `"ia": {"ayuda": "Revisa en Ajustes → Tu IA."}` en `app.json`. Los errores `no_instalada` y
+  `actualizar` traen esa frase en `ayuda` (la interfaz la traduce con el `en.json` de la app) y `ia.frase` la suma. Así no copias la
+  tabla `ERRORES` para agregar una frase.
+- **La lista de IA instaladas** sale de `ia.py lista` (acción `listaIA`): no la busques por tu cuenta en Swift o Electron.
 - **Borra la prueba nativa del CLI** en Swift y Electron: si el host lanzaba `claude`/`codex` directo para «Probar», lo hacía sin
   las protecciones. Todo pasa por `ia.py probar`.
 - Lo propio de la app (frases de su asistente, instrucciones fijas como «responde solo con…») va en sus módulos, no en esta copia:

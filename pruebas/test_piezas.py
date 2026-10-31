@@ -81,6 +81,16 @@ class Nucleo(AppDePrueba):
         self.assertEqual(stat.S_IMODE(os.stat(os.path.join(datos, "x.json")).st_mode), 0o600)
         self.assertEqual(sorted(os.listdir(datos)), ["x.json"])
 
+    def test_texto_con_patron(self):
+        ruta = os.path.join(self.app, "app.json")
+        a = json.load(open(ruta))
+        a["config"]["idioma_audio"] = {"tipo": "texto", "patron": "auto|[a-z]{2,3}"}
+        a["config"]["roto"] = {"tipo": "texto", "patron": "("}
+        json.dump(a, open(ruta, "w"))
+        salida = self.py("import nucleo, json; print(json.dumps([nucleo.limpiar_config({'idioma_audio': v, 'roto': 'x'}) "
+                         "for v in ['auto', 'es', 'es -l', 'ESP', 'auto\\n-x']]))")
+        self.assertEqual(json.loads(salida), [{"idioma_audio": "auto"}, {"idioma_audio": "es"}, {}, {}, {}])
+
     def test_ruta_en_no_sale(self):
         salida = self.py("import nucleo; print([nucleo.ruta_en('/tmp', p) is None for p in ['a/b', '../x', '/etc', '', 'a/../../x']])")
         self.assertEqual(salida.strip(), "[False, True, True, True, True]")
@@ -114,6 +124,23 @@ class IA(AppDePrueba):
         self.assertIn("{app}", e["plantilla"])
         self.assertEqual(e["valores"]["app"], "Prueba")
         self.assertFalse(os.path.exists(self.registro))  # nunca se corrió sin las protecciones
+
+    def test_ayuda_de_la_app_en_los_errores(self):
+        ruta = os.path.join(self.app, "app.json")
+        a = json.load(open(ruta))
+        a["ia"] = {"ayuda": "Revisa en Ajustes → Tu IA."}
+        json.dump(a, open(ruta, "w"), ensure_ascii=False)
+        env = {**self.env, "PATH": "/usr/bin:/bin"}
+        r = subprocess.run([sys.executable, "-c", "import ia, json; print(json.dumps(ia.probar('claude'), ensure_ascii=False))"],
+                           cwd=os.path.join(self.app, "bin"), env=env, capture_output=True, text=True)
+        e = json.loads(r.stdout)
+        self.assertEqual((e["codigo"], e["ayuda"]), ("no_instalada", "Revisa en Ajustes → Tu IA."))
+        self.assertEqual(e["error"], "No encontré Claude en este computador. Revisa en Ajustes → Tu IA.")
+        a["ia"] = {"ayuda": "<b>{x}</b>"}
+        json.dump(a, open(ruta, "w"))
+        r = subprocess.run([sys.executable, "-c", "import ia, json; print(json.dumps(ia.probar('claude')))"],
+                           cwd=os.path.join(self.app, "bin"), env=env, capture_output=True, text=True)
+        self.assertNotIn("ayuda", json.loads(r.stdout))
 
     def test_claude_sin_herramientas_ni_memoria_y_pedido_por_stdin(self):
         self.assertIn("listo None", self.preguntar("claude"))
