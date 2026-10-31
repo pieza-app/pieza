@@ -157,6 +157,12 @@ color}`, `:focus-visible` y `color-scheme`, que ya trae la pieza.
 | Alcancía | `--barra-alto` queda propio; su `#toast` pasa a `--pz-toast-abajo: calc(var(--barra-alto) + 16px)` si usa `componentes`. |
 | Minuta | Cada universo trae sus colores y su modo: al cargar un universo, `tema.aplicar(universo.modo)` (en vez de `dataset.modo`) y sus colores van **directo a los tokens** (`--fondo`, `--panel`, `--acento`…, ya resueltos para ese modo) en vez de los pares. `:root[data-modo="claro"]` → `:root[data-pz-modo="claro"]`. No ofrece «Apariencia» (lo decide el universo): `pieza.py agregar tema minuta --sin-config=tema`. |
 
+## Si venías de 0.2.0
+
+| Qué cambió | Qué hacer en la app |
+|---|---|
+| El título de una ventana `aria-modal` (con `tabindex="-1"`, que la pieza `componentes` enfoca al abrir) no lleva anillo de foco | Si lo quitabas en tu `app.css` (`.galeria h2:focus { outline: none }`), bórralo. |
+
 ## Si venías de 0.1.0
 
 | Qué cambió | Qué hacer en la app |

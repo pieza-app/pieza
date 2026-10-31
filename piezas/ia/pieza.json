@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "ia",
- "version": "0.6.0",
+ "version": "0.6.1",
  "estado": "lista",
  "nombre": "Tu IA",
  "icono": "icono.svg",
@@ -97,6 +97,11 @@
  },
  "red_nota": "La app no sale a internet: la IA de la persona se conecta a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
  "cambios": [
+  {
+   "version": "0.6.1",
+   "tipo": "arreglo",
+   "resumen": "probar ya no suma la «ayuda» de app.json (la persona ya está en «Tu IA»: «Revisa en Ajustes → Tu IA» sobraba), ni en el campo ayuda ni en error. Los demás errores (preguntar, frase) la siguen trayendo."
+  },
   {
    "version": "0.6.0",
    "tipo": "mejora",

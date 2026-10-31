@@ -628,7 +628,8 @@ test("componentes: filas de IA escapan, prueban con {ia} y muestran el error tra
   assert.match(ui.filasIA({ ias }), /aria-label="Probando…"/);
   ui.iaProbada({ ia: "claude", ok: false, plantilla: "No encontré {ia} en este computador.", valores: { ia: "<Claude>" }, ayuda: "Revisa en Ajustes → Tu IA." });
   h = ui.filasIA({ ias });
-  assert.match(h, /pz-error-texto" data-sin-traducir>No encontré &lt;Claude&gt; en este computador\. Revisa en Ajustes → Tu IA\./);
+  assert.match(h, /pz-error-texto" data-sin-traducir>No encontré &lt;Claude&gt; en este computador\.<\/small>/,
+    "sin la «ayuda» de la app: la fila ya está en «Tu IA»");
   ui.iaProbada({ id: "claude", ok: true });   // la forma vieja también se entiende
   assert.deepEqual(enviados.at(-1), ["config", { ia: "claude" }]);
   assert.match(ui.filasIA({ ias, elegida: "claude" }), /class="pz-ok">Lista</);
@@ -760,10 +761,11 @@ test("componentes 0.2: dialogo con «antes», título propio o sin título; envo
   assert.doesNotMatch(ui.dialogo({ id: "t", titulo: "T", clave: 'x" onclick="y' }), /onclick/, "una clave rara no entra");
 });
 
-test("componentes 0.2: confirmar sin peligro enfoca «sí»; con sinElegir, Esc y el velo no son «no»", async () => {
+test("componentes 0.3: confirmar sin peligro enfoca el título (ningún botón con data-autofoco); con sinElegir, Esc y el velo no son «no»", async () => {
   const { ui } = componentes();
   const p = ui.confirmar({ titulo: "¿Seguro?" });
-  assert.match(ui.capas(), /data-pz-confirmar="no" data-sin-traducir[\s\S]*data-pz-confirmar="si" data-autofoco/);
+  assert.doesNotMatch(ui.capas(), /data-autofoco/, "sin peligro el foco va al título, como en todo diálogo");
+  assert.match(ui.capas(), /<h2 id="pz-t-conf" tabindex="-1"/);
   ui.manejarClic(clicEn({ "data-pz-cerrar": "" }));
   assert.equal(await p, false);
   const q = ui.confirmar({ titulo: "¿Guardar los cambios?", si: "Guardar", no: "No guardar", sinElegir: null });
@@ -854,6 +856,40 @@ test("componentes 0.2: versión como función, Acerca de con enlaces extra, actu
   assert.match(h, /• arreglo/);
   ui.actualizacionRevisada({ hay: false });
   assert.equal(pintadas(), antes + 1);
+});
+
+test("componentes 0.3: revisable, clases del título y de la capa, «hay» sin versión no es desarrollo", () => {
+  const { ui } = componentes();
+  const ias = [{ id: "claude", nombre: "Claude", instalada: true }, { id: "telefono", nombre: "Este teléfono", instalada: false, detalle: "Comentarios", revisable: false }];
+  const h = ui.filasIA({ ias });
+  assert.doesNotMatch(h, /data-pz-probar-ia="telefono"/, "una IA que todavía no existe no ofrece «Revisar de nuevo»");
+  assert.match(h, /<b data-sin-traducir>Este teléfono<\/b><small><span data-sin-traducir>Comments<\/span><\/small><\/span><\/div>/);
+  assert.match(h, /data-pz-probar-ia="claude"/);
+  const d = ui.dialogo({ id: "t-x", tituloHTML: "Hola", claseTitulo: "grande mal\"x", claseCapa: "velo-oscuro" });
+  assert.match(d, /<div class="pz-capa velo-oscuro" data-pz-capa>/);
+  assert.match(d, /<h2 id="t-x" class="grande" tabindex="-1"/, "solo clases con forma de clase");
+  assert.match(ui.dialogo({ id: "t-y", titulo: "T" }), /<h2 id="t-y" tabindex="-1"/, "sin claseTitulo, sin class");
+  assert.match(ui.envolver('<h2 id="t-z">Z</h2>', { id: "t-z", claseCapa: "completa" }), /<div class="pz-capa completa" data-pz-capa><div class="pz-dialogo"/);
+  ui.actualizacionRevisada({ hay: true, notas: "• algo" }, { pintar: false });
+  assert.match(ui.filaActualizacion(), /There&#39;s a new version of Ana/, "sin versión ni texto sigue siendo un Release");
+  assert.doesNotMatch(ui.filaActualizacion(), /cambios nuevos en el código/);
+  ui.actualizacionRevisada({ hay: true, notas: "• commit", desarrollo: true }, { pintar: false });
+  assert.match(ui.filaActualizacion(), /Hay cambios nuevos en el código de Ana/, "solo con desarrollo: true");
+});
+
+test("i18n 0.3.1: con noTraducirAtributos, [data-sin-traducir] siempre cuenta (también para sus atributos)", () => {
+  const con = PiezaI18n.crear({ noTraducir: "[data-nota]", noTraducirAtributos: "[data-propio]" });
+  con.usar(EN);
+  const suyo = el("span", { "data-sin-traducir": "", title: "Guardar" }, [el("i", { title: "Guardar" })]);
+  const zona = el("div", { "data-nota": "" }, [el("button", { title: "Guardar" }, ["Guardar"]), suyo]);
+  const fuera = el("b", { "data-sin-traducir": "", "aria-label": "Guardar" });
+  con.traducirDOM(el("section", {}, [zona, fuera]));
+  assert.equal(zona.childNodes[0].attrs.title, "Save", "un botón de la app dentro de la zona, sí");
+  assert.equal(suyo.attrs.title, "Guardar", "data-sin-traducir dentro de la zona: no");
+  assert.equal(suyo.childNodes[0].attrs.title, "Guardar", "ni lo que tiene adentro");
+  assert.equal(fuera.attrs["aria-label"], "Guardar", "ni fuera de la zona");
+  con.traducirDOM(suyo);
+  assert.equal(suyo.attrs.title, "Guardar", "tampoco si es la raíz");
 });
 
 test("host-ui 0.2: responder acepta objetos; reasignar window.<App> avisa y suma al mismo objeto", () => {

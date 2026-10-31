@@ -47,7 +47,13 @@ Las apps hoy tienen su propio `bin/ia.py`, así que `pieza.py agregar ia` no lo 
   (`no_instalada` → ofrecer instalarla; `actualizar` → pedir actualizar el CLI). `ia.frase(error)` la da en español para registros.
 - **Dónde se elige la IA en tu app:** `"ia": {"ayuda": "Revisa en Ajustes → Tu IA."}` en `app.json`. Los errores `no_instalada` y
   `actualizar` traen esa frase en `ayuda` (la interfaz la traduce con el `en.json` de la app) y `ia.frase` la suma. Así no copias la
-  tabla `ERRORES` para agregar una frase.
+  tabla `ERRORES` para agregar una frase. `probar` no la trae: se prueba desde «Tu IA», donde «Revisa en Ajustes → Tu IA» sobra.
+
+## Si venías de 0.6.0
+
+| Qué cambió | Qué hacer en la app |
+|---|---|
+| `probar` ya no trae `ayuda` (ni la suma a `error`) | Nada. Si en «Tu IA» quitabas a mano la frase de la ayuda del resultado de `iaProbada`, bórralo. |
 - **La lista de IA instaladas** sale de `ia.py lista` (acción `listaIA`): no la busques por tu cuenta en Swift o Electron.
 - **Borra la prueba nativa del CLI** en Swift y Electron: si el host lanzaba `claude`/`codex` directo para «Probar», lo hacía sin
   las protecciones. Todo pasa por `ia.py probar`.

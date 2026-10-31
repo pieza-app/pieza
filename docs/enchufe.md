@@ -59,7 +59,7 @@ enruten solos.
 | `archivos` | Origen en la pieza → destino en la app. `pieza.py agregar` los copia y anota su huella. El destino va dentro de `bin/`, `ui/`, `app/`, `escritorio/`, `movil/`, `docs/`, `pruebas/` o `herramientas/`, nunca en carpetas que empiezan con punto (`.github/`, `.git/`, `.claude/`: ahí un archivo ejecuta código), y sin enlaces. |
 | `requiere` | Otras piezas que se agregan antes, solas. |
 | `config` | Claves que la pieza necesita en `app.json` (lista = valores posibles; `"bool"`, `"texto"`, `"numero"` = tipo). Se suman sin pisar. |
-| `config_opcional` | `{clave: "cuándo"}`: claves de `config` que solo sirven si la app ofrece algo (p. ej. `tema`: «Apariencia» en Ajustes). Se suman igual, salvo `pieza.py agregar … --sin-config=tema`; esa decisión queda en `piezas.json` (`sin_config`) y `actualizar` la respeta. |
+| `config_opcional` | `{clave: "cuándo"}`: claves de `config` que solo sirven si la app ofrece algo (p. ej. `tema`: «Apariencia» en Ajustes). Se suman igual, salvo `pieza.py agregar … --sin-config=tema` (o `actualizar … --sin-config=tema`; sobre una pieza ya instalada, quita la clave de `app.json` si la app no la cambió); esa decisión queda en `piezas.json` (`sin_config`) y `actualizar` la respeta. |
 | `acciones` | Las acciones tipo (a) que trae la pieza (abajo). |
 | `textos` | Frases en español → inglés. Se suman al `ui/idiomas/en.json` de la app si faltan. |
 | `estado` | `lista` (trae código) o `planeada` (aún por extraer: sin `archivos`, con `tomar_de`). |
@@ -152,7 +152,9 @@ dice cuál es el ícono de la app para la lista de proyectos de la página de Pi
 ```
 
 Con eso `pieza.py estado` sabe qué cambió la app (huella distinta) y qué trae la base de nuevo (versión distinta), y
-`actualizar` nunca pisa un cambio de la app.
+`actualizar` nunca pisa un cambio de la app. Va en orden de dependencias (lo que una pieza `requiere` primero) y revisa `compatible`
+con las versiones que quedan **después** de la pasada: si `componentes` nueva necesita `tema` nueva, se actualizan las dos juntas
+(aunque se pida solo `componentes`); si no hay una versión que sirva, esa pieza no se toca y se dice por qué.
 
 ## El host genérico (`host-mac` y `host-escritorio`)
 

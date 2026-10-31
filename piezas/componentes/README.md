@@ -41,15 +41,15 @@ const html = ui.envolver(`<h2 id="t-exportar">Exportar</h2>${cuerpo}`, { id: "t-
 
 | API | |
 |---|---|
-| `crear({i18n, host?, app, repo?, version?, pintar?, cerrar?, retener?, elegirIA?, documento?, duracion?, pausa?})` | `elegirIA(id)`: qué hacer cuando una IA prueba bien (por defecto `host.enviar("config", {ia})`). |
-| `dialogo({id, titulo?, tituloHTML?, valores?, antes?, cuerpo, pie?, clase?, cerrable?, sinEsc?, clave?})` | `role="dialog"`, `aria-modal`, `aria-labelledby`; `titulo` es una frase en español con `{marcadores}` (va por `T`); `tituloHTML`, un título que armaste tú con `esc()` (bilingüe, sin traducir); sin ninguno, no hay cabecera y el título lo pones en `cuerpo` con ese `id`. `antes`: HTML antes del título (los puntos de una bienvenida). `cuerpo` y `pie` los armas tú con `esc()`. `clase: "pz-ancho"` para uno ancho; `cerrable: false` sin ✕; `sinEsc: true` para uno que no se cierra solo; `clave` distingue pasos con el mismo título (el foco va al título al cambiar de paso). |
-| `envolver(html, {id, clase?, sinEsc?, clave?, cerrable?})` | Tu diálogo entero (con su `<h2 id>`) dentro de la capa y la caja accesible: foco, Tab, Esc y velo de la pieza. Sin ✕ salvo `cerrable: true`. |
-| `confirmar({titulo, texto?, valores?, si?, no?, peligro?, sinElegir?})` | Promesa: `true` (sí) o `false` (no). **Esc y el velo cuentan como «no»**; si necesitas distinguirlos («Guardar / No guardar / Cancelar»), `sinElegir: null` hace que devuelvan `null`. Con `peligro` el foco empieza en «Cancelar»; sin él, en «sí». Se pinta con `capas()`. |
+| `crear({i18n, host?, app, repo?, version?, pintar?, cerrar?, retener?, elegirIA?, mantenerCampos?, documento?, duracion?, pausa?})` | `elegirIA(id)`: qué hacer cuando una IA prueba bien (por defecto `host.enviar("config", {ia})`). `mantenerCampos: true`: si la app vuelve a pintar mientras se escribe en un campo **fuera** de un diálogo (un buscador), el foco y el cursor vuelven a ese campo (necesita `id` o un `data-*` para reconocerlo). |
+| `dialogo({id, titulo?, tituloHTML?, valores?, antes?, cuerpo, pie?, clase?, claseCapa?, claseTitulo?, cerrable?, sinEsc?, clave?})` | `role="dialog"`, `aria-modal`, `aria-labelledby`; `titulo` es una frase en español con `{marcadores}` (va por `T`); `tituloHTML`, un título que armaste tú con `esc()` (bilingüe, sin traducir); sin ninguno, no hay cabecera y el título lo pones en `cuerpo` con ese `id`. `antes`: HTML antes del título (los puntos de una bienvenida). `cuerpo` y `pie` los armas tú con `esc()`. `clase: "pz-ancho"` para uno ancho (va en la caja); `claseCapa`, en el velo; `claseTitulo`, en el `<h2>` (con `titulo` o `tituloHTML`); `cerrable: false` sin ✕; `sinEsc: true` para uno que no se cierra solo; `clave` distingue pasos con el mismo título (el foco va al título al cambiar de paso). |
+| `envolver(html, {id, clase?, claseCapa?, sinEsc?, clave?, cerrable?})` | Tu diálogo entero (con su `<h2 id>`) dentro de la capa y la caja accesible: foco, Tab, Esc y velo de la pieza. `clase` va en la caja y `claseCapa` en el velo. Sin ✕ salvo `cerrable: true`. |
+| `confirmar({titulo, texto?, valores?, si?, no?, peligro?, sinElegir?})` | Promesa: `true` (sí) o `false` (no). **Esc y el velo cuentan como «no»**; si necesitas distinguirlos («Guardar / No guardar / Cancelar»), `sinElegir: null` hace que devuelvan `null`. Sin `peligro` el foco empieza en el título, como en todo diálogo (el lector anuncia la pregunta; un Enter apurado no elige nada); con `peligro`, en «Cancelar». Se pinta con `capas()`. |
 | `capas()` | Lo que la pieza pinta arriba de todo (confirmar, comentarios): al final de cada pintada. |
 | `despuesDePintar()`, `manejarClic(ev)`, `manejarTecla(ev)` | Foco, Tab que no se escapa del diálogo de más arriba, Esc. Devuelven `true` si era de la pieza. |
 | `aviso(frase, {valores?, traducido?, error?, duracion?, accion?})` | Cola: uno a la vez, sin repetir el que está o espera, máximo 4 esperando; dura según el largo (los errores, más). `frase` en español: con `valores` va por `Tp`; sin ellos, por `tr` (así sirve una frase ya armada, «Quedan 3 días»); `traducido: true` si ya viene en el idioma de la persona. `accion: {texto, f}` suma un botón (Deshacer, Revisar…): dura al menos 6 s, tocarlo corre `f` y cierra; `ui.avisos.accionar()` lo toca desde un atajo de la app. |
-| `filasIA({ias, elegida, guia?, principal?})`, `probarIA(id)`, `iaProbada(r)` | `ias: [{id, nombre, instalada, detalle?}]`; `detalle` (frase en español) dice por qué no está lista. Una no instalada trae «Revisar de nuevo» (se instaló después, o el teléfono ya bajó su modelo). `principal`: `"una"` (por defecto: solo la primera instalada, y ninguna si hay una en uso: un solo color de acción por pantalla), `"todas"` o `false`. `[data-pz-probar-ia]` manda `probarIA {ia}`; `iaProbada` acepta `{ia, ok, plantilla, valores, ayuda}` (y `{id}` de antes) y muestra el error traducido. |
-| `filaActualizacion()`, `actualizacionRevisada(r, {pintar?})`, `actualizacionDisponible(r, {pintar?})`, `actualizacionProgreso(a)` | La forma de la pieza `actualizaciones` (`texto` + `valores`, `notas` —o `detalle`, de antes—, `paso`, `total`, `pct`), con barra de avance. `desarrollo: true` (o sin versión): «Hay cambios nuevos en el código de {app}» con los commits. `{pintar: false}` solo lo anota (p. ej. mientras está la pantalla del idioma). |
+| `filasIA({ias, elegida, guia?, principal?})`, `probarIA(id)`, `iaProbada(r)` | `ias: [{id, nombre, instalada, detalle?, revisable?}]`; `detalle` (frase en español) dice por qué no está lista. Una no instalada trae «Revisar de nuevo» (se instaló después, o el teléfono ya bajó su modelo), salvo con `revisable: false` (una que todavía no existe: «Muy pronto» en `detalle`). `principal`: `"una"` (por defecto: solo la primera instalada, y ninguna si hay una en uso: un solo color de acción por pantalla), `"todas"` o `false`. `[data-pz-probar-ia]` manda `probarIA {ia}`; `iaProbada` acepta `{ia, ok, plantilla, valores, ayuda}` (y `{id}` de antes) y muestra el error traducido (sin la `ayuda` de la app: la fila ya está en «Tu IA»). |
+| `filaActualizacion()`, `actualizacionRevisada(r, {pintar?})`, `actualizacionDisponible(r, {pintar?})`, `actualizacionProgreso(a)` | La forma de la pieza `actualizaciones` (`texto` + `valores`, `notas` —o `detalle`, de antes—, `paso`, `total`, `pct`), con barra de avance. Solo `desarrollo: true`: «Hay cambios nuevos en el código de {app}» con los commits (un `hay` sin versión sigue siendo «Hay una versión nueva»). `{pintar: false}` solo lo anota (p. ej. mientras está la pantalla del idioma). |
 | `acercaDe({version?, licencia?, enlaces: {sitio, codigo, comunidad, aportar}, extra?: [{texto, url}]})` | Solo enlaces https (`[data-pz-enlace]` → `abrirEnlace {url}`); `extra` suma los de la app (texto en español, se traduce con el resto); con `repo`, el botón «Enviar comentarios». `version` por defecto, la de `crear`. |
 | `abrirComentarios({tipo})`, `datosComentario()`; `urlIssue(repo, {titulo, cuerpo, etiqueta})`, `sistemaDe(plataforma, navigator)` | Formulario (algo falla, una idea, otro) que abre `github.com/<repo>/issues/new` prellenado en el navegador. Con la casilla marcada suma versión, idioma y sistema; nunca nada de la persona. |
 | `crearAvisos(...)`, `esc(v)` | Por si los necesitas sueltos. |
@@ -59,14 +59,19 @@ sin traducir» las cuentan); las que llevan valores salen ya traducidas dentro d
 `textos` del `pieza.json` (`pieza.py agregar` las suma al `en.json` de la app).
 
 **Accesible:** al abrir, el foco va al **título** del diálogo (el lector de pantalla lo anuncia y nada se desplaza; con
-`[data-autofoco]` en un campo, a ese campo). Si la app vuelve a pintar con el diálogo abierto, el foco vuelve al control donde
-estaba; si cambia de paso (`clave`), al título nuevo. Tab y Mayús+Tab dan la vuelta adentro, Esc y el velo cierran lo de más
+`[data-autofoco]` en un campo, a ese campo, con el cursor al final). Si la app vuelve a pintar con el diálogo abierto, el foco vuelve al
+control donde estaba (en un campo, con el cursor donde estaba, o al final); si cambia de paso (`clave`), al título nuevo. Fuera de
+un diálogo, lo mismo con `crear({mantenerCampos: true})`, solo si la pintada se llevó el campo (si la persona salió de él, no se
+vuelve). El título enfocado no lleva anillo en ninguna ventana `aria-modal`, sea de la pieza o de la app. Tab y Mayús+Tab dan la vuelta adentro, Esc y el velo cierran lo de más
 arriba y el foco vuelve al botón que lo abrió (se recuerda por su `id` o su primer `data-*`, porque la app vuelve a pintar todo).
 Sin animaciones con `prefers-reduced-motion`.
 
 **Lo que se toca:** `--pz-boton-alto` (36 px), `--pz-chip-alto` (32 px, chips y selector) y `--pz-tactil` (44 px). En pantallas
-táctiles y a 760 px o menos los dos primeros pasan a `--pz-tactil`, y dentro de un diálogo nunca bajan de eso. Para botones de
-44 px también en escritorio: `:root { --pz-boton-alto: 44px; }` en tu `app.css` (nunca `min-height` sobre `.pz-boton`, que pisaría
+táctiles y a 760 px o menos los dos primeros pasan a `--pz-tactil` **dentro de los componentes de la pieza** (diálogos, filas de
+Ajustes `.pz-filas`, avisos y los chips de «Acerca de»); en el resto de tu app quedan como los dejes (un editor compacto no crece
+solo). Para que todo crezca en táctil: `@media (pointer: coarse), (max-width: 760px) { :root { --pz-boton-alto: var(--pz-tactil);
+--pz-chip-alto: var(--pz-tactil); } }` en tu `app.css`. La ✕ de un diálogo nunca baja de 36 px (`--pz-cerrar-ancho` la fija), aunque
+pongas `--pz-boton-alto: 0` para medir tus botones a mano. Para botones de 44 px también en escritorio: `:root { --pz-boton-alto: 44px; }` en tu `app.css` (nunca `min-height` sobre `.pz-boton`, que pisaría
 lo de los diálogos); para unos más grandes en táctil (niños): `:root { --pz-tactil: 48px; }`. Las reglas sobre elementos (`p`,
 `h2` de un diálogo) van con `:where()`: cualquier clase tuya les gana. Un botón con texto largo se parte en dos líneas; el
 selector `.pz-seg` no se parte (se parte el texto de cada opción) y su riel se ve sobre `--panel` y sobre `--panel-2`.
@@ -99,6 +104,18 @@ En todas: `pieza.py agregar componentes <app>` (trae `i18n` y `tema`), los `<lin
 | Repasa | `mantener()` es su `pintar` (conserva el scroll): pásalo como `pintar`. Sus botones más grandes (para niños) quedan en su `app.css` sobre `.pz-boton`. Sus teclas 1–5 del repaso van después de `ui.manejarTecla`. |
 | Alcancía | `--pz-toast-abajo: calc(var(--barra-alto) + 16px)` en celular. En `LECTURA` (celular) no pintes `filasIA` ni `filaActualizacion`. Su `aviso-regla` es propio y se queda. |
 | Minuta | No usa `.capa`/`.dialogo`: sus ventanas son `.galeria`/`.galeria-caja` con `role="dialog"` **sin** `aria-modal`. Para que el foco y Esc funcionen, agrega `aria-modal="true"` (o pásalas a `ui.dialogo`). `.boton` en Minuta es un botón de ícono de 34 px: no lo renombres a `.pz-boton` sin revisar cada uno. Su formulario de comentarios publica también con la cuenta de GitHub del respaldo (`comentarios` con `directo`): eso queda en Minuta hasta la pieza `comentarios`; la parte «Abrir en GitHub» pasa a `ui.abrirComentarios`. |
+
+## Si venías de 0.2.0
+
+| Qué cambió | Qué hacer en la app |
+|---|---|
+| En táctil / ≤760 px, `--pz-tactil` sube solo los componentes de la pieza (diálogos, `.pz-filas`, avisos), no `:root` | Si contrarrestabas el `:root` de la pieza para un editor compacto (Corta), bórralo. Si querías que todos tus `.pz-boton` crecieran, pon la regla `:root` de «Lo que se toca» en tu `app.css`. |
+| `confirmar` sin `peligro` enfoca el título (antes «sí») | Si tus pruebas esperaban el foco en `[data-pz-confirmar="si"]`, ajústalas: Enter ya no confirma, Tab llega a los botones. |
+| `filaActualizacion`: solo `desarrollo: true` es una instalación de desarrollo | Si tu app manda los commits nuevos de un checkout, agrega `desarrollo: true` a lo que pasas a `actualizacionRevisada`/`actualizacionDisponible`. |
+| El error de `iaProbada` no muestra la `ayuda` | Nada (borra lo que la quitara a mano). |
+| El título de tus ventanas `aria-modal` sin anillo; `.pz-cerrar` con ancho mínimo propio | Borra lo que lo arreglaba en tu `app.css`. |
+| Cursor donde estaba al repintar; `mantenerCampos` | Si guardabas y devolvías el cursor de un campo a mano, bórralo (fuera de un diálogo, `crear({mantenerCampos: true})`). |
+| `revisable: false`, `claseTitulo`, `claseCapa` | Si armabas la fila de una IA «muy pronto» o un diálogo a mano solo para poner una clase al título o al velo, pasa a estas opciones. |
 
 ## Si venías de 0.1.0
 

@@ -131,14 +131,22 @@ class IA(AppDePrueba):
         a["ia"] = {"ayuda": "Revisa en Ajustes → Tu IA."}
         json.dump(a, open(ruta, "w"), ensure_ascii=False)
         env = {**self.env, "PATH": "/usr/bin:/bin"}
-        r = subprocess.run([sys.executable, "-c", "import ia, json; print(json.dumps(ia.probar('claude'), ensure_ascii=False))"],
+        r = subprocess.run([sys.executable, "-c", "import ia, json; t, e = ia.preguntar('hola', ia='claude'); "
+                            "print(json.dumps({**e, 'frase': ia.frase(e)}, ensure_ascii=False))"],
                            cwd=os.path.join(self.app, "bin"), env=env, capture_output=True, text=True)
         e = json.loads(r.stdout)
         self.assertEqual((e["codigo"], e["ayuda"]), ("no_instalada", "Revisa en Ajustes → Tu IA."))
-        self.assertEqual(e["error"], "No encontré Claude en este computador. Revisa en Ajustes → Tu IA.")
+        self.assertEqual(e["frase"], "No encontré Claude en este computador. Revisa en Ajustes → Tu IA.")
+        # probar se usa desde «Tu IA»: ahí la ayuda sobra (ni en el campo ni en la frase).
+        r = subprocess.run([sys.executable, "-c", "import ia, json; print(json.dumps(ia.probar('claude'), ensure_ascii=False))"],
+                           cwd=os.path.join(self.app, "bin"), env=env, capture_output=True, text=True)
+        e = json.loads(r.stdout)
+        self.assertEqual(e["codigo"], "no_instalada")
+        self.assertNotIn("ayuda", e)
+        self.assertEqual(e["error"], "No encontré Claude en este computador.")
         a["ia"] = {"ayuda": "<b>{x}</b>"}
         json.dump(a, open(ruta, "w"))
-        r = subprocess.run([sys.executable, "-c", "import ia, json; print(json.dumps(ia.probar('claude')))"],
+        r = subprocess.run([sys.executable, "-c", "import ia, json; t, e = ia.preguntar('hola', ia='claude'); print(json.dumps(e))"],
                            cwd=os.path.join(self.app, "bin"), env=env, capture_output=True, text=True)
         self.assertNotIn("ayuda", json.loads(r.stdout))
 
@@ -684,6 +692,100 @@ class PiezasDeInterfaz(unittest.TestCase):
             json.dump({"formato": 1, "piezas": lock}, f)
         self.assertEqual(correr(PIEZA, "actualizar", self.app, "tema", "--forzar").returncode, 0)
         self.assertNotIn("tema", json.load(open(os.path.join(self.app, "app.json")))["config"])
+        self.assertEqual(json.load(open(os.path.join(self.app, "piezas.json")))["piezas"]["tema"]["sin_config"], ["tema"])
+
+    def _base_con(self, cambios):
+        """Copia la base a un temporal y sube la versión de cada pieza de `cambios` ({pieza: {tipo, compatible?}})."""
+        import shutil
+        base = os.path.join(self.tmp.name, "base")
+        shutil.copytree(BASE, base, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+        for pid, c in cambios.items():
+            ruta = os.path.join(base, "piezas", pid, "pieza.json")
+            with open(ruta, encoding="utf-8") as f:
+                p = json.load(f)
+            x, y, z = map(int, p["version"].split("."))
+            p["version"] = f"{x}.{y + 1}.0" if c["tipo"] != "arreglo" else f"{x}.{y}.{z + 1}"
+            p["compatible"] = {**p.get("compatible", {}), **c.get("compatible", {})}
+            p["cambios"].insert(0, {"version": p["version"], "tipo": c["tipo"], "resumen": "prueba",
+                                    **({"migrar": ["Nada."]} if c["tipo"] == "rompe" else {})})
+            with open(ruta, "w", encoding="utf-8") as f:
+                json.dump(p, f, ensure_ascii=False)
+            primero = next(iter(p["archivos"]))
+            with open(os.path.join(base, "piezas", pid, primero), "a") as f:
+                f.write("\n/* versión nueva */\n")
+        return os.path.join(base, "herramientas", "pieza.py")
+
+    def _versiones(self):
+        return {k: v["version"] for k, v in json.load(open(os.path.join(self.app, "piezas.json")))["piezas"].items()}
+
+    def test_actualizar_va_en_orden_de_dependencias_y_cuenta_lo_de_la_misma_pasada(self):
+        self.assertEqual(correr(PIEZA, "agregar", "componentes", self.app).returncode, 0)
+        tema = self.ficha("tema")["version"]
+        x, y, _ = map(int, tema.split("."))
+        nueva = self._base_con({"tema": {"tipo": "mejora"},
+                                "componentes": {"tipo": "mejora", "compatible": {"tema": f">={x}.{y + 1}.0 <1.0.0"}}})
+        e = {x["pieza"]: x for x in json.loads(correr(nueva, "estado", self.app, "--json").stdout)}
+        self.assertTrue(e["componentes"]["choques"], "sola, componentes chocaría con el tema de antes")
+        self.assertEqual(e["componentes"]["juntas"], ["tema"])
+        self.assertTrue(e["componentes"]["automatico"] and e["tema"]["automatico"], "juntas, las dos se actualizan solas")
+        self.assertIn("se actualizan juntas", correr(nueva, "estado", self.app).stdout)
+        r = correr(nueva, "actualizar", self.app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertNotIn("no actualicé", r.stdout)
+        self.assertLess(r.stdout.index("↑ tema"), r.stdout.index("↑ componentes"), "lo requerido va primero")
+        v = self._versiones()
+        self.assertEqual((v["tema"], v["componentes"]), (f"{x}.{y + 1}.0", self._version_de(nueva, "componentes")))
+        self.assertIn("versión nueva", open(os.path.join(self.app, "ui", "componentes.js")).read())
+
+    def _version_de(self, pieza_py, pid):
+        base = os.path.dirname(os.path.dirname(pieza_py))
+        return json.load(open(os.path.join(base, "piezas", pid, "pieza.json")))["version"]
+
+    def test_actualizar_una_trae_lo_que_necesita_y_aviso_dice_como(self):
+        self.assertEqual(correr(PIEZA, "agregar", "componentes", self.app).returncode, 0)
+        x, y, _ = map(int, self.ficha("tema")["version"].split("."))
+        nueva = self._base_con({"tema": {"tipo": "rompe"},
+                                "componentes": {"tipo": "rompe", "compatible": {"tema": f">={x}.{y + 1}.0 <1.0.0"}}})
+        aviso = correr(nueva, "aviso", self.app).stdout
+        self.assertIn("pieza.py actualizar . componentes tema", aviso)
+        self.assertEqual(correr(nueva, "actualizar", self.app, "--automatico").stdout.strip(), "", "lo que rompe, nunca solo")
+        r = correr(nueva, "actualizar", self.app, "componentes")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("(la necesita componentes)", r.stdout)
+        self.assertEqual(self._versiones()["tema"], f"{x}.{y + 1}.0")
+        self.assertEqual(correr(nueva, "aviso", self.app).stdout.strip(), "")
+
+    def test_si_no_hay_version_que_sirva_no_se_toca(self):
+        self.assertEqual(correr(PIEZA, "agregar", "componentes", self.app).returncode, 0)
+        x, y, _ = map(int, self.ficha("tema")["version"].split("."))
+        nueva = self._base_con({"componentes": {"tipo": "mejora", "compatible": {"tema": f">={x}.{y + 5}.0 <1.0.0"}}})
+        antes = self._versiones()
+        r = correr(nueva, "actualizar", self.app)
+        self.assertIn("! no actualicé componentes", r.stdout)
+        self.assertEqual(self._versiones(), antes)
+        self.assertIn("todavía no hay una versión de `tema` que sirva", correr(nueva, "aviso", self.app).stdout)
+
+    def test_sin_config_al_actualizar_y_sobre_una_pieza_ya_instalada(self):
+        self.assertEqual(correr(PIEZA, "agregar", "componentes", self.app).returncode, 0)
+        self.assertEqual(json.load(open(os.path.join(self.app, "app.json")))["config"]["tema"], ["sistema", "claro", "oscuro"])
+        r = correr(PIEZA, "agregar", "tema", self.app, "--sin-config=tema")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("ya estaba", r.stdout)
+        self.assertIn("quité «tema» de app.json", r.stdout)
+        self.assertNotIn("tema", json.load(open(os.path.join(self.app, "app.json")))["config"])
+        self.assertEqual(json.load(open(os.path.join(self.app, "piezas.json")))["piezas"]["tema"]["sin_config"], ["tema"])
+        # actualizar también lo acepta (aunque no haya nada que actualizar), y una clave que la app cambió no se borra.
+        app = json.load(open(os.path.join(self.app, "app.json")))
+        app["config"]["tema"] = ["sistema", "oscuro"]
+        json.dump(app, open(os.path.join(self.app, "app.json"), "w"))
+        lock = json.load(open(os.path.join(self.app, "piezas.json")))
+        del lock["piezas"]["tema"]["sin_config"]
+        json.dump(lock, open(os.path.join(self.app, "piezas.json"), "w"))
+        r = correr(PIEZA, "actualizar", self.app, "--sin-config=tema,nada")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("la app la cambió", r.stdout)
+        self.assertIn("--sin-config=nada", r.stdout)
+        self.assertEqual(json.load(open(os.path.join(self.app, "app.json")))["config"]["tema"], ["sistema", "oscuro"])
         self.assertEqual(json.load(open(os.path.join(self.app, "piezas.json")))["piezas"]["tema"]["sin_config"], ["tema"])
 
     def test_cada_frase_visible_de_las_piezas_de_interfaz_tiene_su_ingles(self):

@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "i18n",
- "version": "0.3.0",
+ "version": "0.3.1",
  "estado": "lista",
  "nombre": "Idiomas",
  "icono": "icono.svg",
@@ -44,6 +44,14 @@
  "permisos": {},
  "red": [],
  "cambios": [
+  {
+   "version": "0.3.1",
+   "tipo": "arreglo",
+   "resumen": "Con crear({noTraducirAtributos}), [data-sin-traducir] siempre cuenta: los atributos (title, aria-label…) de lo marcado así y de lo que tiene adentro ya no se traducen, sin tener que agregarlo al selector (el README ya lo decía).",
+   "migrar": [
+    "Si agregaste [data-sin-traducir] a mano a noTraducirAtributos, puedes quitarlo (dejarlo no hace daño)."
+   ]
+  },
   {
    "version": "0.3.0",
    "tipo": "mejora",

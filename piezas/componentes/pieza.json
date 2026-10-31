@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "componentes",
- "version": "0.2.0",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "Componentes",
  "icono": "icono.svg",
@@ -107,6 +107,19 @@
   "tema": ">=0.2.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.3.0",
+   "tipo": "rompe",
+   "resumen": "Lo que salió al pasar las seis apps a 0.2. En táctil y a 760 px o menos, --pz-tactil sube solo los componentes de la pieza (diálogos, filas de Ajustes, avisos), no el :root de toda la app (un editor compacto como el de Corta crecía solo). confirmar sin peligro pone el foco en el título, como todo diálogo (antes en «sí»: un Enter apurado confirmaba). La fila de actualización solo dice «cambios nuevos en el código» con desarrollo: true (un hay sin versión anunciaba un Release como commits). Arreglos: el título de una ventana aria-modal propia de la app ya no lleva anillo de foco; .pz-cerrar no baja de 36 px aunque la app ponga --pz-boton-alto: 0 (o --pz-cerrar-ancho); el error de probar una IA no repite la «ayuda» de la app. Nuevo: al volver a pintar, el cursor de un campo queda donde estaba (o al final) y crear({mantenerCampos: true}) lo hace también fuera de un diálogo (un buscador); filasIA con revisable: false por fila (una IA «muy pronto», sin «Revisar de nuevo»); dialogo({claseTitulo, claseCapa}) y envolver(html, {claseCapa}).",
+   "migrar": [
+    "Táctil: si querías que TODOS tus .pz-boton/.pz-chip crecieran a 44 px en táctil (no solo los de diálogos, filas y avisos), agrega en tu app.css `@media (pointer: coarse), (max-width: 760px) { :root { --pz-boton-alto: var(--pz-tactil); --pz-chip-alto: var(--pz-tactil); } }`. Si contrarrestabas el :root de la pieza (Corta), bórralo.",
+    "confirmar sin peligro: el foco empieza en el título, no en «sí». Si tus pruebas esperaban document.activeElement en [data-pz-confirmar=\"si\"], ajústalas (Enter ya no confirma; Tab llega a los botones).",
+    "Actualizaciones de una instalación de desarrollo: manda desarrollo: true en actualizacionRevisada/estado.actualizacion. Un hay: true sin version ahora se muestra como «Hay una versión nueva».",
+    "Si quitabas a mano la «ayuda» del error de iaProbada (o la usabas en la fila de Tu IA), ya no hace falta: la fila no la muestra.",
+    "Si en tu app.css quitabas el anillo del título de tus ventanas aria-modal o le dabas ancho a .pz-cerrar con --pz-boton-alto: 0, bórralo.",
+    "Si guardabas y devolvías a mano el cursor de un buscador al repintar, pasa a crear({mantenerCampos: true})."
+   ]
+  },
   {
    "version": "0.2.0",
    "tipo": "rompe",

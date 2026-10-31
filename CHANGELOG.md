@@ -1,6 +1,16 @@
 # Cambios
 
 ## Sin publicar
+- **Lo que salió al pasar las seis apps a las piezas de interfaz 0.2:** `pieza.py actualizar` va en orden de dependencias y
+  cuenta lo que se actualiza en la misma pasada (`componentes` que necesita el `tema` nuevo ya no se niega: se actualizan las dos,
+  aunque se pida solo una; `estado` y `aviso` dicen «se actualizan juntas» con el comando), acepta varias piezas y `--sin-config`,
+  y `agregar … --sin-config=tema` sobre una pieza ya instalada anota la decisión en `piezas.json` y quita la clave de `app.json` si
+  la app no la cambió. `componentes` 0.3.0 (rompe): `--pz-tactil` sube solo los componentes de la pieza (no el `:root` de toda la
+  app), `confirmar` sin peligro enfoca el título, la fila de actualización exige `desarrollo: true`, el título de una ventana
+  `aria-modal` de la app sin anillo, `.pz-cerrar` que no se achica, el cursor queda donde estaba al repintar (y
+  `mantenerCampos` para un buscador), `revisable: false` en `filasIA`, `claseTitulo` y `claseCapa`. `tema` 0.2.1, `i18n` 0.3.1
+  (`[data-sin-traducir]` siempre cuenta con `noTraducirAtributos`) e `ia` 0.6.1 (`probar` sin la «ayuda» de `app.json`). Cada
+  README dice qué cambia («Si venías de…»).
 - **El host genérico (fase 3 de «todo como si hubiéramos partido con Pieza»):** `host-mac` 0.1.0 (Swift, target propio
   `PiezaHost`) y `host-escritorio` 0.1.0 (Electron) son la app nativa que cada app repetía: ventana, puente que solo atiende el
   marco principal con la página propia, navegación solo dentro de `ui/`, `<id>://` para la interfaz y los medios (con rangos),

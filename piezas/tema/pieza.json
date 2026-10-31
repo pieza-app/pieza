@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "tema",
- "version": "0.2.0",
+ "version": "0.2.1",
  "estado": "lista",
  "nombre": "Tema claro y oscuro",
  "icono": "icono.svg",
@@ -49,6 +49,11 @@
  "permisos": {},
  "red": [],
  "cambios": [
+  {
+   "version": "0.2.1",
+   "tipo": "arreglo",
+   "resumen": "El título de una ventana aria-modal (la pieza componentes lo enfoca al abrir, también en las ventanas propias de una app, como la galería de Minuta) ya no dibuja el anillo de foco: no es un control. Sus botones y campos sí lo llevan."
+  },
   {
    "version": "0.2.0",
    "tipo": "rompe",

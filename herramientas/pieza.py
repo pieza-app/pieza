@@ -8,11 +8,14 @@
                                           Copia la pieza (y lo que requiere) a la app y la anota en piezas.json. Oficial o de la
                                           comunidad: las de la comunidad revisadas se verifican con su huella; las que aún no se
                                           revisan solo con --sin-revisar (bajo tu responsabilidad). --sin-config=tema no suma
-                                          esa clave opcional a app.json (p. ej. una app sin «Apariencia» en Ajustes).
+                                          esa clave opcional a app.json (p. ej. una app sin «Apariencia» en Ajustes); sobre una
+                                          pieza ya instalada, anota la decisión y quita la clave si la app no la cambió.
   pieza.py estado <app> [--json]          Qué piezas tiene la app, qué versiones nuevas hay, de qué tipo (arreglo, mejora,
                                           rompe, seguridad), qué archivos cambió la app y qué se puede actualizar solo.
-  pieza.py actualizar <app> [pieza] [--automatico] [--forzar]
+  pieza.py actualizar <app> [pieza…] [--automatico] [--forzar] [--sin-config=clave,…]
                                           Trae la versión nueva. Nunca pisa un archivo que la app cambió, salvo --forzar.
+                                          Va en orden de dependencias y cuenta lo que se actualiza en la misma pasada (una
+                                          pieza que necesita la versión nueva de otra se actualiza junto con ella).
                                           --automatico: solo arreglos y mejoras compatibles sobre archivos que la app no tocó.
   pieza.py aviso <app>                    En Markdown, lo que hay que actualizar a mano (cambios que rompen o archivos de la
                                           app) con los pasos para migrar. Es el cuerpo del issue que abre «Pieza al día».
@@ -86,6 +89,50 @@ def incompatibles(versiones):
             if req in versiones and not satisface(versiones[req], rango):
                 malas.append((pid, req, rango, versiones[req]))
     return malas
+
+
+def plan_juntas(versiones, nuevas, candidatas):
+    """Qué piezas de `candidatas` se pueden actualizar en la misma pasada: con las versiones nuevas de todas las que van, ningún
+    requisito queda sin cumplir. Si una choca, sale la que pide algo que no hay (o la que rompería a otra que se queda como
+    está) y se vuelve a revisar, porque lo que dependía de ella puede chocar ahora. Devuelve (las que van, {pieza: choques})."""
+    van = set(candidatas)
+    fuera = {}
+    while True:
+        plan = {**versiones, **{p: nuevas[p] for p in van}}
+        malas = incompatibles(plan)
+        sacar = {}
+        for a, b, rango, tiene in malas:
+            quien = a if a in van else b if b in van else None
+            if quien:
+                sacar.setdefault(quien, []).append((a, b, rango, tiene))
+        if not sacar:
+            return van, fuera
+        for p, ch in sacar.items():
+            van.discard(p)
+            fuera[p] = ch
+
+
+def orden_dependencias(pids, requisitos=None):
+    """Las piezas con lo que cada una requiere (o con lo que declara compatible) antes que ella. El resto, en orden alfabético."""
+    pids = set(pids)
+    ps = todas()
+    orden, vistos = [], set()
+
+    def reqs(pid):
+        p = ps.get(pid) or {}
+        r = set(p.get("requiere", [])) | set(p.get("compatible", {})) | set((requisitos or {}).get(pid, []))
+        return sorted(r & pids)
+
+    def visitar(pid, camino=()):
+        if pid in vistos or pid in camino:
+            return
+        for r in reqs(pid):
+            visitar(r, camino + (pid,))
+        vistos.add(pid)
+        orden.append(pid)
+    for pid in sorted(pids):
+        visitar(pid)
+    return orden
 
 
 def leer(ruta, defecto=None):
@@ -618,6 +665,49 @@ def _lista_blanca(app, entradas):
             print(f"~ {gi}: agregué {', '.join(faltan)} (es una lista blanca)")
 
 
+def anotar_sin_config(app, lock, pids):
+    """`--sin-config` sobre piezas ya instaladas: anota la decisión en piezas.json (`sin_config`) y quita la clave de app.json
+    si sigue como la dejó la pieza (si la app la cambió, solo avisa). `actualizar` la respeta desde ahí."""
+    if not _SIN_CONFIG:
+        return
+    ruta_app = os.path.join(app, "app.json")
+    a = leer(ruta_app)
+    cambio_app = cambio_lock = False
+    for pid in pids:
+        info = lock["piezas"].get(pid)
+        if not info or info.get("fuente"):
+            continue
+        p = todas().get(pid) or {}
+        nuevas = (_SIN_CONFIG & set(p.get("config_opcional", {}))) - set(info.get("sin_config", []))
+        if not nuevas:
+            continue
+        info["sin_config"] = sorted(set(info.get("sin_config", [])) | nuevas)
+        cambio_lock = True
+        for k in sorted(nuevas):
+            config = (a or {}).get("config") or {}
+            if k in config and config[k] == p.get("config", {}).get(k):
+                del config[k]
+                cambio_app = True
+                print(f"    · {pid}: quité «{k}» de app.json y anoté --sin-config={k} en piezas.json")
+            elif k in config:
+                print(f"    · {pid}: anoté --sin-config={k}; «{k}» sigue en app.json porque la app la cambió (bórrala si no la usas)")
+            else:
+                print(f"    · {pid}: anoté --sin-config={k} en piezas.json")
+    if cambio_app:
+        escribir(ruta_app, a)
+    if cambio_lock:
+        escribir(os.path.join(app, "piezas.json"), lock)
+
+
+def avisar_sin_config_desconocida(pids):
+    """Una clave de --sin-config que ninguna de estas piezas declara opcional no hace nada: mejor decirlo."""
+    opcionales = set()
+    for pid in pids:
+        opcionales |= set((todas().get(pid) or {}).get("config_opcional", {}))
+    for k in sorted(_SIN_CONFIG - opcionales):
+        print(f"! --sin-config={k}: ninguna de estas piezas tiene «{k}» como clave opcional; no hice nada con ella")
+
+
 def agregar(pid, app, sin_revisar=False):
     if not ID.match(pid):
         sys.exit("El id de una pieza va en minúsculas, números y guiones.")
@@ -633,6 +723,7 @@ def agregar(pid, app, sin_revisar=False):
             sys.exit(f"«{p}» aún no está extraída. Se toma de: {pieza(p)['tomar_de']}. Extráela primero (ver AGENTS.md).")
         if p in lock["piezas"]:
             print(f"· {p} ya estaba")
+            anotar_sin_config(app, lock, [p])
             continue
         saltados = copiar(p, app, lock=lock)
         print(f"+ {p} {pieza(p)['version']}")
@@ -643,6 +734,7 @@ def agregar(pid, app, sin_revisar=False):
                 print(f"    · sumé «{k}» a app.json: {cuando} Si no, vuelve a agregarla con --sin-config={k}.")
         for s in saltados:
             print(f"    ! {s} ya existía en la app y no lo pisé. Compara con: pieza.py diferencias {app} {p}")
+    avisar_sin_config_desconocida(con_requisitos(pid))
     if armar_acciones(app):
         print("~ acciones.json (lo lee el host: va dentro de la app junto a app.json)")
 
@@ -673,9 +765,17 @@ def estado_app(app):
                                                                      for k in ("requiere", "permisos", "red")}
         salida.append({"pieza": pid, "actual": info["version"], "comunidad": bool(info.get("fuente")), "pide_mas": pide_mas, "nueva": nueva, "al_dia": semver(info["version"]) >= semver(nueva),
                        "tipo": tipo, "seguridad": any(c.get("seguridad") for c in pendientes), "cambios": pendientes,
-                       "cambiados_por_la_app": cambiados, "faltan": faltan, "choques": choques,
-                       "automatico": bool(pendientes) and tipo != "rompe" and not cambiados and not faltan and not choques
-                       and not pide_mas})
+                       "cambiados_por_la_app": cambiados, "faltan": faltan, "choques": choques, "juntas": [],
+                       "automatico": bool(pendientes) and tipo != "rompe" and not cambiados and not faltan and not pide_mas})
+    # Un choque que se arregla actualizando las dos en la misma pasada (componentes 0.2 necesita tema 0.2) no frena nada: se
+    # cuentan las versiones nuevas de todo lo que se va a actualizar. Lo automático, solo entre lo que también es automático.
+    versiones = {k: v["version"] for k, v in lock["piezas"].items()}
+    auto, _ = plan_juntas(versiones, nuevas, [x["pieza"] for x in salida if x["automatico"]])
+    todas_van, _ = plan_juntas(versiones, nuevas, [x["pieza"] for x in salida if not x["al_dia"]])
+    for x in salida:
+        x["automatico"] = x["pieza"] in auto
+        if x["choques"] and x["pieza"] in todas_van:
+            x["juntas"] = sorted({p for a, b, _r, _t in x["choques"] for p in (a, b)} - {x["pieza"]})
     return salida
 
 
@@ -699,23 +799,44 @@ def estado(app, como_json=False):
         for d in x["faltan"]:
             print(f"    ✗ falta {d}")
         for pid, req, rango, tiene in x["choques"]:
-            print(f"    ! {pid} necesita {req} {rango} (hay {tiene})")
+            print(f"    ! {pid} necesita {req} {rango} (hay {tiene})" +
+                  (f": se actualizan juntas (pieza.py actualizar {app} {' '.join(sorted([x['pieza']] + x['juntas']))})"
+                   if x["juntas"] else ""))
 
 
-def actualizar(app, solo=None, forzar=False, automatico=False):
+def actualizar(app, solas=None, forzar=False, automatico=False):
+    """Trae las versiones nuevas (de todas o de `solas`). Va en orden de dependencias (lo requerido primero) y revisa los
+    requisitos con las versiones que quedan después de esta pasada: si `componentes` nueva necesita `tema` nueva, se actualizan
+    las dos (aunque se pida solo `componentes`), una sola vez."""
     lock = candado(app)
-    e = {x["pieza"]: x for x in estado_app(app)}
-    for pid in [solo] if solo else sorted(lock["piezas"]):
+    solas = [solas] if isinstance(solas, str) else list(solas or [])
+    for pid in solas:
         if pid not in lock["piezas"]:
             sys.exit(f"La app no tiene la pieza «{pid}».")
+    anotar_sin_config(app, lock, solas or sorted(lock["piezas"]))
+    if _SIN_CONFIG:
+        avisar_sin_config_desconocida(solas or sorted(lock["piezas"]))
+    e = {x["pieza"]: x for x in estado_app(app)}
+    nuevas = {pid: x["nueva"] for pid, x in e.items()}
+    candidatas = [p for p in (solas or sorted(lock["piezas"]))
+                  if (forzar or not e[p]["al_dia"]) and (not automatico or e[p]["automatico"])]
+    # Lo que una pieza pedida necesita en su versión nueva también va (si no, se negaría por un choque que esta pasada arregla).
+    agregadas = {}
+    while not automatico:
+        mas = {b: a for p in candidatas for a, b, _r, _t in e[p]["choques"]
+               if a == p and b in e and b not in candidatas and not e[b]["al_dia"]}
+        if not mas:
+            break
+        for b, a in sorted(mas.items()):
+            candidatas.append(b)
+            agregadas[b] = a
+    versiones = {k: v["version"] for k, v in lock["piezas"].items()}
+    van, fuera = (set(candidatas), {}) if forzar else plan_juntas(versiones, nuevas, candidatas)
+    for pid in sorted(fuera):
+        print(f"! no actualicé {pid}: " + "; ".join(f"{a} necesita {b} {c} (hay {d})" for a, b, c, d in fuera[pid]))
+    requisitos = {pid: (lock["piezas"][pid].get("ficha") or {}).get("requiere", []) for pid in van}
+    for pid in orden_dependencias(van, requisitos):
         x = e[pid]
-        if x["al_dia"] and not forzar:
-            continue
-        if automatico and not x["automatico"]:
-            continue
-        if x["choques"] and not forzar:
-            print(f"! no actualicé {pid}: " + "; ".join(f"{a} necesita {b} {c} (hay {d})" for a, b, c, d in x["choques"]))
-            continue
         for r in con_requisitos(pid):  # lo que la versión nueva requiere y la app aún no tiene
             if r != pid and r not in lock["piezas"]:
                 if pieza(r).get("estado") == "planeada":
@@ -723,9 +844,14 @@ def actualizar(app, solo=None, forzar=False, automatico=False):
                 copiar(r, app, lock=lock)
                 print(f"+ {r} {pieza(r)['version']} (la requiere {pid})")
         saltados = copiar(pid, app, forzar=forzar, lock=lock)
-        print(f"↑ {pid} {x['actual']} → {pieza(pid)['version']}" + (" (seguridad)" if x["seguridad"] else ""))
+        print(f"↑ {pid} {x['actual']} → {pieza(pid)['version']}" + (" (seguridad)" if x["seguridad"] else "")
+              + (f" (la necesita {agregadas[pid]})" if pid in agregadas else ""))
         for s in saltados:
             print(f"    ! no actualicé {s}: la app lo cambió. Revisa: pieza.py diferencias {app} {pid}")
+    # Si un archivo cambiado por la app dejó una pieza en su versión de antes, lo que dependía de ella puede chocar: se avisa.
+    for a, b, rango, tiene in incompatibles({k: v["version"] for k, v in lock["piezas"].items()}):
+        if a in van or b in van:
+            print(f"! {a} necesita {b} {rango} (quedó {tiene}): revisa pieza.py diferencias {app} {b}")
     if armar_acciones(app):
         print("~ acciones.json al día")
 
@@ -747,7 +873,12 @@ def aviso(app):
                      f"`pieza.py diferencias . {x['pieza']}`, pasa tus cambios y luego `pieza.py actualizar . {x['pieza']} --forzar`. "
                      "Si tu cambio sirve para todas las apps, propónlo en pieza-app/pieza.")
         for pid, req, rango, tiene in x["choques"]:
-            l.append(f"- `{pid}` necesita `{req}` {rango} (hay {tiene}): actualiza las dos juntas.")
+            if x["juntas"]:
+                juntas = " ".join(sorted([x["pieza"]] + x["juntas"]))
+                l.append(f"- `{pid}` necesita `{req}` {rango} (hay {tiene}): se actualizan juntas con "
+                         f"`pieza.py actualizar . {juntas}` (o `pieza.py actualizar .`, que va en orden de dependencias).")
+            else:
+                l.append(f"- `{pid}` necesita `{req}` {rango} (hay {tiene}) y todavía no hay una versión de `{req}` que sirva.")
         l.append("")
     l.append("Lo abrió «Pieza al día» (`.github/workflows/pieza-al-dia.yml`). Se cierra solo cuando todo queda al día.")
     return "\n".join(l)
@@ -929,10 +1060,13 @@ def main(a):
         estado(os.path.abspath(resto[0]), como_json)
     elif orden == "aviso" and len(resto) == 1:
         print(aviso(os.path.abspath(resto[0])))
-    elif orden == "actualizar" and len(resto) in (1, 2):
+    elif orden == "actualizar" and len([x for x in resto if not x.startswith("--")]) >= 1:
         automatico = "--automatico" in resto
-        resto = [x for x in resto if x != "--automatico"]
-        actualizar(os.path.abspath(resto[0]), resto[1] if len(resto) == 2 else None, forzar, automatico)
+        for x in resto:
+            if x.startswith("--sin-config="):
+                _SIN_CONFIG.update(k for k in x.split("=", 1)[1].split(",") if k)
+        libres = [x for x in resto if not x.startswith("--")]
+        actualizar(os.path.abspath(libres[0]), libres[1:], forzar, automatico)
     elif orden == "acciones" and len(resto) == 1:
         print(armar_acciones(os.path.abspath(resto[0]), forzar=True))
     elif orden == "diferencias" and len(resto) == 2:

@@ -38,7 +38,8 @@ fs.writeFileSync(path.join(dir, "index.html"), `<!doctype html><html lang="es"><
 fs.writeFileSync(path.join(dir, "prueba.js"), `"use strict";
 window._faltantes = new Set();
 const i18n = PiezaI18n.crear({ faltantes: window._faltantes });
-const E = { ajustes: false, ia: null, enlaces: [], propio: null, paso: 1, deshecho: 0 };
+const E = { ajustes: false, ia: null, enlaces: [], propio: null, paso: 1, deshecho: 0, galeria: false, busqueda: "", campo: "" };
+const attr = (v) => String(v).replace(/[&<>"']/g, (c) => "&#" + c.charCodeAt(0) + ";");
 const IAS = [{ id: "claude", nombre: "Claude Code", instalada: true }, { id: "codex", nombre: "Codex <i>", instalada: false }];
 const host = PiezaHost.crearHost({ nombre: "prueba", global: "Prueba", simular: {
   ...PiezaHost.simulacionesComunes({ espera: 40 }),
@@ -46,8 +47,8 @@ const host = PiezaHost.crearHost({ nombre: "prueba", global: "Prueba", simular: 
   abrirEnlace: (d) => { E.enlaces.push(d.url); },
 } });
 const raiz = document.getElementById("app");
-const ui = PiezaComponentes.crear({ i18n, host, app: "Prueba", repo: "ana-app/ana", version: "1.0", pintar, duracion: 300, pausa: 50,
-  cerrar: () => { E.ajustes = false; E.propio = null; pintar(); } });
+const ui = PiezaComponentes.crear({ i18n, host, app: "Prueba", repo: "ana-app/ana", version: "1.0", pintar, duracion: 300, pausa: 50, mantenerCampos: true,
+  cerrar: () => { E.ajustes = false; E.propio = null; E.galeria = false; pintar(); } });
 const tema = PiezaTema.crear({ guardar: (v) => host.enviar("config", { tema: v }) });
 host.responder({ iaProbada: (r) => ui.iaProbada(r), actualizacionRevisada: (r) => ui.actualizacionRevisada(r), actualizacionProgreso: (a) => ui.actualizacionProgreso(a) });
 function ajustes() {
@@ -57,12 +58,15 @@ function ajustes() {
 // Un diálogo armado por la app (envolver), con pasos que comparten el título y un campo: el foco va al título al abrir y al
 // cambiar de paso, y se queda en el campo si la app vuelve a pintar.
 function propio() {
-  return ui.envolver('<h2 id="t-propio">Ajustes</h2><p class="pz-error-texto" id="error">Abrir</p><label class="pz-campo"><span>Abrir</span><input id="campo" type="text"></label>'
+  return ui.envolver('<h2 id="t-propio">Ajustes</h2><p class="pz-error-texto" id="error">Abrir</p><label class="pz-campo"><span>Abrir</span><input id="campo" type="text" value="' + attr(E.campo) + '"></label>'
     + '<div class="pz-pie"><button type="button" class="pz-boton" id="paso" data-paso-siguiente>Un botón</button><button type="button" class="pz-boton pz-principal" data-pz-cerrar>Listo</button></div>',
     { id: "t-propio", clave: "paso-" + E.paso });
 }
 function pintar() {
-  raiz.innerHTML = '<main data-tema="de-la-app"><button type="button" class="pz-boton" id="abrir">Ajustes</button> <button type="button" class="pz-boton" data-otro="1">Un botón</button> <button type="button" class="pz-boton" id="abrir-propio">Abrir</button></main>'
+  raiz.innerHTML = '<main data-tema="de-la-app"><button type="button" class="pz-boton" id="abrir">Ajustes</button> <button type="button" class="pz-boton" data-otro="1">Un botón</button> <button type="button" class="pz-boton" id="abrir-propio">Abrir</button>'
+    + ' <button type="button" class="pz-boton" id="abrir-galeria">Tu IA</button> <input id="buscar" type="search" value="' + attr(E.busqueda) + '"><p id="vacio">Listo</p></main>'
+    // Una ventana propia de la app (como la galería de Minuta): aria-modal, sin las clases de la pieza.
+    + (E.galeria ? '<div class="galeria" role="dialog" aria-modal="true" aria-labelledby="t-gal"><h2 id="t-gal">Tu IA</h2><button type="button" data-pz-cerrar>Listo</button></div>' : "")
     + (E.ajustes ? ui.dialogo({ id: "t-aj", titulo: "Ajustes", cuerpo: ajustes(), pie: '<button type="button" class="pz-boton pz-principal" id="listo" data-pz-cerrar data-autofoco>Listo</button>' }) : "")
     + (E.propio ? propio() : "")
     + ui.capas();
@@ -75,9 +79,15 @@ document.addEventListener("click", (ev) => {
   if (ev.target.closest("#abrir")) { E.ajustes = true; pintar(); }
   if (ev.target.closest("#abrir-propio")) { E.propio = true; E.paso = 1; pintar(); }
   if (ev.target.closest("[data-paso-siguiente]")) { E.paso++; pintar(); }
+  if (ev.target.closest("#abrir-galeria")) { E.galeria = true; pintar(); }
   E.temaApp = ev.target.closest("[data-tema]")?.getAttribute("data-tema") || null;
 });
 document.addEventListener("keydown", (ev) => { ui.manejarTecla(ev); });
+// Un buscador que vuelve a pintar todo en cada letra; el campo del diálogo solo guarda lo escrito.
+document.addEventListener("input", (ev) => {
+  if (ev.target.id === "buscar") { E.busqueda = ev.target.value; pintar(); }
+  if (ev.target.id === "campo") E.campo = ev.target.value;
+});
 window.prueba = { ui, tema, host, i18n, pintar, E };
 (async () => {
   await i18n.cargar(i18n.elegir({}));
@@ -170,7 +180,7 @@ await caso("diálogo: el foco entra, Tab y Mayús+Tab dan la vuelta adentro, Esc
   assert.equal(await page.locator('[role="dialog"]').count(), 0, "el velo cierra");
 });
 
-await caso("confirmar: con peligro el foco empieza en «Cancelar» (Enter no borra), Esc es «no»; sin peligro, en «sí»", async (page) => {
+await caso("confirmar: con peligro el foco empieza en «Cancelar» (Enter no borra), Esc es «no»; sin peligro, en el título", async (page) => {
   await abrir(page);
   await page.evaluate(() => { window.r1 = window.prueba.ui.confirmar({ titulo: "¿Borrar «{x}»?", valores: { x: "<b>nota</b>" }, si: "Aceptar", peligro: true }); });
   assert.equal(await page.locator('[role="alertdialog"] h2 b').count(), 0, "el valor va escapado");
@@ -185,8 +195,11 @@ await caso("confirmar: con peligro el foco empieza en «Cancelar» (Enter no bor
     const b = document.querySelector(".pz-principal.pz-peligro"), c = getComputedStyle(b); return [c.color, c.backgroundColor]; });
   assert.notEqual(peligro[0], peligro[1], "el texto del botón de peligro se ve");
   await page.keyboard.press("Escape");
-  await page.evaluate(() => { window.r2 = window.prueba.ui.confirmar({ titulo: "¿Seguro?" }); });
-  assert.equal(await page.evaluate(() => document.activeElement.dataset.pzConfirmar), "si");
+  await page.evaluate(() => { window.r2 = "sin respuesta"; window.prueba.ui.confirmar({ titulo: "¿Seguro?" }).then((v) => { window.r2 = v; }); });
+  assert.equal((await activo(page)).id, "pz-t-conf", "sin peligro, el foco va al título como en todo diálogo");
+  assert.equal(await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle), "none", "el título no lleva anillo");
+  await page.keyboard.press("Enter");
+  assert.equal(await page.evaluate(() => window.r2), "sin respuesta", "un Enter sobre el título no elige nada");
   await page.click('[data-pz-confirmar="si"]');
   assert.equal(await page.evaluate(() => window.r2), true);
   assert.equal(await page.locator('[role="alertdialog"]').count(), 0);
@@ -320,6 +333,44 @@ await caso("componentes 0.2: aviso con botón y avisos legibles con fondos trans
   assert.match(await t.getAttribute("class"), /pz-toast/);
 });
 
+await caso("componentes 0.3: al repintar, el cursor queda donde estaba (en un diálogo y en un buscador con mantenerCampos)", async (page) => {
+  await abrir(page);
+  await page.click("#abrir-propio");
+  await page.click("#campo");
+  await page.keyboard.type("hola mundo");
+  for (let i = 0; i < 3; i++) await page.keyboard.press("ArrowLeft");
+  await page.evaluate(() => window.prueba.pintar());
+  assert.deepEqual(await page.evaluate(() => [document.activeElement.id, document.activeElement.selectionStart]), ["campo", 7], "el cursor sigue donde estaba");
+  await page.keyboard.press("Escape");
+  // Fuera de un diálogo: el buscador vuelve a pintar todo en cada letra y se sigue escribiendo sin perder nada.
+  await page.click("#buscar");
+  await page.keyboard.type("ana pérez");
+  assert.deepEqual(await page.evaluate(() => [document.activeElement.id, document.activeElement.value]), ["buscar", "ana pérez"]);
+  await page.keyboard.press("Home");
+  await page.keyboard.press("ArrowRight");
+  await page.keyboard.type("x");
+  assert.deepEqual(await page.evaluate(() => [document.activeElement.value, document.activeElement.selectionStart]), ["axna pérez", 2], "escribir en el medio deja el cursor ahí");
+  // Salir del buscador (un clic en otro lado) y que la app vuelva a pintar: el foco no vuelve solo.
+  await page.click("#vacio");
+  await page.evaluate(() => window.prueba.pintar());
+  assert.notEqual((await activo(page)).id, "buscar", "si la persona salió del campo, una pintada no la devuelve");
+});
+
+await caso("componentes 0.3: el título de una ventana aria-modal propia de la app no lleva anillo; la ✕ no se achica", async (page) => {
+  await abrir(page);
+  await page.focus("#abrir-galeria");
+  await page.keyboard.press("Enter");   // con el teclado: ahí el navegador dibuja el anillo de :focus-visible
+  assert.equal((await activo(page)).id, "t-gal", "la pieza enfoca el título de la ventana de la app");
+  assert.equal(await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle), "none");
+  await page.keyboard.press("Tab");
+  assert.notEqual(await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle), "none", "sus controles sí lo llevan");
+  await page.keyboard.press("Escape");
+  await page.evaluate(() => document.documentElement.style.setProperty("--pz-boton-alto", "0px"));
+  await page.click("#abrir");
+  const ancho = await page.evaluate(() => { const r = document.querySelector(".pz-cerrar").getBoundingClientRect(); return [r.width, r.height]; });
+  assert.ok(ancho[0] >= 36 && ancho[1] >= 36, `la ✕ mide ${ancho}`);
+});
+
 await caso("celular (390 px): botones de 44 px, el diálogo sale desde abajo, nada se sale de ancho", async (page, contexto) => {
   await page.setViewportSize({ width: 390, height: 780 });
   await abrir(page);
@@ -331,6 +382,8 @@ await caso("celular (390 px): botones de 44 px, el diálogo sale desde abajo, na
     ancho: document.documentElement.scrollWidth, vista: innerWidth,
   }));
   assert.ok(r.min >= 44, `el más chico mide ${r.min}px`);
+  const fuera = await page.evaluate(() => document.getElementById("abrir").getBoundingClientRect().height);
+  assert.ok(fuera < 44, `fuera de los componentes de la pieza (un editor compacto) no crece solo: mide ${fuera}px`);
   const seg = await page.evaluate(() => { const s = document.querySelector('[role="dialog"] .pz-seg'); const b = [...s.querySelectorAll("button")].map((x) => Math.round(x.getBoundingClientRect().top)); return new Set(b).size; });
   assert.equal(seg, 1, "el selector segmentado queda en una línea");
   const largo = await page.evaluate(() => { const b = document.createElement("button"); b.className = "pz-boton"; b.textContent = "Un texto muy largo para un botón que en un celular no cabe en una sola línea";

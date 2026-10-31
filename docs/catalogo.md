@@ -12,13 +12,13 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | Pieza | Versión | Qué es | Tomada de |
 |---|---|---|---|
 | `nucleo` | 0.7.0 | `app.json`, carpeta de datos, config validada, escritura atómica, `ruta_en`, contrato de scripts | Esquema `bin/comun.py` + Alcancía/Repasa |
-| `ia` | 0.6.0 | La IA de la persona con su cuenta, segura; en vivo (lo que lee y «Detener») | Esquema `bin/ia.py` + `ia_vivo.py` + Alcancía (pedido en archivo) + Repasa (material) |
-| `i18n` | 0.3.0 | `T`/`Tp`/`Thtml`/`tr`/`traducirDOM`, paquetes de idioma validados | Minuta (`tr`) + Esquema (`T` que escapa, `traducirDOM`) + Alcancía (`Thtml`) + Graba (prioridad) |
+| `ia` | 0.6.1 | La IA de la persona con su cuenta, segura; en vivo (lo que lee y «Detener») | Esquema `bin/ia.py` + `ia_vivo.py` + Alcancía (pedido en archivo) + Repasa (material) |
+| `i18n` | 0.3.1 | `T`/`Tp`/`Thtml`/`tr`/`traducirDOM`, paquetes de idioma validados | Minuta (`tr`) + Esquema (`T` que escapa, `traducirDOM`) + Alcancía (`Thtml`) + Graba (prioridad) |
 | `bienvenida` | 0.3.0 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
 | `actualizaciones` | 0.3.0 | Releases del propio repo, `.sha256` obligatorio, Mac (target propio) y Electron | Esquema + Repasa (URL sin puerto ni `..`, PATH fijo, textos que traduce la interfaz) |
 | `host-ui` | 0.2.0 | `crearHost({nombre, global, simular})`: `host.enviar` y `window.<App>.*` iguales en Mac, Electron, celular y navegador; `probarIA {ia}` en todas | Esquema + Repasa/Alcancía (puente del celular) + Minuta (mensaje plano mientras cambia) |
-| `tema` | 0.2.0 | Un solo juego de tokens CSS (`--texto-suave`, `--panel-2`…), pares claro/oscuro con `light-dark()`, selector «Apariencia» | Esquema (`data-tema`, ahora `data-pz-modo`) + los nombres comunes de Graba, Corta, Repasa y Alcancía; tabla de nombres viejos → nuevos en su README |
-| `componentes` | 0.2.0 | Diálogo con foco atrapado y Esc (`envolver` para uno de la app), confirmar, avisos en cola, filas de Tu IA, fila de actualización «Paso n de 3», Acerca de, comentarios a GitHub | Esquema + Alcancía («Cómo instalarla», error de la IA traducido) + Minuta (comentarios → issue prellenado) |
+| `tema` | 0.2.1 | Un solo juego de tokens CSS (`--texto-suave`, `--panel-2`…), pares claro/oscuro con `light-dark()`, selector «Apariencia» | Esquema (`data-tema`, ahora `data-pz-modo`) + los nombres comunes de Graba, Corta, Repasa y Alcancía; tabla de nombres viejos → nuevos en su README |
+| `componentes` | 0.3.0 | Diálogo con foco atrapado y Esc (`envolver` para uno de la app), confirmar, avisos en cola, filas de Tu IA, fila de actualización «Paso n de 3», Acerca de, comentarios a GitHub | Esquema + Alcancía («Cómo instalarla», error de la IA traducido) + Minuta (comentarios → issue prellenado) |
 | `catalogo` | 0.1.0 | Contenido de la comunidad: índice validado por el validador de la app, SHA-256 obligatorio, sin redirecciones; Py + Swift + Electron | Esquema `plantillas.py` + `Catalogo.swift` + `catalogo.js` + Corta (`origen`, categoría = carpeta, un tipo por cosa) |
 | `red` | 0.1.0 | HTTPS desde los scripts: dominios permitidos, sin redirecciones, topes de tamaño y tiempo | Alcancía `bin/red.py` |
 | `cifrado` | 0.1.0 | PBKDF2 600k + AES-256-GCM con AAD, HMAC para nombres, verificador, archivos con versión | Repasa `motor/cifrado.js` + Alcancía `ui/copia.js` |
