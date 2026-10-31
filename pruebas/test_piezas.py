@@ -918,6 +918,24 @@ class HostGenerico(unittest.TestCase):
             {"script": "a.py", "limite": 5, "datos": {"e": {"tipo": "enum", "valores": ["a b"]}}, "entrada": "archivo"},
             {"script": "a.py", "limite": 5, "datos": {"*": "pasar"}, "entrada": "archivo"},
             {"script": "a.py", "limite": True},
+            # 0.2: «limite» "trabajo" o por orden, «maximo» y «vigilar».
+            {"script": "a.py", "limite": "trabajo"},
+            {"script": "a.py", "limite": "siempre"},
+            {"script": "a.py", "args": ["$o"], "datos": {"o": {"tipo": "enum", "valores": ["a", "b"]}},
+             "limite": {"segun": "o", "valores": {"a": "trabajo", "b": 60}, "otro": 120}},
+            {"script": "a.py", "args": ["$o"], "datos": {"o": {"tipo": "enum", "valores": ["a"]}}, "limite": {"segun": "o", "valores": {"z": 5}, "otro": 5}},
+            {"script": "a.py", "args": ["$o"], "datos": {"o": {"tipo": "enum", "valores": ["a"]}}, "limite": {"segun": "o", "valores": {}}},
+            {"script": "a.py", "entrada": "archivo", "datos": {"t": {"tipo": "texto", "max": 9}}, "limite": {"segun": "t", "valores": {}, "otro": 5}},
+            {"script": "a.py", "args": ["$o"], "datos": {"o": {"tipo": "enum", "valores": ["a"]}}, "limite": {"segun": "o", "valores": {}, "otro": 5, "x": 1}},
+            {"script": "a.py", "limite": 5, "entrada": "archivo", "datos": {"t": {"tipo": "texto", "max": 6 * 1024 * 1024}}},
+            {"script": "a.py", "limite": 5, "entrada": "archivo", "maximo": 7 * 1024 * 1024, "datos": {"t": {"tipo": "texto", "max": 6 * 1024 * 1024}}},
+            {"script": "a.py", "limite": 5, "maximo": 51 * 1024 * 1024},
+            {"script": "a.py", "limite": 5, "maximo": True},
+            {"script": "a.py", "limite": 5, "entrada": "archivo", "vigilar": "lee", "datos": {"ruta": {"tipo": "rutaRelativa"}}},
+            {"script": "a.py", "limite": 5, "entrada": "archivo", "vigilar": "escribe", "datos": {"ruta": {"tipo": "rutaRelativa"}}},
+            {"script": "a.py", "limite": 5, "entrada": "archivo", "vigilar": "escribe",
+             "datos": {"ruta": {"tipo": "rutaRelativa"}, "texto": {"tipo": "texto", "max": 9}}},
+            {"script": "a.py", "limite": 5, "entrada": "archivo", "vigilar": "borra", "datos": {"ruta": {"tipo": "rutaRelativa"}}},
         ]
         py = [not pieza.errores_accion("x", c, None) for c in casos]
         js = subprocess.run(["node", "-e", "const E = require(process.argv[1]); const c = JSON.parse(process.argv[2]);"
@@ -927,13 +945,64 @@ class HostGenerico(unittest.TestCase):
         self.assertEqual(js.returncode, 0, js.stderr)
         self.assertEqual(py, json.loads(js.stdout))
         self.assertEqual(py[:4], [True, False, False, True])
+        self.assertEqual(py[18:], [True, False, True, False, False, False, False, False, True, False, False, True, False, True, False])
         # Swift no compila aquí: al menos las mismas frases (lo que ve quien escribe una acción) y los mismos tipos.
         swift = open(os.path.join(BASE, "piezas", "host-mac", "mac", "Enchufe.swift"), encoding="utf-8").read()
-        for frase in ("solo puede ser un campo enum o entero", "lo pone el host", "«limite» (segundos) es obligatorio, entre 1 y 3600",
-                      "una lista de listas no", "«cola» solo puede ser"):
+        for frase in ("solo puede ser un campo enum o entero", "lo pone el host", "«limite» es obligatorio: segundos (1 a 3600)",
+                      "una lista de listas no", "«cola» solo puede ser", "«maximo» (bytes de la entrada)", "«vigilar» es"):
             self.assertIn(frase, swift)
         for tipo in pieza.TIPOS:
             self.assertIn(f'"{tipo}"', swift)
+
+    def test_sin_acciones_no_adopta_una_accion_de_una_pieza(self):
+        self.assertEqual(correr(PIEZA, "agregar", "host-escritorio", self.app).returncode, 0)
+        self.assertEqual(correr(PIEZA, "agregar", "ia", self.app).returncode, 0)
+        self.assertIn("listaIA", self.leer("acciones.json")["acciones"])
+        app = self.leer("app.json")
+        app["sin_acciones"] = ["listaIA", "noExiste"]
+        with open(os.path.join(self.app, "app.json"), "w") as f:
+            json.dump(app, f)
+        r = correr(PIEZA, "acciones", self.app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        a = self.leer("acciones.json")["acciones"]
+        self.assertNotIn("listaIA", a)
+        self.assertIn("probarIA", a)
+        self.assertIn("noExiste", r.stdout)
+
+    def test_piezas_json_viejo_sin_acciones(self):
+        """Una app con piezas.json de antes (sin «acciones») y otra versión que la base: se buscan en el historial de git de
+        Pieza; si no hay historial, no se arma un acciones.json sin ellas (y se dice qué correr)."""
+        self.assertEqual(correr(PIEZA, "agregar", "ia", self.app).returncode, 0)
+        lock = self.leer("piezas.json")
+        del lock["piezas"]["ia"]["acciones"]
+        lock["piezas"]["ia"]["version"] = "0.5.0"
+        with open(os.path.join(self.app, "piezas.json"), "w") as f:
+            json.dump(lock, f)
+        r = correr(PIEZA, "agregar", "host-escritorio", self.app)
+        hay_historia = subprocess.run(["git", "-C", BASE, "rev-list", "--count", "HEAD"], capture_output=True, text=True).stdout.strip() not in ("", "0", "1")
+        if hay_historia:
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            self.assertIn("probarIA", self.leer("acciones.json")["acciones"])
+            self.assertIn("probarIA", self.leer("piezas.json")["piezas"]["ia"]["acciones"], "quedan anotadas")
+        else:
+            self.assertNotEqual(r.returncode, 0)
+            self.assertIn("actualizar", r.stdout + r.stderr)
+
+    def test_trabajos_late_para_el_host(self):
+        """trabajos.latir() toca <ID>_LATIDO (lo pide el host para «limite»: "trabajo"); sin la variable no hace nada."""
+        self.assertEqual(correr(PIEZA, "agregar", "trabajos", self.app).returncode, 0)
+        latido = os.path.join(self.tmp.name, "latido")
+        codigo = ("import sys, time; sys.path.insert(0, 'bin'); import trabajos; trabajos.LATIDO = 0.1;"
+                  "t = trabajos.Trabajo.nuevo('x', '/tmp', ['a'], {}); t.latir(); time.sleep(0.5); t.terminar('listo')")
+        env = {**os.environ, "PRUEBA_LATIDO": latido, "PRUEBA_DATOS": os.path.join(self.tmp.name, "datos")}
+        r = subprocess.run([sys.executable, "-c", codigo], cwd=self.app, env=env, capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertTrue(os.path.exists(latido))
+        os.remove(latido)
+        env.pop("PRUEBA_LATIDO")
+        r = subprocess.run([sys.executable, "-c", codigo], cwd=self.app, env=env, capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertFalse(os.path.exists(latido))
 
     def test_nada_de_una_app_en_el_host(self):
         import re

@@ -30,11 +30,22 @@ if accion == "dormir":
     time.sleep(60)
 if accion == "roto":
     sys.exit(3)
+if accion == "latir":
+    # Late como la pieza «trabajos» (toca <ID>_LATIDO) más tiempo del que aguantaría sin latir.
+    for _ in range(int(entrada.get("vueltas", 12))):
+        open(os.environ["ANA_LATIDO"], "a").close(); os.utime(os.environ["ANA_LATIDO"], None); time.sleep(0.2)
+if accion == "colgado":
+    time.sleep(60)
 r = {"ok": True, "accion": accion, "entrada": entrada, "argv": args[:-1], "cwd": os.getcwd(),
      "env": sorted(k for k in os.environ if k.startswith("ANA_")), "ajena": os.environ.get("ANA_AJENA"),
      "stdin": sys.stdin.read() if accion == "secreto" else None}
 if accion == "secreto":
     print("CREDENCIAL {}")
+if accion == "leer":
+    r["texto"] = "del disco"
+if accion == "falla":
+    r = {"ok": False, "error": "no pude"}
+r["latido"] = os.environ.get("ANA_LATIDO") is not None
 json.dump(r, open(salida, "w", encoding="utf-8"))
 `;
 
@@ -48,6 +59,13 @@ const ACCIONES = {
     lento: { script: "eco.py", args: ["dormir"], responde: "lentoListo", limite: 1 },
     malo: { script: "eco.py", args: ["$texto"], entrada: "archivo", datos: { texto: { tipo: "texto", max: 10 } }, responde: "x", limite: 30 },
     sinScript: { script: "noexiste.py", responde: "x", limite: 30 },
+    proyecto: { script: "eco.py", args: ["$orden"], entrada: "archivo", datos: { orden: { tipo: "enum", valores: ["abrir", "latir", "colgado"] }, n: { tipo: "entero", max: 3 }, vueltas: { tipo: "entero" } },
+      responde: "proyectoRespuesta", eco: ["orden", "n"], limite: { segun: "orden", valores: { latir: "trabajo", colgado: "trabajo" }, otro: 1 } },
+    leerArchivo: { script: "eco.py", args: ["leer"], entrada: "archivo", datos: { ruta: { tipo: "rutaRelativa", extensiones: [".md"], requerido: true } },
+      inyectar: { carpeta: "carpetaActual" }, responde: "archivoAbierto", eco: ["ruta"], vigilar: "lee", limite: 30 },
+    escribirArchivo: { script: "eco.py", args: ["$modo"], entrada: "archivo", datos: { modo: { tipo: "enum", valores: ["guardar", "falla"] },
+      ruta: { tipo: "rutaRelativa", extensiones: [".md"], requerido: true }, texto: { tipo: "texto", max: 6 * 1024 * 1024 } },
+      inyectar: { carpeta: "carpetaActual" }, responde: "archivoGuardado", eco: ["ruta"], vigilar: "escribe", cola: "escritura", maximo: 7 * 1024 * 1024, limite: 30 },
   },
 };
 
@@ -379,6 +397,144 @@ test("host: el protocolo sirve solo ui/ y los medios que la app aprueba, con ran
   assert.equal((await pedir("ana://video/otro.mp4")).status, 404);
   assert.equal((await servirArchivo({ headers: new Headers({ range: "bytes=200-" }) }, video)).status, 416);
   assert.throws(() => host.medios.registrar("ui", () => null));
+});
+
+// ───────────── 0.2: límites, vigilar, carpeta, secretos, avisos ─────────────
+test("enchufe: «limite» trabajo o por orden, «maximo» y «vigilar» con las mismas reglas que pieza.py", () => {
+  const enumOrden = { orden: { tipo: "enum", valores: ["a", "b"] } };
+  const ok = (a) => E.erroresAccion("x", { script: "a.py", entrada: "archivo", ...a }).length === 0;
+  assert.ok(ok({ limite: "trabajo" }));
+  assert.ok(ok({ limite: { segun: "orden", valores: { a: "trabajo", b: 60 }, otro: 120 }, datos: enumOrden }));
+  assert.ok(!ok({ limite: { segun: "orden", valores: { c: 60 }, otro: 120 }, datos: enumOrden }), "valor que el enum no tiene");
+  assert.ok(!ok({ limite: { segun: "orden", valores: {}, otro: 0 }, datos: enumOrden }), "otro fuera de rango");
+  assert.ok(!ok({ limite: { segun: "orden", valores: {} }, datos: enumOrden }), "sin otro");
+  assert.ok(!ok({ limite: { segun: "t", valores: {}, otro: 5 }, datos: { t: { tipo: "texto", max: 9 } } }), "segun un texto");
+  assert.ok(!ok({ limite: "siempre" }));
+  assert.ok(!ok({ limite: 5, datos: { t: { tipo: "texto", max: 6 * 1024 * 1024 } } }), "texto más grande que la entrada");
+  assert.ok(ok({ limite: 5, maximo: 7 * 1024 * 1024, datos: { t: { tipo: "texto", max: 6 * 1024 * 1024 } } }));
+  assert.ok(!ok({ limite: 5, maximo: 51 * 1024 * 1024 }));
+  assert.ok(ok({ limite: 5, vigilar: "lee", datos: { ruta: { tipo: "rutaRelativa" } } }));
+  assert.ok(!ok({ limite: 5, vigilar: "escribe", datos: { ruta: { tipo: "rutaRelativa" } } }), "escribe sin texto");
+  assert.ok(!ok({ limite: 5, vigilar: "lee", datos: { ruta: { tipo: "texto", max: 9 } } }), "ruta que no es rutaRelativa");
+  const def = { limite: { segun: "orden", valores: { a: "trabajo" }, otro: 9 } };
+  assert.equal(E.limiteDe(def, { orden: "a" }), "trabajo");
+  assert.equal(E.limiteDe(def, { orden: "b" }), 9);
+  assert.equal(E.limiteDe(def, {}), 9);
+  assert.equal(E.limiteDe({ limite: 4 }, {}), 4);
+  assert.deepEqual(E.ecoValido({ eco: ["orden", "n"], datos: { orden: enumOrden.orden, n: { tipo: "entero", max: 3 } } }, { orden: "a", n: 9 }), { orden: "a" });
+});
+
+test("procesador: un trabajo que late no tiene tope; uno que deja de latir se corta", { skip: process.platform === "win32" }, async () => {
+  const { raiz, datos } = crearApp();
+  const p = procesadorDe(raiz, datos, { gracia: 1, latido: { muerto: 0.6, primero: 0.6, revisar: 0.1 } });
+  const vivo = await p.conEntrada("eco.py", "latir", { vueltas: 10 }, { latido: true });   // ~2 s, más que el tope sin latido
+  assert.equal(vivo.ok, true); assert.equal(vivo.latido, true);
+  const antes = Date.now();
+  const colgado = await p.correrJSON("eco.py", ["colgado"], { latido: true });
+  assert.equal(colgado.codigo, "limite"); assert.equal(colgado.texto, "Dejó de avanzar y lo detuve. Intenta de nuevo.");
+  assert.ok(Date.now() - antes < 5000);
+  assert.equal((await p.correrJSON("eco.py", ["abrir"])).latido, false, "sin trabajo, sin ANA_LATIDO");
+});
+
+test("procesador: al salir se corta lo que sigue corriendo", { skip: process.platform === "win32" }, async () => {
+  const { raiz, datos } = crearApp();
+  const p = procesadorDe(raiz, datos, { gracia: 1 });
+  const corriendo = p.correrJSON("eco.py", ["colgado"], { limite: 60 });
+  await new Promise((ok) => setTimeout(ok, 300));
+  assert.equal(p.enCurso, 1);
+  const antes = Date.now();
+  p.cortarTodo();
+  const r = await corriendo;
+  assert.equal(r.ok, false); assert.ok(Date.now() - antes < 4000); assert.equal(p.enCurso, 0);
+});
+
+test("host: límite por orden, eco en el error de datos y el texto propio de un inyector", { skip: process.platform === "win32" }, async () => {
+  const { host, electron, enviar } = await hostListo({ latido: { muerto: 0.6, primero: 0.6, revisar: 0.1 } });
+  await enviar("proyecto", { orden: "latir", vueltas: 8 });          // «trabajo»: dura más que el «otro» (1 s) y no se corta
+  assert.equal(llamadasA(electron, "proyectoRespuesta")[0].ok, true);
+  await enviar("proyecto", { orden: "abrir", n: 99 });               // n no pasa: el error trae la orden (válida), no n
+  const malo = llamadasA(electron, "proyectoRespuesta")[1];
+  assert.equal(malo.codigo, "datos"); assert.equal(malo.orden, "abrir"); assert.equal(malo.n, undefined);
+  await enviar("proyecto", { orden: "rm -rf" });
+  assert.equal(llamadasA(electron, "proyectoRespuesta")[2].orden, undefined, "un eco que no calza nunca vuelve");
+  host.inyectores.carpetaActual = () => host.falta("Elige una carpeta primero.", { x: 1 });
+  await enviar("leerArchivo", { ruta: "a.md" });
+  const f = llamadasA(electron, "archivoAbierto")[0];
+  assert.equal(f.codigo, "falta"); assert.equal(f.texto, "Elige una carpeta primero."); assert.deepEqual(f.valores, { x: 1 });
+});
+
+test("host: la carpeta elegida, el vigilante y «vigilar» (lo que escribe la app no se avisa)", async () => {
+  const { host, electron, enviar, raiz } = await hostListo({ carpeta: { clave: "carpeta" }, vigilar: { extensiones: [".md"] } });
+  await enviar("leerArchivo", { ruta: "a.md" });
+  assert.equal(llamadasA(electron, "archivoAbierto")[0].texto, "Elige una carpeta primero.", "sin carpeta: el texto del host");
+  const docs = path.join(raiz, "docs");
+  fs.mkdirSync(docs);
+  assert.equal(host.carpeta.usar(docs), fs.realpathSync(docs));
+  assert.equal(host.config.leer().carpeta, fs.realpathSync(docs));
+  assert.equal(host.vigilante.base, fs.realpathSync(docs));
+  await enviar("leerArchivo", { ruta: "a.md" });
+  const r = llamadasA(electron, "archivoAbierto")[1];
+  assert.equal(r.entrada.carpeta, fs.realpathSync(docs)); assert.equal(host.vigilante.conocidos.get("a.md"), "del disco");
+  await enviar("escribirArchivo", { modo: "guardar", ruta: "b.md", texto: "mío" });
+  assert.equal(host.vigilante.conocidos.get("b.md"), "mío");
+  await enviar("escribirArchivo", { modo: "falla", ruta: "b.md", texto: "otro" });
+  assert.equal(host.vigilante.conocidos.get("b.md"), "mío", "si no se pudo escribir, vuelve el de antes");
+  // Un documento grande pasa porque la acción dice «maximo».
+  await enviar("escribirArchivo", { modo: "guardar", ruta: "c.md", texto: "x".repeat(5.5 * 1024 * 1024) });
+  assert.equal(llamadasA(electron, "archivoGuardado")[2].ok, true);
+  // Afuera cambia a.md: se avisa; b.md quedó igual a lo que escribió la app: no.
+  fs.writeFileSync(path.join(docs, "a.md"), "de otro editor");
+  fs.writeFileSync(path.join(docs, "b.md"), "mío");
+  electron.llamadas.length = 0;
+  await host.vigilante.revisar();
+  assert.deepEqual(llamadasA(electron, "archivoCambiado"), [{ ruta: "a.md", texto: "de otro editor" }]);
+  assert.ok(!host.vigilante.importa("node_modules/x.md") && !host.vigilante.importa("a.txt") && host.vigilante.importa("sub"));
+  host.vigilante.detener();
+});
+
+test("host: secretos con safeStorage (nunca en texto plano) y avisos del sistema", async () => {
+  const electron = electronFalso();
+  let backend = "gnome_libsecret";
+  electron.safeStorage = { isEncryptionAvailable: () => true, getSelectedStorageBackend: () => backend,
+    encryptString: (t) => Buffer.from("cifrado:" + t), decryptString: (b) => b.toString().replace(/^cifrado:/, "") };
+  const vistos = [];
+  class Notification { static isSupported() { return true; } constructor(o) { this.o = o; this._on = {}; } on(n, f) { this._on[n] = f; } show() { vistos.push(this); } close() { this.cerrada = true; } }
+  electron.Notification = Notification;
+  const { raiz, datos } = crearApp();
+  const tocados = [];
+  const host = crearHost({ electron, recursos: raiz, datos, python: PYTHON, estadoScript: null, alTocarAviso: (id) => tocados.push(id) });
+  const s = host.secretos("conexiones");
+  assert.ok(s.guardar("banco", "llave-123"));
+  assert.equal(s.leer("banco"), "llave-123");
+  const archivo = fs.readFileSync(path.join(datos, ".conexiones.json"), "utf8");
+  assert.ok(!archivo.includes("llave-123") || archivo.includes(Buffer.from("cifrado:llave-123").toString("base64")));
+  assert.ok(!s.guardar("../x", "y") && s.leer("../x") === null);
+  if (process.platform !== "win32") assert.equal(fs.statSync(path.join(datos, ".conexiones.json")).mode & 0o777, 0o600);
+  backend = "basic_text";
+  if (process.platform === "linux") { assert.equal(s.disponible, false); assert.equal(s.leer("banco"), null); assert.equal(s.guardar("otro", "x"), false); }
+  s.borrar("banco");
+  backend = "gnome_libsecret";
+  assert.equal(s.leer("banco"), null);
+  assert.throws(() => host.secretos("../x"));
+  // Avisos: nada antes de elegir el idioma.
+  assert.equal(host.notificaciones.mostrar({ id: "pago", titulo: "Hola" }), false);
+  host.config.guardar({ idioma_ui: "es" });
+  assert.equal(host.notificaciones.mostrar({ id: "pago", titulo: "Tienes un pago por vencer" }), true);
+  assert.equal(host.notificaciones.mostrar({ id: "pago mal", titulo: "x" }), false);
+  vistos[0]._on.click();
+  assert.deepEqual(tocados, ["pago"]);
+  host.notificaciones.quitar("pago");
+  assert.ok(vistos[0].cerrada);
+});
+
+test("host: menú Ayuda opcional; esperarLibre espera también a los scripts", async () => {
+  const { host, electron, enviar } = await hostListo({ sitio: "https://ana.example/", ayuda: false });
+  assert.ok(!electron.menus.at(-1).some((m) => m.label === "Ayuda"));
+  const corriendo = enviar("lento", {});
+  await new Promise((ok) => setTimeout(ok, 100));
+  assert.equal(await host.esperarLibre(400), false, "un script corriendo no es estar libre");
+  await corriendo;
+  assert.equal(await host.esperarLibre(400), true);
 });
 
 test("host: la pieza no trae nada de una app", () => {

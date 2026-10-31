@@ -34,5 +34,11 @@ de la IA sin `ia_vivo` (mismo resultado). `documentar.detener` puede usar `traba
 **Las demás** (Corta y Graba con `estado.json` por carpeta, Minuta con `procesar.log`): sus procesos largos no tienen latido ni
 «Detener»; pasarlos a trabajos es una mejora por app, no mecánica.
 
-## Si venías de la 0.1.0
-Nada que cambiar: `terminar` con un error de la IA raro (valores que no son texto) ya no se cae.
+## Con el host genérico (0.2.0)
+Una acción declarada con `"limite": "trabajo"` (o `{"segun": "orden", "valores": {"documentar": "trabajo"}, "otro": 120}`) no
+tiene tope de tiempo en `host-mac`/`host-escritorio` 0.2: el host pone `<ID>_LATIDO` y el hilo de `t.latir()` lo toca cada 5 s
+(`trabajos.latir_host()`). Si deja de latir por 45 s (120 s el primero), el host lo corta. Algo largo que no es un `Trabajo`:
+`trabajos.mantener_vivo()` al empezar. Sin host que lo pida, nada cambia.
+
+## Si venías de la 0.1.0 o 0.1.1
+Nada que cambiar: 0.2.0 solo suma el latido para el host, y desde 0.1.1 `terminar` con un error de la IA raro (valores que no son texto) ya no se cae.

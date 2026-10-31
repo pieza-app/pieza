@@ -3,7 +3,7 @@
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "id": "trabajos",
- "version": "0.1.1",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Trabajos largos",
  "categoria": "datos",
@@ -58,6 +58,11 @@
   "nucleo": ">=0.7.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "mejora",
+   "resumen": "El latido también le avisa al host (host-mac / host-escritorio 0.2): con «limite»: \"trabajo\" en una acción declarada, el host no le pone tope de tiempo mientras el trabajo lata (Trabajo.latir(), o trabajos.mantener_vivo() para algo largo que no es un Trabajo) y lo corta si deja de latir por 45 s. Sin un host que lo pida (<ID>_LATIDO), nada cambia."
+  },
   {
    "version": "0.1.1",
    "tipo": "arreglo",

@@ -21,11 +21,14 @@ const raiz = fs.mkdtempSync(path.join(os.tmpdir(), "host-electron-"));
 const casa = path.join(raiz, "casa");
 const src = path.join(raiz, "escritorio", "src");
 fs.mkdirSync(src, { recursive: true });
-for (const f of ["host.js", "enchufe.js", "procesador.js", "preload.js"]) fs.copyFileSync(path.join(BASE, "piezas/host-escritorio/escritorio", f), path.join(src, f));
+for (const f of ["host.js", "enchufe.js", "procesador.js", "preload.js", "vigilante.js"]) fs.copyFileSync(path.join(BASE, "piezas/host-escritorio/escritorio", f), path.join(src, f));
 fs.mkdirSync(path.join(raiz, "bin"));
 fs.mkdirSync(path.join(raiz, "ui"));
 fs.mkdirSync(casa);
-fs.writeFileSync(path.join(raiz, "app.json"), JSON.stringify({ id: "ana", nombre: "Ana", config: { idioma_ui: ["es", "en"], tema: ["sistema", "claro", "oscuro"] } }));
+fs.writeFileSync(path.join(raiz, "app.json"), JSON.stringify({ id: "ana", nombre: "Ana", config: { idioma_ui: ["es", "en"], tema: ["sistema", "claro", "oscuro"], carpeta: { tipo: "texto", max: 4000, interfaz: false } } }));
+const docs = path.join(raiz, "docs");
+fs.mkdirSync(docs);
+fs.writeFileSync(path.join(docs, "a.md"), "viejo");
 fs.writeFileSync(path.join(raiz, "acciones.json"), JSON.stringify({ formato: 1, acciones: {
   probarIA: { script: "eco.py", args: ["probar"], entrada: "archivo", datos: { ia: { tipo: "enum", valores: ["claude", "codex"] } }, responde: "iaProbada", eco: ["ia"], limite: 30 },
 } }));
@@ -39,8 +42,9 @@ const vistos = {};
 const enviar = (accion, datos) => window.anaEscritorio.enviar({ accion, datos });
 window.Ana = {
   estado(e) { vistos.estado = e; enviar("config", { tema: "oscuro" }); enviar("probarIA", { ia: "claude" }); },
-  iaProbada(r) {
-    vistos.iaProbada = r;
+  iaProbada(r) { vistos.iaProbada = r; enviar("cambiarAfuera", {}); },
+  archivoCambiado(r) {
+    vistos.archivoCambiado = r;
     enviar("resultado", { vistos, host: window.ANA_HOST, sinNode: typeof require === "undefined" && typeof process === "undefined",
       oscuro: matchMedia("(prefers-color-scheme: dark)").matches });
   },
@@ -50,8 +54,15 @@ enviar("listo", {});
 fs.writeFileSync(path.join(src, "main.js"), `
 const electron = require("electron");
 const { crearHost } = require("./host");
-const host = crearHost({ electron });
-host.acciones.registrar("resultado", (d) => { process.stdout.write("RESULTADO " + JSON.stringify(d) + "\\n"); electron.app.exit(0); });
+const host = crearHost({ electron, carpeta: { clave: "carpeta" }, vigilar: { extensiones: [".md"] } });
+// La carpeta con su vigilante (fs.watch de verdad): a.md es conocido; cambia afuera y la interfaz recibe archivoCambiado.
+host.acciones.registrar("cambiarAfuera", () => {
+  host.carpeta.usar(${JSON.stringify(docs)});
+  host.vigilante.conocer("a.md", "viejo");
+  setTimeout(() => require("fs").writeFileSync(${JSON.stringify(path.join(docs, "a.md"))}, "de otro editor"), 400);
+});
+host.acciones.registrar("resultado", (d) => {
+  d.secretos = typeof host.secretos("prueba").disponible === "boolean"; process.stdout.write("RESULTADO " + JSON.stringify(d) + "\\n"); electron.app.exit(0); });
 setTimeout(() => { process.stdout.write("RESULTADO {}\\n"); electron.app.exit(1); }, 30000);
 host.iniciar();
 `);
@@ -68,6 +79,8 @@ revisar(d.sinNode === true, "la página no ve Node");
 revisar(d.vistos && d.vistos.estado && d.vistos.estado.config && "version" in d.vistos.estado, "estado");
 revisar(d.vistos && d.vistos.iaProbada && d.vistos.iaProbada.ok === true && d.vistos.iaProbada.ia === "claude"
   && JSON.stringify(d.vistos.iaProbada.recibi) === '{"ia":"claude"}', "acción declarada con su eco");
+revisar(d.vistos && d.vistos.archivoCambiado && d.vistos.archivoCambiado.texto === "de otro editor", "el vigilante avisa un cambio de afuera");
+revisar(d.secretos === true, "secretos con safeStorage");
 revisar(d.oscuro === true, "config.tema = oscuro cambia la apariencia (nativeTheme)");
 const conf = JSON.parse(fs.readFileSync(path.join(casa, ".config", "ana", "config.json"), "utf8"));
 revisar(conf.tema === "oscuro", "config.json guardado");

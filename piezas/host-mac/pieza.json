@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "host-mac",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "App de Mac",
  "icono": "icono.svg",
@@ -12,7 +12,7 @@
   "siempre": true,
   "cuando": "Siempre que haya app de Mac."
  },
- "origen": "esquema (Ventana.swift: marco principal + origen file, navegación solo dentro de ui/, https al navegador, <input type=file> solo del marco propio, recargar si se cae la página; Servicios.swift: Config, Idioma.elegido, Procesador sin variables <ID>_*, EnOrden; EsquemaApp.swift: menús en el idioma elegido y esperar los guardados al salir) + alcancia (secreto por la entrada estándar y su salida estándar) + repasa (conEntrada con varios args) + corta (Medios.swift: <id>:// con rangos). Nuevo: nada de la app adentro (todo de app.json y Host.Configuracion), acciones declaradas (acciones.json) validadas al cargar y en cada mensaje, límite de tiempo que corta también a los descendientes, carpeta temporal propia 0700 para entrada y salida, el puente también revisa que la página sea un archivo de ui/, config con las reglas de nucleo (incluido «interfaz»: false) y la ventana y los menús siguen config.tema (NSApp.appearance).",
+ "origen": "esquema (Ventana.swift: marco principal + origen file, navegación solo dentro de ui/, https al navegador, <input type=file> solo del marco propio, recargar si se cae la página; Servicios.swift: Config, Idioma.elegido, Procesador sin variables <ID>_*, EnOrden; EsquemaApp.swift: menús en el idioma elegido y esperar los guardados al salir) + alcancia (secreto por la entrada estándar y su salida estándar) + repasa (conEntrada con varios args) + corta (Medios.swift: <id>:// con rangos). Nuevo: nada de la app adentro (todo de app.json y Host.Configuracion), acciones declaradas (acciones.json) validadas al cargar y en cada mensaje, límite de tiempo que corta también a los descendientes, carpeta temporal propia 0700 para entrada y salida, el puente también revisa que la página sea un archivo de ui/, config con las reglas de nucleo (incluido «interfaz»: false) y la ventana y los menús siguen config.tema (NSApp.appearance). Nuevo en 0.2: «limite» \"trabajo\" (sin tope mientras lata) o por orden, «maximo» y «vigilar» por acción, el inyector con su texto (`Puente.Falta`), el eco también en el error de datos, actualizaciones (`p.actualizaciones`), la carpeta con marcador (`CarpetaElegida`), el vigilante de la carpeta (`Vigilante`, FSEvents), `mostrarEnFinder`, secretos en el Llavero (`Secretos`) y avisos del sistema (`Notificaciones`), sacados de Esquema, Alcancía, Graba y Minuta.",
  "requiere": [
   "nucleo",
   "host-ui"
@@ -28,7 +28,9 @@
   "mac/Host.swift": "app/Sources/PiezaHost/Host.swift",
   "mac/Procesador.swift": "app/Sources/PiezaHost/Procesador.swift",
   "mac/Enchufe.swift": "app/Sources/PiezaHost/Enchufe.swift",
-  "mac/Puente.swift": "app/Sources/PiezaHost/Puente.swift"
+  "mac/Puente.swift": "app/Sources/PiezaHost/Puente.swift",
+  "mac/Carpeta.swift": "app/Sources/PiezaHost/Carpeta.swift",
+  "mac/Sistema.swift": "app/Sources/PiezaHost/Sistema.swift"
  },
  "solo": {
   "mac/Host.swift": [
@@ -41,6 +43,12 @@
    "mac"
   ],
   "mac/Puente.swift": [
+   "mac"
+  ],
+  "mac/Carpeta.swift": [
+   "mac"
+  ],
+  "mac/Sistema.swift": [
    "mac"
   ]
  },
@@ -72,7 +80,10 @@
   "Minimizar": "Minimize",
   "Zoom": "Zoom",
   "Cerrar ventana": "Close Window",
-  "Agregar": "Add"
+  "Agregar": "Add",
+  "Dejó de avanzar y lo detuve. Intenta de nuevo.": "It stopped making progress, so I stopped it. Try again.",
+  "Elige una carpeta primero.": "Choose a folder first.",
+  "Espera a que termine lo que está haciendo y vuelve a intentarlo.": "Wait until it finishes what it's doing and try again."
  },
  "pantallas": [
   {
@@ -82,7 +93,16 @@
   }
  ],
  "permisos": {
-  "mac": []
+  "mac": [
+   {
+    "clave": "Notificaciones",
+    "por": "solo si la app usa Notificaciones: macOS pregunta cuando la app lo pide (pedirPermiso), nunca al abrir"
+   },
+   {
+    "clave": "Llavero",
+    "por": "solo si la app usa Secretos: los tokens quedan en el Llavero de la persona, solo en este Mac"
+   }
+  ]
  },
  "red": [],
  "tareas_persona": [
@@ -90,6 +110,19 @@
   "Opcional: Apple Developer (USD 99/año) para firmar y que macOS no advierta"
  ],
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "rompe",
+   "seguridad": true,
+   "resumen": "Lo que salió al pasar Esquema: límite \"trabajo\" (sin tope, cortado si deja de latir) y límites por orden; el tope de la entrada por acción («maximo», hasta 50 MB); el inyector puede responder su propio texto; el error de datos trae el eco válido; esperar a quedar libre también espera a los scripts corriendo, y al salir se cortan los que queden (nada huérfano); «vigilar» para que lo que escribe la app no se avise como cambio de afuera; capacidades nuevas: carpeta elegida, vigilante, mostrar en el Finder/explorador, secretos y avisos; menú Ayuda opcional; actualizaciones atendidas por el host (como en Electron).",
+   "migrar": [
+    "Mac: `Puente.llamar` ya no devuelve nada (así `guard … else { return p.llamar(…) }` compila). Si usabas su Bool, cámbialo por `intentarLlamar`. Un `_ = Puente.shared.llamar(…)` sigue compilando (o quítale el `_ =`).",
+    "Mac: `Procesador.lectorProgreso` ahora es `@MainActor` (el bloque de siempre, `{ aviso in let l = LectorProgreso(…); return (l.url.path, l.empezar, l.terminar) }`, no cambia).",
+    "Mac: si atendías buscarActualizacion/actualizar a mano, puedes borrarlo y poner `p.actualizaciones = .init(revisar: Actualizaciones.revisar, revisarCadaRato: Actualizaciones.revisarCadaRato, seguir: Actualizaciones.seguir, instalar: Actualizaciones.instalar, aviso: Actualizaciones.aviso, disponible: { Actualizaciones.disponible })` (y sacar `actualizacion` de tu `estado` y la revisión de `tareas`). Lo tuyo registrado sigue ganando: no es obligatorio.",
+    "Si una acción tenía `\"limite\": 3600` porque a veces tarda más, usa `\"limite\": \"trabajo\"` (con la pieza «trabajos» 0.2.0, que late) o límites por orden: `{\"segun\": \"orden\", \"valores\": {\"documentar\": \"trabajo\"}, \"otro\": 120}`.",
+    "Opcional: la carpeta con marcador y el vigilante ya vienen en el host (`p.carpeta = CarpetaElegida()` + `p.vigilante = Vigilante(extensiones: [\".md\"])` en Mac; `carpeta: {clave}` + `vigilar: {extensiones, alCambiar}` en Electron): ver «Si venías de la 0.1.0» en el README."
+   ]
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

@@ -10,7 +10,9 @@ que [`host-escritorio`](../host-escritorio/).
 | `Host.swift` | `Host.arrancar/configurar`, rutas (datos, recursos, Python), `Config` (reglas de `nucleo`), `Idioma`, el delegado de la app |
 | `Procesador.swift` | Scripts de `bin/` con **límite de tiempo** (corta también a los descendientes), entorno sin `<ID>_*`, entrada por archivo, secreto por stdin; `Fila` |
 | `Enchufe.swift` | Acciones declaradas (`acciones.json`): revisarlas al cargar, validar los datos de cada mensaje; `Enchufe.dentro` (= `nucleo.ruta_en`) |
-| `Puente.swift` | Ventana, WKWebView, puente con guardas, navegación, `<id>://` para medios, diálogos, menús, apariencia |
+| `Puente.swift` | Ventana, WKWebView, puente con guardas, navegación, `<id>://` para medios, diálogos, menús, apariencia, actualizaciones |
+| `Carpeta.swift` | `CarpetaElegida` (la carpeta de la persona con marcador del sistema) y `Vigilante` (FSEvents, sin avisar lo que escribió la app) |
+| `Sistema.swift` | `Secretos` (Llavero) y `Notificaciones` (avisos del sistema) |
 
 ## Uso
 
@@ -28,29 +30,25 @@ import PiezaActualizaciones   // opcional
 @main enum AnaApp {
     @MainActor static func main() {
         Host.arrancar(.init(sitio: "https://ana-app.github.io/ana/", codigo: "https://github.com/ana-app/ana")) { p in
-            p.inyectores["carpetaActual"] = { _ in Carpeta.actual()?.path }          // lo pone el host, nunca la interfaz
-            p.estado = { base, listo in var e = base; e["carpeta"] = Carpeta.actual()?.path; listo(e) }
-            p.menus = { m in [m.archivo([m.item("Nuevo…", "nuevo", "n"), m.nativo("Abrir carpeta…", "o") { abrirCarpeta() }]),
+            p.inyectores["proyecto"] = { _ -> Any? in Proyecto.actual() ?? Puente.Falta("Elige un proyecto primero.") as Any }  // nunca la interfaz
+            p.estado = { base, listo in var e = base; e["carpeta"] = p.carpeta?.actual()?.path; listo(e) }
+            p.menus = { m in [m.archivo([m.item("Nuevo…", "nuevo", "n"), m.nativo("Abrir carpeta…", "o") { p.carpeta?.elegir { _ in p.enviarEstado() } }]),
                               m.edicion(), m.ver([m.item("Acercar", "acercar", "+")])] }
             p.registrar("exportar") { d in
                 p.guardarComo(nombre: d["nombre"] as? String ?? "ana", extension: "svg", datos: Data((d["texto"] as? String ?? "").utf8)) { u in
                     p.llamar("exportado", ["ok": u != nil])
                 }
             }
-            // Pieza «actualizaciones»:
+            // Pieza «actualizaciones»: el host atiende buscarActualizacion/actualizar (nunca con algo en curso), revisa cada 6 h con
+            // el idioma elegido y suma `actualizacion` al estado.
             Actualizaciones.configurar(.init(repo: "ana-app/ana", nombre: "Ana",
                 archivoDesarrollo: Host.datos.appendingPathComponent("desarrollo"), variableProgreso: Host.prefijo + "PROGRESO"))
-            p.tareas = { Actualizaciones.revisarCadaRato { p.llamar("actualizacionRevisada", $0) } }
-            p.registrar("buscarActualizacion") { _ in Actualizaciones.revisar { p.llamar("actualizacionRevisada", $0) } }
-            p.registrar("actualizar") { _ in
-                p.esperarLibre(segundos: 5) { libre in
-                    guard libre, Procesador.enCurso == 0 else {
-                        return p.llamar("actualizacionProgreso", ["paso": "error", "codigo": "ocupada", "texto": "Espera a que termine lo que está haciendo y vuelve a intentarlo.", "valores": [String: String](), "total": 3])
-                    }
-                    Actualizaciones.seguir { p.llamar("actualizacionProgreso", $0) }
-                    Actualizaciones.instalar { ok, codigo in if !ok { p.llamar("actualizacionProgreso", Actualizaciones.aviso("error", codigo)) } }
-                }
-            }
+            p.actualizaciones = .init(revisar: Actualizaciones.revisar, revisarCadaRato: Actualizaciones.revisarCadaRato,
+                seguir: Actualizaciones.seguir, instalar: Actualizaciones.instalar, aviso: Actualizaciones.aviso,
+                disponible: { Actualizaciones.disponible })
+            // La carpeta de la persona (con marcador) y su vigilante: `carpetaActual` para las acciones y `archivoCambiado`.
+            p.carpeta = CarpetaElegida()
+            p.vigilante = Vigilante(extensiones: ["md"])
             // Pieza «trabajos» (habilita `progreso` en las acciones declaradas):
             Procesador.lectorProgreso = { aviso in let l = LectorProgreso(prefijo: Host.id, aviso: aviso); return (l.url.path, l.empezar, l.terminar) }
         }
@@ -62,25 +60,31 @@ import PiezaActualizaciones   // opcional
 
 | | |
 |---|---|
-| `Host.Configuracion(ancho:alto:minAncho:minAlto:sitio:codigo:global:estadoScript:cerrarSale:recursos:python:)` | Todo opcional. `global`: el objeto `window.<App>` (por defecto el id con mayúscula). `cerrarSale`: cerrar la ventana cierra la app. |
+| `Host.Configuracion(ancho:alto:minAncho:minAlto:sitio:codigo:menuAyuda:avisos:global:estadoScript:cerrarSale:recursos:python:)` | Todo opcional. `global`: el objeto `window.<App>` (por defecto el id con mayúscula). `cerrarSale`: cerrar la ventana cierra la app. `menuAyuda: false`: sin menú Ayuda. `avisos: true`: el host atiende el toque de un aviso desde el arranque. |
 | `Host.arrancar(c) { puente in … }` | Configura, crea la app, deja registrar lo propio, instala menús, aplica la apariencia y abre la ventana. Lo que corre solo (`tareas`) espera al idioma elegido. Al salir, la interfaz guarda y se espera la fila (3 s). |
 | `Host.id`, `.nombre`, `.app`, `.datos`, `.recursos`, `.prefijo`, `.version`, `.python`, `prepararDatos()` | Desde `app.json` (`datos`: `sistema`, `visible` o `{"carpeta": "~/…"}`, igual que `nucleo.carpeta_datos()`). |
 | `Config.leer()`, `.guardar(cambios, desdeInterfaz:)`, `.texto(clave)`, `.valida(regla, valor)` | `config.json` con las claves de `app.json` (`"interfaz": false` no se cambia desde la interfaz). |
 | `Idioma.codigo`, `.elegido`, `.t(_)`, `.f(_, valores)`, `.fuente` | `fuente`: si la app guarda `idioma_ui` en otro lado. |
 | `Puente.shared` / `Puente.registrar("accion") { datos in … }` | Una acción propia. Gana sobre las del host y las declaradas (se migra de a poco). |
-| `llamar(funcion, json)`, `despachar(accion, datos)` | Hacia la interfaz (solo nombres simples, nada antes de `listo`) y correr una acción. |
-| `inyectores`, `estado`, `tareas`, `alCambiarConfig`, `menus`, `antesDeSalir`, `alConfigurarWeb` | Ganchos (ver arriba). `alConfigurarWeb`: otro manejador o preferencia del `WKWebViewConfiguration`. |
+| `llamar(funcion, json)`, `intentarLlamar(…) -> Bool`, `despachar(accion, datos)` | Hacia la interfaz (solo nombres simples, nada antes de `listo`) y correr una acción. `llamar` no devuelve nada: `guard … else { return p.llamar(…) }` compila. |
+| `inyectores`, `estado`, `tareas`, `alCambiarConfig`, `menus`, `antesDeSalir`, `alConfigurarWeb` | Ganchos (ver arriba). Un inyector devuelve el valor, nil (`codigo: "falta"`) o `Puente.Falta("texto", valores)` (lo mismo con ese texto). `alConfigurarWeb`: otro manejador o preferencia del `WKWebViewConfiguration`. |
+| `actualizaciones = Puente.Actualizador(…)` | Las funciones de la pieza «actualizaciones» (arriba): el host atiende `buscarActualizacion` → `actualizacionRevisada` y `actualizar` → `actualizacionProgreso` (con `codigo: "ocupada"` si algo sigue en curso después de 5 s). |
+| `carpeta = CarpetaElegida(marcador:clave:)` | `.actual()`, `.elegir(mensaje:boton:) { url in }`, `.usar(url)`, `.olvidar()`, `.textoFalta`. Marcador en `UserDefaults` (la sigue aunque la muevan) y la ruta en `config.<clave>` para los scripts (`"interfaz": false` en `app.json`). Con ella, el inyector `carpetaActual`. |
+| `vigilante = Vigilante(extensiones:espera:maximo:)` | `.conocer(ruta, texto)`, `.olvidar(ruta)`, `.conocidos`, `.absoluta(rel)`, `.empezar(url)`, `.detener()`, `.alCambiarArchivo` (por defecto `archivoCambiado {ruta, texto}`), `.alCambiar` (para volver a listar). Lo mueve la carpeta y lo usan las acciones con «vigilar». |
+| `mostrarEnFinder(url)` | El archivo o la carpeta, elegido en el Finder. Solo rutas que la app ya revisó. |
+| `Secretos(servicio:)` / `Secretos.deLaApp` | `.guardar(valor, cuenta:)`, `.leer(cuenta)`, `.borrar(cuenta)`: el Llavero, solo en este Mac (`WhenUnlockedThisDeviceOnly`). Un secreto llega a un script solo por stdin (`Procesador.conSecreto`). Mismo `servicio` que antes = los tokens de siempre siguen ahí. |
+| `Notificaciones.pedirPermiso { ok in }`, `.mostrar(id:titulo:texto:sonido:)`, `.quitar(id)`, `.alTocar` | Avisos del sistema. El permiso, cuando la app lo pide (nunca al abrir); nada antes de elegir el idioma; tocar uno muestra la ventana y llama `alTocar(id)`. |
 | `registrarMedios("video") { ruta in URL? }` | `<id>://video/<ruta>` con rangos. Antes de `mostrar()` (en el bloque de `arrancar`). |
 | `elegirCarpeta`, `elegirArchivos(extensiones:varios:)`, `guardarComo(nombre:extension:datos:)`, `papelera(_:)`, `copiar`, `abrirEnlace` | Diálogos y capacidades comunes. |
 | `ocupar()`/`soltar()`, `ocupada`, `esperarLibre(segundos:)` | Para no cerrar ni actualizar en medio de algo. |
 | `aplicarApariencia()` | `config.tema` (`sistema`/`claro`/`oscuro`, pieza `tema`) → `NSApp.appearance` y la ventana. La llama `config` solo. |
-| `Procesador.correrJSON(script, args, limite:)`, `.conEntrada(script, "accion" \| [args], datos, limite:progreso:)`, `.conSecreto(script, args, secreto:)`, `.correr(…)` | `correr` y `conSecreto` dan `Resultado(respuesta, salidaEstandar, porLimite)`. |
+| `Procesador.correrJSON(script, args, limite:latido:)`, `.conEntrada(script, "accion" \| [args], datos, limite:latido:progreso:)`, `.conSecreto(script, args, secreto:)`, `.correr(…)`, `.cortarTodo()` | `correr` y `conSecreto` dan `Resultado(respuesta, salidaEstandar, porLimite)`. `latido: true`: sin tope mientras el script lata (pieza «trabajos»; se corta a los `latidoMuerto` = 45 s sin latido). `lectorProgreso` es `@MainActor`. |
 | `Fila.agregar { listo in … listo() }` | De a una y en orden. |
 | `Enchufe.dentro(base, relativa, extensiones:)` | La guarda de `nucleo.ruta_en`. |
 
 Lo que atiende solo: `listo` (estado), `config` (guarda, rearma los menús en el idioma nuevo, aplica la apariencia y arranca las
-tareas), `abrirEnlace` (solo https), `copiar` → `copiado`, y toda acción declarada en `acciones.json` (validar → inyectar → fila →
-script con límite → `responde` con `eco` → `despues`; ver [`host-escritorio`](../host-escritorio/README.md#acciones-declaradas-accionesjson)
+tareas), `abrirEnlace` (solo https), `copiar` → `copiado`, con `actualizaciones` `buscarActualizacion` y `actualizar`, y toda acción
+declarada en `acciones.json` (validar → inyectar → fila → «vigilar» → script con su límite → `responde` con `eco` → `despues`; ver [`host-escritorio`](../host-escritorio/README.md#acciones-declaradas-accionesjson)
 y [`docs/enchufe.md`](../../docs/enchufe.md#una-acción)). Errores: `{ok: false, codigo: "datos" | "falta" | "limite" | "fallo", texto, valores, error}`.
 
 ## Seguridad
@@ -90,14 +94,34 @@ y [`docs/enchufe.md`](../../docs/enchufe.md#una-acción)). Errores: `{ok: false,
   principal propio. Si el proceso de la página se cae, se vuelve a cargar.
 - `<id>://` sirve solo lo que aprueba el resolvedor de la app (sin `?`, `#`, usuario ni clave).
 - Scripts: `<ID>_*` de afuera nunca llegan; lo de la persona en un archivo de entrada dentro de una carpeta temporal 0700;
-  secreto por stdin; **límite de tiempo** (SIGTERM al script y a sus descendientes, y SIGKILL 3 s después). Sin `__pycache__`.
+  secreto por stdin; **límite de tiempo** (SIGTERM al script y a sus descendientes, y SIGKILL 3 s después); un trabajo sin tope
+  se corta si deja de latir, y al salir se corta lo que siga corriendo (nada queda huérfano). Sin `__pycache__`.
+- Secretos solo en el Llavero, solo en este Mac; los avisos nunca antes de elegir el idioma ni con el permiso pedido al abrir.
 
 ## Compilar en el Mac
 
 Swift no compila en Linux: `bash pruebas/swift/revisar_host_mac.sh` (desde Pieza) arma un paquete temporal con la pieza, la
-compila con `swift build` y corre una prueba sin ventana (reglas del enchufe, config, procesador con Python: entrada por archivo,
-entorno sin `ANA_*`, secreto por stdin y límite de tiempo). Para revisar solo los tipos:
+compila con `swift build` y corre una prueba sin ventana (reglas del enchufe con límites por orden, «maximo», «vigilar» y el eco
+válido; config; carpeta con marcador y vigilante con FSEvents; procesador con Python: entrada por archivo, entorno sin `ANA_*`,
+secreto por stdin, límite de tiempo, trabajo que late y que deja de latir, y cortar todo al salir). Para revisar solo los tipos:
 `swiftc -typecheck -target arm64-apple-macos15.0 piezas/host-mac/mac/*.swift`.
+
+## Si venías de la 0.1.0
+
+`pieza.py actualizar <app> host-mac` trae `Carpeta.swift` y `Sistema.swift` (van solos en `Sources/PiezaHost`: nada que sumar a
+`Package.swift`). Lo que cambia al compilar:
+- `Puente.llamar` ya no devuelve `Bool`: un `_ = Puente.shared.llamar(…)` o un envoltorio como el `responder` de Esquema siguen
+  compilando (se pueden borrar: `guard … else { return p.llamar(…) }` ya compila). Si usabas el `Bool`, `intentarLlamar`.
+- `Procesador.lectorProgreso` es `@MainActor` (el bloque de siempre no cambia). `Enchufe.Accion.limite` pasa a `limite(para:)`.
+- `esperarLibre` también espera a los scripts que corren (`Procesador.enCurso`): un `guard libre, Procesador.enCurso == 0` queda
+  como `guard libre`.
+- **Esquema:** puede borrar de `EsquemaApp.swift` `buscarActualizacion`, `actualizar`, `actualizarCuandoPueda`, la revisión de
+  `tareas` y `actualizacion` del estado (`p.actualizaciones = .init(…)`, arriba; el texto de «ocupada» pasa a ser el del host);
+  `Carpeta.swift` propio por `p.carpeta = CarpetaElegida()` (mismo marcador `carpeta.marcador` y misma clave `carpeta`: nada se
+  pierde) y `Vigilante` por `p.vigilante = Vigilante(extensiones: ["md", "mmd"])` con `alCambiar` = volver a listar (lo que hoy hace
+  su `revisar`); `abrirArchivo`/`guardarArchivo` se pueden declarar (`vigilar: "lee" | "escribe"`, `maximo`); «Mostrar la carpeta
+  en el Finder» con `p.mostrarEnFinder`. `proyecto` con `"limite": {"segun": "orden", "valores": {"documentar": "trabajo", …},
+  "otro": 120}` en vez de 3600, y `probarIA` sube solo a 150 (pieza `ia` 0.6.3).
 
 ## Pasar una app a esta pieza
 
@@ -109,8 +133,8 @@ con `Host.arrancar`, copiar `acciones.json` junto a `app.json` en `herramientas/
 | App | Se borra | Queda como acción propia | Ojo |
 |---|---|---|---|
 | Esquema | `Servicios.swift` (Rutas, Archivos, Config, Idioma, Procesador, EnOrden; `LectorProgreso` → pieza «trabajos»), casi todo `Ventana.swift` y `EsquemaApp.swift` (queda el `@main` y los menús con `m.item`/`m.nativo`) | `elegirCarpeta`, `abrirProyecto`, `proyecto` (o declarada: `"*": "pasar"`, `$orden` enum, `inyectar: {carpeta: "carpetaActual"}`, `progreso: "proyectoProgreso"`), `papelera`, `abrirArchivo`/`guardarArchivo` (con `Fila`, por el vigilante), `exportar`, catálogo, actualizaciones | `Carpeta.swift` y `Vigilante` quedan; `probarIA` va solo (pieza `ia`) |
-| Graba | `Servicios.swift` (rutas, config, idioma, `Procesador`), el WKWebView de `Ventana.swift` | Grabar, pausar, recortar, permisos, YouTube, teleprompter, flotantes y barra de menú (`NSStatusItem` en el bloque de `arrancar`) | `datos: "visible"` (~/Graba/.graba) ya lo resuelve el host; su puente de hoy no revisa marco ni origen: con la pieza, sí |
-| Minuta | `Rutas`/`Config`/`Procesador` de `MinutaApp.swift`, el WKWebView de `VisorWeb.swift` | Casi todo (perfil, universos, gimnasio, avisos, calendario, coach) | **La última:** `Idioma.fuente` = `idioma_ui` de `perfil.json`; el panel de `BarraMenu.swift` es otro WKWebView: queda en la app y llama `Puente.shared.despachar` para lo compartido |
-| Corta | `Servicios.swift` (salvo `Modelos`), `Medios.swift` → `registrarMedios("video") { … }` con la misma revisión de `proyecto.json`, gran parte de `Ventana.swift` y `CortaApp.swift` | `elegirVideo`, `soltarVideo`, `exportar`, `elegirMusica`, `elegirClips`, catálogo, `descargarModelo` | `guardarProyecto`/`deshacer`/`limpiar`/`vocabulario` se declaran con `cola: "escritura"`; `transcribir`/`exportar` con `progreso` |
+| Graba | `Servicios.swift` (rutas, config, idioma, `Procesador`, `Llavero` → `Secretos(servicio: "Graba")`), el WKWebView de `Ventana.swift`, «Mostrar en el Finder» → `mostrarEnFinder` | Grabar, pausar, recortar, permisos, YouTube, teleprompter, flotantes y barra de menú (`NSStatusItem` en el bloque de `arrancar`) | `datos: "visible"` (~/Graba/.graba) ya lo resuelve el host; su puente de hoy no revisa marco ni origen: con la pieza, sí |
+| Minuta | `Rutas`/`Config`/`Procesador` de `MinutaApp.swift`, el WKWebView de `VisorWeb.swift`, el `Llavero` de `Bienvenida.swift` → `Secretos(servicio:)` con el mismo servicio, los avisos inmediatos → `Notificaciones` (los suyos con botones siguen propios) | Casi todo (perfil, universos, gimnasio, avisos, calendario, coach) | **La última:** `Idioma.fuente` = `idioma_ui` de `perfil.json`; el panel de `BarraMenu.swift` es otro WKWebView: queda en la app y llama `Puente.shared.despachar` para lo compartido |
+| Corta | `Servicios.swift` (salvo `Modelos`), `Medios.swift` → `registrarMedios("video") { … }` con la misma revisión de `proyecto.json`, gran parte de `Ventana.swift` y `CortaApp.swift`, «Mostrar en el Finder» → `mostrarEnFinder`, sus actualizaciones → `p.actualizaciones` | `elegirVideo`, `soltarVideo`, `exportar`, `elegirMusica`, `elegirClips`, catálogo, `descargarModelo` | `guardarProyecto`/`deshacer`/`limpiar`/`vocabulario` se declaran con `cola: "escritura"`; `transcribir`/`exportar` con `progreso` |
 | Repasa | `Servicios.swift` (rutas, config, idioma, `Procesador` con su fila), `EsquemaMaterial` → `registrarMedios("material")`, gran parte de `Ventana.swift` y `RepasaApp.swift` | `elegirMaterial`, `soltarMaterial`, `guardarCopia`/`traerCopia` (`callAsyncJavaScript`) | `guardarProgreso`, `guardarPerfil`, `guardarPruebas` se declaran (`guardar.py`, `cola: "escritura"`); `crearTema`/`explicar` con su `limite` |
-| Alcancía | `Servicios.swift` (rutas, config, idioma, `Procesador`: el secreto pasa a `Procesador.conSecreto`, «CREDENCIAL {json}» se lee de `salidaEstandar`), gran parte de `Ventana.swift` y `AlcanciaApp.swift` | `elegirCartola`, `conectar`/`sincronizar`/`desconectar` (Llavero), `celular`, `vigilar`, `avisos` | `datos: {"carpeta": "~/Alcancia/.alcancia"}` y `privado: true` ya los respeta el host |
+| Alcancía | `Servicios.swift` (rutas, config, idioma, `Procesador`: el secreto pasa a `Procesador.conSecreto`, «CREDENCIAL {json}» se lee de `salidaEstandar`), gran parte de `Ventana.swift` y `AlcanciaApp.swift`, el Llavero de `Conexiones.swift`/`Celular.swift` → `Secretos(servicio:)` con sus mismos servicios, la carpeta de la nube → `CarpetaElegida(marcador: <su clave>, clave: nil)`, `Avisos.swift` → `Notificaciones` (+ `avisos: true`) | `elegirCartola`, `conectar`/`sincronizar`/`desconectar` (Llavero), `celular`, `vigilar`, `avisos` | `datos: {"carpeta": "~/Alcancia/.alcancia"}` y `privado: true` ya los respeta el host |

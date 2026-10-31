@@ -42,6 +42,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 import sys
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -231,7 +232,7 @@ FORMA = {"version": str, "estado": str, "nombre": str, "icono": str, "categoria"
 
 
 #: Las claves de app.json que son de la app (o de nucleo): una pieza no puede sumarlas con «app_json».
-APP_JSON_PROPIAS = {"formato", "id", "nombre", "repo", "datos", "privado", "plataformas", "config", "acciones", "ia"}
+APP_JSON_PROPIAS = {"formato", "id", "nombre", "repo", "datos", "privado", "plataformas", "config", "acciones", "sin_acciones", "ia"}
 
 
 def errores_forma(p):
@@ -288,6 +289,10 @@ def errores_accion(nombre, a, scripts=None):
     datos, args = a.get("datos", {}), a.get("args", [])
     if not isinstance(datos, dict) or not isinstance(args, list) or not all(isinstance(x, str) for x in args):
         return e + [f"{donde}: «datos» es {{campo: regla}} y «args» una lista de textos"]
+    maximo = a.get("maximo", MAXIMO_ENTRADA)
+    if not _entero(maximo) or not 0 < maximo <= TOPE_ENTRADA:
+        e.append(f"{donde}: «maximo» (bytes de la entrada) es un entero hasta {TOPE_ENTRADA}")
+        maximo = MAXIMO_ENTRADA
     for campo, regla in datos.items():
         if campo == "*":
             if regla != "pasar":
@@ -295,7 +300,7 @@ def errores_accion(nombre, a, scripts=None):
             continue
         if not CAMPO.match(campo) or campo in ("__proto__", "constructor", "prototype"):
             e.append(f"{donde}: campo raro «{campo}»")
-        e += _errores_regla(f"{donde}: «{campo}»", regla)
+        e += _errores_regla(f"{donde}: «{campo}»", regla, maximo)
     for arg in args:
         if arg.startswith("$"):
             regla = datos.get(arg[1:], {})
@@ -316,8 +321,13 @@ def errores_accion(nombre, a, scripts=None):
         e.append(f"{donde}: {', '.join(por_archivo)} no van en args: necesita \"entrada\": \"archivo\"")
     if a.get("entrada") not in (None, "archivo"):
         e.append(f"{donde}: «entrada» es \"archivo\" o null")
-    if not isinstance(a.get("limite"), int) or isinstance(a.get("limite"), bool) or not 1 <= a["limite"] <= 3600:
-        e.append(f"{donde}: «limite» (segundos) es obligatorio, entre 1 y 3600")
+    e += _errores_limite(donde, a.get("limite"), datos)
+    v = a.get("vigilar")
+    if v is not None:
+        ruta, texto = datos.get("ruta"), datos.get("texto")
+        if v not in ("lee", "escribe") or not (isinstance(ruta, dict) and ruta.get("tipo") == "rutaRelativa") \
+                or (v == "escribe" and not (isinstance(texto, dict) and texto.get("tipo") == "texto")):
+            e.append(f"{donde}: «vigilar» es \"lee\" o \"escribe\", con «ruta» (rutaRelativa) en datos (y «texto» para escribe)")
     for k in ("responde", "progreso"):
         v = a.get(k)
         if v is not None and not (isinstance(v, str) and NOMBRE_ACCION.match(v)):
@@ -331,19 +341,47 @@ def errores_accion(nombre, a, scripts=None):
     return e
 
 
-def _errores_regla(donde, r):
+#: Lo que puede pesar la entrada de una acción: 5 MB salvo que diga «maximo» (hasta 50 MB, p. ej. guardar un documento grande).
+MAXIMO_ENTRADA = 5 * 1024 * 1024
+TOPE_ENTRADA = 50 * 1024 * 1024
+
+
+def _entero(x):
+    return isinstance(x, int) and not isinstance(x, bool)
+
+
+def _limite_ok(x):
+    return x == "trabajo" or (_entero(x) and 1 <= x <= 3600)
+
+
+def _errores_limite(donde, limite, datos):
+    """«limite»: segundos (1 a 3600), "trabajo" (sin tope, mientras lata: pieza «trabajos») o según el valor de un campo enum:
+    {"segun": "orden", "valores": {"documentar": "trabajo", "leer": 60}, "otro": 120}."""
+    malo = [f"{donde}: «limite» es obligatorio: segundos (1 a 3600), \"trabajo\" o {{\"segun\": campo, \"valores\": {{…}}, \"otro\": …}}"]
+    if not isinstance(limite, dict):
+        return [] if _limite_ok(limite) else malo
+    regla = datos.get(limite.get("segun")) if isinstance(limite.get("segun"), str) else None
+    valores = limite.get("valores")
+    if set(limite) - {"segun", "valores", "otro"} or not (isinstance(regla, dict) and regla.get("tipo") == "enum") \
+            or not isinstance(valores, dict) or not _limite_ok(limite.get("otro")) \
+            or not all(k in (regla.get("valores") or []) and _limite_ok(v) for k, v in valores.items()):
+        return malo
+    return []
+
+
+def _errores_regla(donde, r, maximo=MAXIMO_ENTRADA):
     if not isinstance(r, dict) or r.get("tipo") not in TIPOS:
         return [f"{donde}: tipo desconocido"]
     e, t = [], r["tipo"]
-    entero = lambda x: isinstance(x, int) and not isinstance(x, bool)
-    if t == "texto" and not (entero(r.get("max")) and 0 < r["max"] <= 5 * 1024 * 1024):
+    entero = _entero
+    if t == "texto" and not (entero(r.get("max")) and 0 < r["max"] <= maximo):
         e.append(f"{donde}: un texto necesita «max»")
     if t == "enum" and not (isinstance(r.get("valores"), list) and r["valores"]
                             and all(isinstance(x, str) and re.match(r"^[\w.-]+$", x) for x in r["valores"])):
         e.append(f"{donde}: un enum necesita «valores» (textos simples)")
     if t == "entero" and any(k in r and not entero(r[k]) for k in ("min", "max")):
         e.append(f"{donde}: «min»/«max» son enteros")
-    if t == "base64" and not (entero(r.get("maxBytes")) and 0 < r["maxBytes"] <= 5 * 1024 * 1024):
+    if t == "base64" and not (entero(r.get("maxBytes")) and 0 < r["maxBytes"] <= maximo):
         e.append(f"{donde}: base64 necesita «maxBytes»")
     if t == "rutaRelativa" and "extensiones" in r and not (isinstance(r["extensiones"], list)
                                                           and all(isinstance(x, str) and re.match(r"^\.\w{1,10}$", x) for x in r["extensiones"])):
@@ -353,7 +391,7 @@ def _errores_regla(donde, r):
             e.append(f"{donde}: «max» de una lista es un entero")
         if "de" in r:
             e += [f"{donde}: una lista de listas no"] if isinstance(r["de"], dict) and r["de"].get("tipo") == "lista" \
-                else _errores_regla(f"{donde} (cada uno)", r["de"])
+                else _errores_regla(f"{donde} (cada uno)", r["de"], maximo)
     return e
 
 
@@ -692,24 +730,49 @@ def armar_acciones(app, forzar=False):
     if not forzar and not os.path.exists(ruta) and not any(h in lock["piezas"] for h in HOSTS):
         return None
     todas_a, origen, errores = {}, {}, []
-    fuentes = []
+    fuentes, sin_saber, resueltas = [], [], False
     for pid, info in sorted(lock["piezas"].items()):
         acciones = info.get("acciones")
         if acciones is None and not info.get("fuente"):
-            # Instalada antes de que piezas.json guardara las acciones: las de la base, si es la misma versión.
+            # Instalada antes de que piezas.json guardara las acciones: las de la base si es la misma versión; si no, las de esa
+            # versión en el historial de git de Pieza. Se anotan en piezas.json para no buscarlas otra vez.
             base = todas().get(pid) or {}
             if base.get("version") == info.get("version"):
                 acciones = base.get("acciones")
             elif base.get("acciones"):
-                print(f"    ! {pid} {info.get('version')}: no sé sus acciones (la base tiene {base.get('version')}); actualízala")
+                acciones = acciones_de_version(pid, info.get("version"))
+                if acciones is None:
+                    sin_saber.append(f"{pid} {info.get('version')}")
+            if acciones:
+                info["acciones"] = acciones
+                resueltas = True
         fuentes.append((pid, acciones or {}))
+    if sin_saber:
+        # Sin sus acciones, acciones.json saldría sin ellas (y la app perdería, p. ej., probarIA sin avisar): mejor no armarlo.
+        sys.exit("No armé acciones.json: piezas.json es de antes de que guardara las acciones y no encontré en el historial de\n"
+                 f"Pieza las de: {', '.join(sin_saber)}. Ponlas al día primero:\n"
+                 f"  python3 {os.path.relpath(__file__)} actualizar {app} {' '.join(x.split()[0] for x in sin_saber)}\n"
+                 "(y vuelve a correr lo que estabas haciendo, o pieza.py acciones <app>).")
+    if resueltas:
+        escribir(os.path.join(app, "piezas.json"), lock)
     a = leer(os.path.join(app, "app.json"), {}) or {}
     propias = a.get("acciones") or {}
     if not isinstance(propias, dict):
         sys.exit("app.json: «acciones» es {nombre: acción}.")
+    # «No adoptar» una acción de una pieza que la app no usa (app.json → "sin_acciones": ["listaIA"]): no se carga en el host.
+    sin = a.get("sin_acciones") or []
+    if not isinstance(sin, list) or not all(isinstance(x, str) and NOMBRE_ACCION.match(x) for x in sin):
+        sys.exit("app.json: «sin_acciones» es una lista de nombres de acciones.")
+    de_piezas = {n for _, acc in fuentes for n in acc}
+    for x in sorted(set(sin) - de_piezas):
+        print(f"    ! app.json → sin_acciones: ninguna pieza instalada declara «{x}» (bórrala de la lista)")
+    for x in sorted(set(sin) & set(propias)):
+        errores.append(f"app: «{x}» está en «acciones» y en «sin_acciones»")
     scripts_app = set(os.listdir(os.path.join(app, "bin"))) if os.path.isdir(os.path.join(app, "bin")) else set()
     for pid, acciones in fuentes + [("app", propias)]:
         for nombre, accion in acciones.items():
+            if pid != "app" and nombre in sin:
+                continue
             e = errores_accion(nombre, accion, scripts_app if pid == "app" else None)
             if pid == "app" and not e and accion["script"] not in scripts_app:
                 e.append(f"acción «{nombre}»: no está bin/{accion['script']}")
@@ -724,6 +787,31 @@ def armar_acciones(app, forzar=False):
     escribir(ruta, {"formato": 1, "acciones": {k: {**todas_a[k], "pieza": origen[k]} for k in sorted(todas_a)}})
     _lista_blanca(app, ["!/acciones.json"])
     return ruta
+
+
+def acciones_de_version(pid, version):
+    """Las acciones del pieza.json de `pid` en esa versión, del historial de git de Pieza (si las piezas están en un checkout).
+    None si no hay git o esa versión no aparece."""
+    if not isinstance(version, str) or not VERSION.match(version) or not ID.match(pid):
+        return None
+    raiz, ruta = os.path.dirname(os.path.abspath(PIEZAS)), f"{os.path.basename(os.path.abspath(PIEZAS))}/{pid}/pieza.json"
+    entorno = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    try:
+        r = subprocess.run(["git", "-C", raiz, "log", "--format=%H", "--", ruta], capture_output=True, text=True, timeout=30, env=entorno)
+        for h in r.stdout.split()[:300]:
+            if not re.fullmatch(r"[0-9a-f]{40}", h):
+                continue
+            x = subprocess.run(["git", "-C", raiz, "show", f"{h}:{ruta}"], capture_output=True, text=True, timeout=30, env=entorno)
+            try:
+                d = json.loads(x.stdout)
+            except ValueError:
+                continue
+            if isinstance(d, dict) and d.get("version") == version:
+                acc = d.get("acciones") or {}
+                return acc if isinstance(acc, dict) else None
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return None
 
 
 def _lista_blanca(app, entradas):

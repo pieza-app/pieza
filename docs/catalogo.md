@@ -12,7 +12,7 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | Pieza | Versión | Qué es | Tomada de |
 |---|---|---|---|
 | `nucleo` | 0.7.0 | `app.json`, carpeta de datos, config validada, escritura atómica, `ruta_en`, contrato de scripts | Esquema `bin/comun.py` + Alcancía/Repasa |
-| `ia` | 0.6.2 | La IA de la persona con su cuenta, segura; en vivo (lo que lee y «Detener») | Esquema `bin/ia.py` + `ia_vivo.py` + Alcancía (pedido en archivo) + Repasa (material) |
+| `ia` | 0.6.3 | La IA de la persona con su cuenta, segura; en vivo (lo que lee y «Detener») | Esquema `bin/ia.py` + `ia_vivo.py` + Alcancía (pedido en archivo) + Repasa (material) |
 | `i18n` | 0.3.1 | `T`/`Tp`/`Thtml`/`tr`/`traducirDOM`, paquetes de idioma validados | Minuta (`tr`) + Esquema (`T` que escapa, `traducirDOM`) + Alcancía (`Thtml`) + Graba (prioridad) |
 | `bienvenida` | 0.3.0 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
 | `actualizaciones` | 0.3.0 | Releases del propio repo, `.sha256` obligatorio, Mac (target propio) y Electron | Esquema + Repasa (URL sin puerto ni `..`, PATH fijo, textos que traduce la interfaz) |
@@ -23,9 +23,9 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | `red` | 0.2.0 | HTTPS desde los scripts: dominios permitidos, sin redirecciones, topes de tamaño y tiempo, subidas por partes | Alcancía `bin/red.py` |
 | `cifrado` | 0.2.0 | PBKDF2 600k + AES-256-GCM con AAD, HMAC para nombres, verificador, archivos con versión y con varios sobres | Repasa `motor/cifrado.js` + Alcancía `ui/copia.js` |
 | `transcribir` | 0.2.0 | whisper.cpp con modelos de huella fija, vocabulario por archivo privado, VAD, filtro de inventos (con la energía: nunca borra un «gracias» dicho) y bucles | Minuta + Corta (`comando_transcribir`) + Graba |
-| `trabajos` | 0.1.1 | Trabajos largos: estado en disco, latido, «Detener», preguntas; lectores de progreso Swift y Electron | Esquema `bin/trabajos.py` + `LectorProgreso` / `lectorProgreso` |
-| `host-mac` | 0.1.0 | App de Mac genérica (target `PiezaHost`): ventana, puente con guardas, acciones declaradas con límite de tiempo, config/idioma de `app.json`, menús, apariencia de `tema` | Esquema `app/Sources/Esquema/` + Alcancía (secreto por stdin) + Repasa (`conEntrada` con varios args) + Corta (`Medios.swift`) |
-| `host-escritorio` | 0.1.0 | Lo mismo en Electron, con `nativeTheme.themeSource` según `config.tema` | Esquema `escritorio/src/` + Graba (medios con rangos, permisos que abre la app) + Alcancía (secreto por stdin) |
+| `trabajos` | 0.2.0 | Trabajos largos: estado en disco, latido (también para el host: `"limite": "trabajo"`), «Detener», preguntas; lectores de progreso Swift y Electron | Esquema `bin/trabajos.py` + `LectorProgreso` / `lectorProgreso` |
+| `host-mac` | 0.2.0 | App de Mac genérica (target `PiezaHost`): ventana, puente con guardas, acciones declaradas con límite de tiempo (o latido, o por orden), config/idioma de `app.json`, menús, apariencia de `tema`, actualizaciones, carpeta con marcador, vigilante (FSEvents), Finder, Llavero y avisos | Esquema `app/Sources/Esquema/` (+ `Carpeta.swift`) + Alcancía (secreto por stdin, Llavero, avisos, carpeta de la nube) + Repasa (`conEntrada` con varios args) + Corta (`Medios.swift`) + Graba y Minuta (Llavero) |
+| `host-escritorio` | 0.2.0 | Lo mismo en Electron, con `nativeTheme.themeSource` según `config.tema`; carpeta, vigilante (`fs.watch`), explorador, `safeStorage` y avisos | Esquema `escritorio/src/` (+ `vigilante.js`) + Graba (medios con rangos, permisos que abre la app, `Tokens`) + Alcancía (secreto por stdin) + Minuta (avisos) |
 | `contenido` | 0.1.0 | Leer md, txt, pdf, docx, odt, epub y html con topes (zip bombas, XML sin entidades); capítulos sin IA | Esquema `bin/contenido.py` + Alcancía (`ArchivoNoValido`) |
 
 ## Por extraer, en este orden

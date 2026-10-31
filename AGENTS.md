@@ -44,7 +44,8 @@ menos tokens: elegir piezas, no reescribirlas.
 
 `host-mac` (Swift) y `host-escritorio` (Electron) son la app nativa genérica. Una acción que solo corre un script **no se programa
 en el host**: se declara en el `pieza.json` de la pieza (o en `app.json` → `acciones` si es de la app) y `pieza.py` arma
-`acciones.json`. Lo nativo propio se registra en la app. Si cambias las reglas de una acción, cámbialas en los tres lados
+`acciones.json`. Lo nativo propio se registra en la app; lo nativo que usan dos apps o más (carpeta, vigilante, secretos,
+avisos…) va en los dos hosts con la misma API. Si cambias las reglas de una acción, cámbialas en los tres lados
 (`errores_accion` de `pieza.py`, `enchufe.js` y `Enchufe.swift`): `test_piezas.py` (`HostGenerico`) los compara. Swift no compila
 aquí: imita código que ya compila y deja anotado qué revisar en el Mac (`pruebas/swift/revisar_host_mac.sh`).
 

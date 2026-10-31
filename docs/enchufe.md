@@ -44,7 +44,7 @@ enruten solos.
   "probarIA": {
    "script": "ia.py", "args": ["probar"], "entrada": "archivo",
    "datos": {"ia": {"tipo": "enum", "valores": ["claude", "codex", "gemini"]}},
-   "responde": "iaProbada", "limite": 120
+   "responde": "iaProbada", "limite": 150
   }
  },
  "textos": {"No conozco esa IA.": "I don't know that AI."}
@@ -87,13 +87,15 @@ completa antes de crearla. Agregar una pieza (o un campo nuevo a una) la hace ap
 | `args` | Literales, o `$campo` **solo si el campo es `enum` o `entero`** ya validado. |
 | `entrada` | `"archivo"` si hay datos que no van en `args`: el host los escribe en un JSON temporal y lo pasa antes de la salida. |
 | `datos` | Esquema cerrado de lo que manda la UI. Tipos: `texto{max, recortar?}`, `enum{valores}`, `bool`, `entero{min?,max?}`, `rutaRelativa{extensiones?}` (relativa, sin `..`), `base64{maxBytes}`, `lista{max?, de?}` (sin `de`: textos de hasta 2000). `"requerido": true` en cualquiera; un campo de `args` siempre lo es. Un valor que no calza **no corre** el script (responde `codigo: "datos"`); `recortar` corta un texto largo en vez de rechazarlo. Lo no declarado se descarta (salvo `"*": "pasar"`, cuando el script valida todo). |
-| `inyectar` | Valores que pone el host y nunca la UI: `{"carpeta": "carpetaActual"}`, `{"idioma": "idiomaUI"}`. El host trae `idiomaUI` y `carpetaDatos`; las demás fuentes las registra la app. Sin valor, no corre (`codigo: "falta"`). Un campo inyectado no puede estar también en `datos`. |
+| `inyectar` | Valores que pone el host y nunca la UI: `{"carpeta": "carpetaActual"}`, `{"idioma": "idiomaUI"}`. El host trae `idiomaUI`, `carpetaDatos` y, si la app usa la carpeta elegida, `carpetaActual`; las demás fuentes las registra la app. Sin valor, no corre (`codigo: "falta"`); el inyector puede devolver su propio texto (`Puente.Falta("…")` / `host.falta("…")`). Un campo inyectado no puede estar también en `datos`. |
 | `responde` | Función `window.<App>.<responde>(json)` a la que va el resultado. `null` = no responde. |
-| `eco` | Campos de la entrada que vuelven en la respuesta (ej. `orden`). |
+| `eco` | Campos de la entrada que vuelven en la respuesta (ej. `orden`). También en el error de datos, los que son válidos por sí solos. |
 | `cola` | `"escritura"` = va en la fila `EnOrden` (nunca dos escrituras a la vez). |
 | `despues` | Acciones que corre el host al terminar, ej. `["estado"]` (registradas por la app o declaradas). |
 | `progreso` | Función que recibe `{eventos}` mientras corre (pieza «trabajos»: el script escribe en `<ID>_PROGRESO`). |
-| `limite` | Segundos. **Obligatorio**: hoy ningún `Procesador` tiene timeout. |
+| `limite` | **Obligatorio.** Segundos (1 a 3600); `"trabajo"`: sin tope **mientras lata** (pieza «trabajos» 0.2.0: `Trabajo.latir()` o `trabajos.mantener_vivo()` tocan `<ID>_LATIDO`; sin latido por 45 s —120 el primero— el host lo corta); o según el valor de un campo `enum`: `{"segun": "orden", "valores": {"documentar": "trabajo", "leer": 60}, "otro": 120}`. |
+| `maximo` | Bytes que puede pesar la entrada (5 MB si no lo dice; hasta 50 MB). Un `texto.max` o `base64.maxBytes` no puede pasarlo. |
+| `vigilar` | `"lee"` o `"escribe"`, con `ruta` (`rutaRelativa`) en `datos` (y `texto` para escribir): el vigilante de la carpeta conoce el texto que la app leyó (el `texto` de la respuesta) o va a escribir (antes de correr el script; si falla, vuelve el de antes), así lo de la app nunca se avisa como un cambio de afuera. |
 | `movil` | `{"motor": "modulo.funcion"}` para correrlo en JS en el celular, o `{"soloEscritorio": true}`. |
 
 ### Reglas de seguridad (las revisa `pieza.py revisar`, y el host al cargar)
@@ -104,7 +106,8 @@ completa antes de crearla. Agregar una pieza (o un campo nuevo a una) la hace ap
    van por la entrada estándar (patrón de Alcancía).
 3. **El script tiene que existir en `bin/`** y llamarse `^\w+\.py$`.
 4. **El entorno del script** no hereda nada raro; el de la IA, además, sin las variables `<ID>_*` de la app.
-5. **Todo tiene límite de tiempo.**
+5. **Todo tiene límite de tiempo** (o, si es un trabajo largo, un latido: si deja de latir, se corta). Al salir de la app se corta lo
+   que siga corriendo: nada queda huérfano.
 
 ## Licencia
 
@@ -141,6 +144,9 @@ red). Así el catálogo se recorre mirando, no leyendo.
  "config": {"idioma_ui": ["es", "en"], "tema": ["sistema", "claro", "oscuro"], "bienvenida": "bool", "ia": ["claude", "codex", "gemini"]}}
 ```
 
+`"sin_acciones": ["listaIA"]`: acciones de una pieza que la app **no adopta** (no entran a `acciones.json`, así el host no carga
+algo que la interfaz nunca pide). Una que ninguna pieza declara se avisa.
+
 Claves que usan las piezas además: `"repo": "dueño/repo"` (el repo de GitHub de la app, p. ej. `"ana-app/ana"`: «red» lo pone en
 el User-Agent; si no tiene esa forma, se ignora), `"privado": true` (todo archivo
 0600) y las secciones propias de una pieza (`catalogo`, `transcribir`, `ia`…: ver su README).
@@ -166,12 +172,14 @@ con las versiones que quedan **después** de la pasada: si `componentes` nueva n
 
 `pieza.py agregar`/`actualizar` arman **`acciones.json`** en la raíz de la app (si tiene un host; o a mano con `pieza.py acciones
 <app>`): las `acciones` de cada pieza instalada (las de la versión copiada, guardadas en `piezas.json`) más las de `app.json` →
-`"acciones"`, las propias de la app (mismo formato; su script tiene que estar en `bin/`). Dos con el mismo nombre o una que no
-cumple las reglas detienen todo. Va dentro de la app junto a `app.json` (en `empaquetar.sh` y en `extraResources`).
+`"acciones"`, las propias de la app (mismo formato; su script tiene que estar en `bin/`), menos las de `"sin_acciones"`. Dos con el
+mismo nombre o una que no cumple las reglas detienen todo. Con un `piezas.json` de antes (sin las acciones guardadas) y otra versión
+en la base, las busca en el historial de git de Pieza y las anota; si no las encuentra, **no** arma un `acciones.json` sin ellas y
+dice qué `pieza.py actualizar` correr. Va dentro de la app junto a `app.json` (en `empaquetar.sh` y en `extraResources`).
 
 ```json
 {"formato": 1, "acciones": {"probarIA": {"script": "ia.py", "args": ["probar"], "entrada": "archivo",
-  "datos": {"ia": {"tipo": "enum", "valores": ["claude", "codex", "gemini"]}}, "responde": "iaProbada", "limite": 120, "pieza": "ia"}}}
+  "datos": {"ia": {"tipo": "enum", "valores": ["claude", "codex", "gemini"]}}, "responde": "iaProbada", "limite": 150, "pieza": "ia"}}}
 ```
 
 Cada host, al arrancar y en cada mensaje, sin código por acción:
@@ -183,8 +191,9 @@ Cada host, al arrancar y en cada mensaje, sin código por acción:
 3. Primero lo que **registró la app** (`Puente.registrar` / `host.acciones.registrar`: lo nativo propio, y lo que todavía no se
    migró), después lo que **trae el host** (`listo`, `config`, `abrirEnlace`, `copiar`; en Electron también las actualizaciones si se
    le pasan) y al final lo **declarado**.
-4. Una declarada: valida `datos` → agrega `inyectar` → (fila si `cola`) → escribe la entrada en una carpeta temporal 0700 → corre
-   el script con `limite` (al cumplirse, corta también lo que lanzó) → agrega `eco` → `window.<App>.<responde>(r)` → corre `despues`.
+4. Una declarada: valida `datos` (hasta `maximo`) → agrega `inyectar` → (fila si `cola`) → `vigilar` → escribe la entrada en una
+   carpeta temporal 0700 → corre el script con su `limite` (al cumplirse, o si un trabajo deja de latir, corta también lo que lanzó)
+   → agrega `eco` → `window.<App>.<responde>(r)` → corre `despues`.
 5. Si no está en ninguna parte, se ignora.
 
 Errores del host: `{ok: false, codigo: "datos" | "falta" | "limite" | "fallo", campo?, texto, valores, error}` (`texto` en español
@@ -200,10 +209,22 @@ navegador y los scripts digan lo mismo (pendiente: hoy cada app tiene el suyo).
 `notificaciones` · `actualizaciones.revisar/instalar` · `catalogo.listar/descargar` · `descarga.verificada` (url + sha256) ·
 `ventana` (menú, cerrar, minimizar, zoom) · `soltar` · `secretos` (llavero / safeStorage).
 
-Ya en los hosts: `estado`, `config.guardar`, `idioma`, `dialogo.carpeta` y `dialogo.archivos` (sin marcador ni vigilante: eso
-sigue en cada app), `dialogo.guardarComo`, `portapapeles.copiar`, `enlace.abrir`, `papelera.mover`, `ventana` (menú y apariencia),
-medios con rangos y, en Electron, `actualizaciones`. Pendientes: `finder.mostrar`, `notificaciones`, `soltar`, `secretos`
-(llavero / safeStorage), `catalogo` y `descarga.verificada` como capacidades del host (hoy son piezas aparte o código de la app).
+Ya en los hosts (0.2.0), con la misma API en los dos:
+
+| Capacidad | Mac (`host-mac`) | Windows y Linux (`host-escritorio`) |
+|---|---|---|
+| estado, config, idioma, menús, apariencia | `Host`, `Config`, `Idioma`, `p.menus` (`menuAyuda: false` sin Ayuda) | `crearHost({menu, ayuda: false})` |
+| diálogos, portapapeles, enlace, papelera, medios | `elegirCarpeta`, `elegirArchivos`, `guardarComo`, `copiar`, `abrirEnlace`, `papelera`, `registrarMedios` | `dialogos.*`, `copiar`, `abrirEnlace`, `papelera`, `medios.registrar` |
+| carpeta elegida | `p.carpeta = CarpetaElegida()` (marcador del sistema: la sigue aunque la muevan) | `carpeta: {clave}` (la ruta real) |
+| vigilante de la carpeta | `p.vigilante = Vigilante(extensiones:)` (FSEvents) | `vigilar: {extensiones, alCambiar}` (`fs.watch`) |
+| mostrar en el Finder / explorador | `p.mostrarEnFinder(url)` | `host.mostrarEnCarpeta(ruta)` |
+| actualizaciones | `p.actualizaciones = .init(…)` (pieza «actualizaciones») | `actualizaciones: crear(…)` |
+| secretos | `Secretos(servicio:)` (Llavero, solo este Mac) | `host.secretos(nombre)` (`safeStorage`; sin llavero en Linux, nada) |
+| avisos | `Notificaciones` (permiso cuando la app lo pide) | `host.notificaciones` |
+
+Pendientes: `soltar` (solo Corta guarda rutas al soltar un archivo; Repasa manda el contenido desde la interfaz), `catalogo` (ya es
+la pieza «catálogo», dos líneas por tipo en cada app: el host no la envuelve) y `descarga.verificada`. Los avisos **programados**
+(que llegan con la app cerrada) siguen en la pieza «notificaciones», planeada.
 
 ## Versiones y actualizaciones
 

@@ -8,6 +8,7 @@ sin nada de una app adentro: todo sale de `app.json` y de los parámetros. Misma
 | `escritorio/src/host.js` | Ventana, protocolo `<id>://`, puente, capacidades comunes, menú, apariencia, arranque | sí (inyectable) |
 | `escritorio/src/enchufe.js` | `app.json`, config validada, idioma, `dentro()`, acciones declaradas | no |
 | `escritorio/src/procesador.js` | Scripts de `bin/` con límite de tiempo, entorno limpio, entrada por archivo, secreto por stdin; la fila | no |
+| `escritorio/src/vigilante.js` | Vigilar la carpeta de la persona (`fs.watch`) sin avisar lo que escribió la app | no |
 | `escritorio/src/preload.js` | Lo único que ve la página: `window.<id>Escritorio.enviar` y `window.<ID>_HOST` (pieza `host-ui`) | — |
 
 ## Uso
@@ -43,9 +44,13 @@ host.iniciar();
 | `electron` | El módulo (en las pruebas, uno falso). |
 | `ventana` | `{ancho, alto, minAncho, minAlto, icono, fondo: {claro, oscuro}, alCerrar: "salir" \| "esconder" \| "cerrar"}`. `"esconder"`: sigue viva (bandeja). |
 | `global` | El objeto `window.<App>` (por defecto el id con mayúscula). |
-| `sitio`, `codigo` | Enlaces del menú Ayuda (solo https). |
+| `sitio`, `codigo` | Enlaces del menú Ayuda (solo https). `ayuda: false`: sin menú Ayuda. |
+| `carpeta` | `{clave: "carpeta", titulo, boton, falta}`: la carpeta que elige la persona (`host.carpeta`). Su ruta real queda en `config.<clave>` (en `app.json` con `"interfaz": false`) y trae el inyector `carpetaActual` (sin carpeta: `codigo: "falta"` con «Elige una carpeta primero.» o tu `falta`). En Windows y Linux no hay marcador del sistema: si la carpeta se movió, `actual()` es `null`. |
+| `vigilar` | `{extensiones: [".md"], alCambiar(base, host), alCambiarArchivo(ruta, texto, host)}`: el vigilante de la carpeta (`host.vigilante`). Por defecto, un archivo conocido que cambió afuera manda `archivoCambiado {ruta, texto}`; `alCambiar` sirve para volver a listar. |
+| `latido` | `{muerto: 45, primero: 120, revisar: 5}` segundos para las acciones `"limite": "trabajo"` (solo pruebas). |
+| `alTocarAviso(id, host)` | La persona tocó un aviso de `host.notificaciones` (la ventana ya se mostró). |
 | `menu({t, f, item, salir, abrirEnlace, base, host})` | La plantilla del menú. `item(etiqueta, accion, atajo)` manda `window.<App>.menu({accion})` (nada antes de elegir el idioma). Se rearma al cambiar el idioma. |
-| `inyectar` | `{fuente: (entrada) => valor}` para el `inyectar` de las acciones (el host trae `idiomaUI` y `carpetaDatos`). `null` = no corre. |
+| `inyectar` | `{fuente: (entrada) => valor}` para el `inyectar` de las acciones (el host trae `idiomaUI`, `carpetaDatos` y, con `carpeta`, `carpetaActual`; lo tuyo gana). `null` = no corre (`codigo: "falta"`); `host.falta("Elige un proyecto primero.", valores)` = no corre y responde ese texto. |
 | `estado(base, host)` | Suma lo propio al estado (`base`: lo de `bin/estado.py` si existe + `version`, `idioma`, `plataforma`, `config`, `actualizacion`). |
 | `estadoScript` | Otro script de estado, o `null` para ninguno. |
 | `actualizaciones` | Una instancia de la pieza «actualizaciones»: el host atiende `buscarActualizacion`/`actualizar` (nunca con algo en curso) y revisa cada 6 h con el idioma elegido. |
@@ -64,13 +69,18 @@ host.iniciar();
 | `acciones.registrar(nombre, fn(datos, host))` | Una acción propia. Gana sobre las del host y las declaradas: así se migra de a poco. |
 | `llamar(funcion, json)` | `window.<App>.<funcion>(json)`. Solo nombres simples; nada antes de `listo`. |
 | `despachar(accion, datos)` | Correr una acción como si la pidiera la interfaz. |
-| `procesador.correrJSON(script, args, {limite, progreso})`, `.conEntrada(script, args, datos, …)`, `.correr(script, args, {secreto, entrada, limite})` | Scripts de `bin/`. `correr` devuelve `{respuesta, salidaEstandar, porLimite}`. |
+| `procesador.correrJSON(script, args, {limite, latido, progreso})`, `.conEntrada(script, args, datos, …)`, `.correr(script, args, {secreto, entrada, limite})`, `.cortarTodo()` | Scripts de `bin/`. `correr` devuelve `{respuesta, salidaEstandar, porLimite}`. `latido: true`: sin tope mientras el script lata (pieza «trabajos»). |
 | `fila.agregar(async () => …)` | De a una y en orden (guardados). |
 | `config.leer()`, `config.guardar(cambios, {desdeInterfaz})`, `idioma.t/f/codigo/elegido`, `t` | Con las reglas de `app.json` (las de `nucleo`). |
 | `dentro(base, relativa, {extensiones})` | La guarda de `nucleo.ruta_en`. |
 | `dialogos.carpeta()`, `.archivos({extensiones, varios})`, `.guardarComo({nombre, extension, contenido})` | Diálogos del sistema (rutas reales). |
 | `medios.registrar(nombre, resolver(ruta) → absoluta \| null)` | `<id>://<nombre>/<ruta>` con rangos (videos). |
-| `copiar`, `abrirEnlace` (solo https, sin usuario ni clave), `papelera(absoluta)`, `mostrar`, `salir`, `ocupar`/`soltar`/`ocupada`, `enviarEstado` | |
+| `copiar`, `abrirEnlace` (solo https, sin usuario ni clave), `papelera(absoluta)`, `mostrarEnCarpeta(absoluta)`, `mostrar`, `salir`, `ocupar`/`soltar`/`ocupada`, `await esperarLibre(ms)` (true si quedó libre: fila, scripts y lo marcado), `enviarEstado` | |
+| `carpeta.actual()`, `.elegir({titulo, boton})`, `.usar(ruta)`, `.olvidar()` | Con `carpeta`. `usar` solo con rutas que eligió la persona o que la app leyó de lo suyo, nunca de la interfaz. Mueve el vigilante. |
+| `vigilante.conocer(ruta, texto)`, `.olvidar(ruta)`, `.conocidos`, `.importa(rel)`, `.absoluta(rel)`, `.empezar(base)`, `.detener()` | Con `vigilar`. Lo que conoce (lo que la app leyó o escribió) no se avisa. |
+| `secretos(nombre, {archivo})` → `{disponible, guardar(cuenta, valor), leer(cuenta), borrar(cuenta)}` | Cifrados con `safeStorage` en `<datos>/.<nombre>.json` (0600; `archivo` para seguir usando uno de antes, p. ej. `.tokens`). En Linux sin llavero (`basic_text`) `disponible` es false y no se guarda nada. Un secreto llega a un script solo por stdin (`procesador.correr(…, {secreto})`). |
+| `notificaciones.mostrar({id, titulo, texto, silencioso})`, `.quitar(id)`, `.soportado`, `await .pedirPermiso()` | Avisos del sistema. Nada antes de elegir el idioma; tocar uno muestra la ventana y llama `alTocarAviso`. |
+| `falta(texto, valores)` | Lo que devuelve un inyector cuando falta algo, con su texto. |
 
 ### Lo que atiende solo
 
@@ -86,12 +96,16 @@ al fondo de la ventana, y arranca las tareas con el idioma elegido), `abrirEnlac
 reglas en [`docs/enchufe.md`](../../docs/enchufe.md#una-acción). Al cargar, el host vuelve a revisar cada una con las mismas reglas
 que `pieza.py` (lo que no pasa no se carga y se avisa en la consola) y que su script exista.
 
-En cada mensaje: valida `datos` por su tipo (lo no declarado no pasa; un `$campo` de `args` es obligatorio) → pone lo de `inyectar`
-(nunca de la interfaz) → fila si `cola: "escritura"` → corre el script con `limite` (la entrada en un archivo 0600 dentro de una
-carpeta temporal propia) → `window.<App>.<responde>({...respuesta, ...eco})` → corre `despues`.
+En cada mensaje: valida `datos` por su tipo (lo no declarado no pasa; un `$campo` de `args` es obligatorio; la entrada entera hasta
+`maximo` bytes, 5 MB si no lo dice) → pone lo de `inyectar` (nunca de la interfaz) → fila si `cola: "escritura"` → con `vigilar:
+"escribe"`, el vigilante conoce `texto` antes de escribir → corre el script con su límite (`limite`: segundos, `"trabajo"` = sin tope
+mientras lata, o el de su orden con `{segun, valores, otro}`; la entrada en un archivo 0600 dentro de una carpeta temporal propia)
+→ con `vigilar: "lee"`, el vigilante conoce el `texto` de la respuesta → `window.<App>.<responde>({...respuesta, ...eco})` → corre
+`despues`. Si los datos no pasan, el error igual trae los campos de `eco` que sí son válidos (la interfaz sabe a qué orden responde).
 
 Errores del host (la interfaz los traduce con `T(texto, valores)`; `error` va ya traducido para las interfaces de antes):
-`{ok: false, codigo: "datos" | "falta" | "limite" | "fallo", campo?, texto, valores, error}`.
+`{ok: false, codigo: "datos" | "falta" | "limite" | "fallo", campo?, texto, valores, error}`. Un trabajo que deja de latir responde
+`codigo: "limite"` con «Dejó de avanzar y lo detuve. Intenta de nuevo.».
 
 ## Seguridad
 
@@ -102,7 +116,21 @@ Errores del host (la interfaz los traduce con `T(texto, valores)`; `error` va ya
 - El protocolo sirve solo archivos de `ui/` (sin `..`, sin enlaces hacia afuera, sin `?`) y lo que aprueba un resolvedor de medios.
 - Todo permiso del navegador se niega salvo lo que la app acepte con `permisos`, y solo para sus páginas.
 - Scripts: sin variables `<ID>_*` de afuera, lo de la persona nunca como argumento, el secreto por stdin y **límite de tiempo** que
-  corta también lo que lanzó el script (grupo de procesos en Linux, `taskkill /T` en Windows).
+  corta también lo que lanzó el script (grupo de procesos en Linux, `taskkill /T` en Windows); un trabajo sin tope se corta si deja
+  de latir, y al salir se corta lo que siga corriendo (nada queda huérfano: un trabajo queda «interrumpido» y se sigue después).
+- Secretos solo cifrados por el sistema (`safeStorage`), nunca en texto plano: sin llavero en Linux, no se guardan.
+
+## Si venías de la 0.1.0
+
+Nada se rompe: lo de 0.1.0 sigue igual. Al actualizar (`pieza.py actualizar <app> host-escritorio`) llega `vigilante.js`.
+- `await host.esperarLibre(ms)` ahora también espera a los scripts que corren y devuelve true si quedó libre; al salir se cortan
+  los que queden (antes quedaban huérfanos).
+- Un `"limite": 3600` puesto «por si acaso» puede ser `"trabajo"` (con «trabajos» 0.2.0) o `{"segun": "orden", …}`.
+- **Esquema:** `main.js` puede pasar a `carpeta: {clave: "carpeta"}` (borra `carpetaActual()` y `usarCarpeta`: `host.carpeta.usar(c)`;
+  el inyector que manda `""` sin carpeta queda en `inyectar`) y `vigilar: {extensiones: [".md", ".mmd"], alCambiar: relistar}`
+  (borra `src/vigilante.js` propio: la lista de archivos que se compara pasa a `alCambiar`). `abrirArchivo`/`guardarArchivo`
+  se pueden declarar en `app.json` (`carpeta.py leer|guardar`, `vigilar: "lee" | "escribe"`, `maximo` si los documentos pesan más
+  de 5 MB, `eco: ["ruta"]`); la traducción de `error` que hacía `main.js` la hace la interfaz con `texto`.
 
 ## Pasar una app a esta pieza
 
@@ -114,6 +142,6 @@ En todas: `pieza.py agregar host-escritorio <app>` (antes **borra `escritorio/sr
 | App | Se borra | Queda como acción propia (`acciones.registrar`) | Ojo |
 |---|---|---|---|
 | Esquema | `servicios.js` y `rutas.js` (`absoluta` → `host.dentro(base, r, {extensiones: [".md", ".mmd"]})`), `preload.js`; de `main.js`: ventana, protocolo, `ipcMain`, `Config`, `Idioma`, `Procesador`, `EnOrden`, `listo`, `config`, `copiar`, `abrirEnlace`, `probarIA`, `buscarActualizacion`, `actualizar`, permisos y arranque | `elegirCarpeta`, `abrirProyecto`, `proyecto` (o declararla con `"*": "pasar"`, `inyectar: {carpeta: "carpetaActual"}` y `progreso: "proyectoProgreso"`), `papelera`, `abrirArchivo`, `guardarArchivo` (con `host.fila`), `estructura`, `crearReadme`, `dibujar`, `exportar` (`host.dialogos.guardarComo`), catálogo | `vigilante.js` queda; `progreso.js` de «trabajos» como `lectorProgreso`; el menú con `item(...)` |
-| Graba | `servicios.js` (config, idioma, `Procesador`), `rutas.js`, `preload.js` | Todo lo de grabar (`grabar`, `terminar`, `pausar`, `recortar`, `teleprompter`…), YouTube, permisos | `ventana.alCerrar: "esconder"` (bandeja), `permisos: (p) => p === "media"`, `medios.registrar("video", …)` y `medios.registrar("app", …)` para `barra.html` y las demás ventanas propias (siguen con su `preload-interno.js`); `probarIA` ya va por la pieza `ia` |
-| Minuta | `rutas.js`, `preload.js`, la ventana y el puente de `main.js` | Casi todo (perfil, universos, gimnasio, calendario, ventana sin bordes) | **La última en migrar:** guarda `idioma_ui` en `perfil.json` (`idiomaElegido`), tiene el panel de la bandeja con su propia página y su `ventana`/`cerrar`/`minimizar`. Antes: el puente de hoy no revisa marco ni origen (ver brechas) |
-| Corta, Repasa, Alcancía | — (aún no tienen Windows/Linux) | — | Con esta pieza parten con `main.js` de ~50 líneas: sus acciones de script (`guardarProyecto`, `guardarProgreso`, `importar`…) se declaran en `app.json`; lo nativo (diálogos, `medios.registrar("video" \| "material", …)`) se registra |
+| Graba | `servicios.js` (config, idioma, `Procesador`, `Tokens` → `host.secretos("tokens", {archivo: ".tokens"})`), `rutas.js`, `preload.js` | Todo lo de grabar (`grabar`, `terminar`, `pausar`, `recortar`, `teleprompter`…), YouTube, permisos | `ventana.alCerrar: "esconder"` (bandeja), `permisos: (p) => p === "media"`, `medios.registrar("video", …)` y `medios.registrar("app", …)` para `barra.html` y las demás ventanas propias (siguen con su `preload-interno.js`); `probarIA` ya va por la pieza `ia` |
+| Minuta | `rutas.js`, `preload.js`, la ventana y el puente de `main.js`, el token de `bienvenida.js` → `host.secretos(…)`, `new Notification` → `host.notificaciones` (y su `click` → `alTocarAviso`) | Casi todo (perfil, universos, gimnasio, calendario, ventana sin bordes) | **La última en migrar:** guarda `idioma_ui` en `perfil.json` (`idiomaElegido`), tiene el panel de la bandeja con su propia página y su `ventana`/`cerrar`/`minimizar`. Antes: el puente de hoy no revisa marco ni origen (ver brechas) |
+| Corta, Repasa, Alcancía | — (aún no tienen Windows/Linux) | — | Con esta pieza parten con `main.js` de ~50 líneas: sus acciones de script (`guardarProyecto`, `guardarProgreso`, `importar`…) se declaran en `app.json`; lo nativo (diálogos, `medios.registrar("video" \| "material", …)`) se registra. Alcancía: el Llavero con `host.secretos("conexiones")`, los avisos de compromisos con `host.notificaciones` y la carpeta vigilada de Descargas con un `Vigilante` propio (`new Vigilante({extensiones: [".csv", ".xlsx", ".pdf", ".ofx"]})`) |

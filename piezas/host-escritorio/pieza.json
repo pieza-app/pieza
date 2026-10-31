@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "host-escritorio",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "App de Windows y Linux",
  "icono": "icono.svg",
@@ -12,7 +12,7 @@
   "siempre": true,
   "cuando": "Siempre que haya app de Windows o Linux."
  },
- "origen": "esquema (escritorio/src/main.js: sandbox, contextIsolation, <id>://ui/ solo con archivos de ui/, ipcMain solo del marco principal con el origen propio, will-navigate/will-redirect/setWindowOpenHandler, permisos negados, una sola instancia, guardar al salir; servicios.js: Config, Idioma, Procesador sin variables <ID>_*, EnOrden; rutas.js: absoluta) + graba (<id>://video con rangos, permisos que la app puede abrir) + alcancia (secreto por la entrada estándar). Nuevo: nada de la app adentro (id, nombre y carpeta de datos de app.json; el preload recibe el id del host), acciones declaradas (acciones.json) validadas al cargar y en cada mensaje, límite de tiempo que corta también lo que lanzó el script (su grupo de procesos), carpeta temporal propia 0700 para entrada y salida, nativeTheme.themeSource según config.tema, y todo probado en Node y con Electron de verdad.",
+ "origen": "esquema (escritorio/src/main.js: sandbox, contextIsolation, <id>://ui/ solo con archivos de ui/, ipcMain solo del marco principal con el origen propio, will-navigate/will-redirect/setWindowOpenHandler, permisos negados, una sola instancia, guardar al salir; servicios.js: Config, Idioma, Procesador sin variables <ID>_*, EnOrden; rutas.js: absoluta) + graba (<id>://video con rangos, permisos que la app puede abrir) + alcancia (secreto por la entrada estándar). Nuevo: nada de la app adentro (id, nombre y carpeta de datos de app.json; el preload recibe el id del host), acciones declaradas (acciones.json) validadas al cargar y en cada mensaje, límite de tiempo que corta también lo que lanzó el script (su grupo de procesos), carpeta temporal propia 0700 para entrada y salida, nativeTheme.themeSource según config.tema, y todo probado en Node y con Electron de verdad. Nuevo en 0.2: «limite» \"trabajo\" (sin tope mientras lata) o por orden, «maximo» y «vigilar» por acción, el inyector con su texto (`host.falta`), el eco también en el error de datos, la carpeta elegida (`carpeta`), el vigilante (`vigilar`, fs.watch), `mostrarEnCarpeta`, secretos con safeStorage (`host.secretos`) y avisos (`host.notificaciones`), sacados de Esquema, Graba y Minuta.",
  "requiere": [
   "nucleo",
   "host-ui"
@@ -29,7 +29,8 @@
   "escritorio/host.js": "escritorio/src/host.js",
   "escritorio/enchufe.js": "escritorio/src/enchufe.js",
   "escritorio/procesador.js": "escritorio/src/procesador.js",
-  "escritorio/preload.js": "escritorio/src/preload.js"
+  "escritorio/preload.js": "escritorio/src/preload.js",
+  "escritorio/vigilante.js": "escritorio/src/vigilante.js"
  },
  "solo": {
   "escritorio/host.js": [
@@ -45,6 +46,10 @@
    "linux"
   ],
   "escritorio/preload.js": [
+   "windows",
+   "linux"
+  ],
+  "escritorio/vigilante.js": [
    "windows",
    "linux"
   ]
@@ -71,7 +76,9 @@
   "Salir de {app}": "Quit {app}",
   "Sitio de {app}": "{app} website",
   "Código": "Source code",
-  "Espera a que termine lo que está haciendo y vuelve a intentarlo.": "Wait until it finishes what it's doing and try again."
+  "Espera a que termine lo que está haciendo y vuelve a intentarlo.": "Wait until it finishes what it's doing and try again.",
+  "Dejó de avanzar y lo detuve. Intenta de nuevo.": "It stopped making progress, so I stopped it. Try again.",
+  "Elige una carpeta primero.": "Choose a folder first."
  },
  "pantallas": [
   {
@@ -86,6 +93,17 @@
   "Opcional: certificado de firma para Windows"
  ],
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "mejora",
+   "seguridad": true,
+   "resumen": "Lo que salió al pasar Esquema: límite \"trabajo\" (sin tope, cortado si deja de latir) y límites por orden; el tope de la entrada por acción («maximo», hasta 50 MB); el inyector puede responder su propio texto; el error de datos trae el eco válido; esperar a quedar libre también espera a los scripts corriendo, y al salir se cortan los que queden (nada huérfano); «vigilar» para que lo que escribe la app no se avise como cambio de afuera; capacidades nuevas: carpeta elegida, vigilante, mostrar en el Finder/explorador, secretos y avisos; menú Ayuda opcional.",
+   "migrar": [
+    "Si una acción tenía `\"limite\": 3600` porque a veces tarda más, usa `\"limite\": \"trabajo\"` (con la pieza «trabajos» 0.2.0, que late) o límites por orden: `{\"segun\": \"orden\", \"valores\": {\"documentar\": \"trabajo\"}, \"otro\": 120}`.",
+    "Opcional: la carpeta con marcador y el vigilante ya vienen en el host (`p.carpeta = CarpetaElegida()` + `p.vigilante = Vigilante(extensiones: [\".md\"])` en Mac; `carpeta: {clave}` + `vigilar: {extensiones, alCambiar}` en Electron): ver «Si venías de la 0.1.0» en el README.",
+    "Si leías `ocupada()` después de `await host.esperarLibre(…)`: ahora devuelve true si quedó libre (y también espera a los scripts que corren)."
+   ]
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

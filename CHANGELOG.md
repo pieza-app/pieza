@@ -1,6 +1,20 @@
 # Cambios
 
 ## Sin publicar
+- **Lo que salió al pasar Esquema a `host-mac`/`host-escritorio` (0.2.0, antes de que migren las otras cinco):** `"limite":
+  "trabajo"` (sin tope mientras lata: la pieza `trabajos` 0.2.0 toca `<ID>_LATIDO`; si deja de latir por 45 s, se corta) y
+  límites por orden (`{"segun": "orden", "valores": {…}, "otro": …}`); `maximo` por acción (la entrada hasta 50 MB) y `vigilar`
+  (`lee` / `escribe`: lo que escribe la app no se avisa como cambio de afuera, así abrir y guardar se pueden declarar); un
+  inyector responde su propio texto (`Puente.Falta` / `host.falta`); el error de datos trae el eco válido; esperar a quedar
+  libre también espera a los scripts que corren, y al salir se cortan los que queden (nada huérfano); en Mac, `Puente.llamar`
+  sin `Bool` (`intentarLlamar` para quien lo use), `lectorProgreso` `@MainActor` y las actualizaciones atendidas por el host
+  (`p.actualizaciones`, como en Electron); menú Ayuda opcional. Capacidades nuevas, iguales en los dos: la carpeta elegida (con
+  marcador en Mac), el vigilante de la carpeta (FSEvents / `fs.watch`), mostrar en el Finder o el explorador, secretos (Llavero /
+  `safeStorage`, que en Linux sin llavero no guarda nada) y avisos del sistema (tomados de Esquema, Alcancía, Graba y Minuta).
+  `ia` 0.6.3: `probarIA` con límite 150 (con 120 se cortaba justo cuando `ia.probar` iba a responder). `pieza.py`:
+  `app.json` → `"sin_acciones"` (no adoptar una acción de una pieza), y con un `piezas.json` de antes sin acciones guardadas
+  las busca en el historial de git de Pieza (si no las encuentra, no arma un `acciones.json` sin ellas y dice qué correr). Cada
+  README dice qué cambia «Si venías de la 0.1.0» y qué se borra en cada app; `revisar_host_mac.sh` prueba lo nuevo de Swift.
 - **Lo que salió al pasar las seis apps a las piezas de datos:** `transcribir` 0.2.0: «Gracias», «Thank you» y las demás frases
   que whisper inventa ya **no se borran siempre** (en una reunión se perdía lo dicho): con la energía del audio se quitan solo si
   caen en silencio o casi; sin ella, solo si no hay nada más; los créditos («…Amara.org») siempre, como palabras completas

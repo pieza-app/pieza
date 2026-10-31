@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "ia",
- "version": "0.6.2",
+ "version": "0.6.3",
  "estado": "lista",
  "nombre": "Tu IA",
  "icono": "icono.svg",
@@ -70,7 +70,7 @@
     }
    },
    "responde": "iaProbada",
-   "limite": 120
+   "limite": 150
   },
   "listaIA": {
    "script": "ia.py",
@@ -97,6 +97,11 @@
  },
  "red_nota": "La app no sale a internet: la IA de la persona se conecta a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
  "cambios": [
+  {
+   "version": "0.6.3",
+   "tipo": "arreglo",
+   "resumen": "probarIA (la acción declarada para el host) con límite 150 s: con 120 el host la cortaba justo cuando ia.probar iba a responder por su cuenta (su propio límite es 120 s), y la persona veía «Tardó demasiado» en vez de lo que pasó."
+  },
   {
    "version": "0.6.2",
    "tipo": "arreglo",
