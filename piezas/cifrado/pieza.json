@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "cifrado",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Cifrado",
  "icono": "icono.svg",
@@ -33,18 +33,28 @@
   "Este archivo viene de una versión más nueva de {app}. Actualiza la app.": "This file comes from a newer version of {app}. Update the app.",
   "Ese archivo no es una copia de {app}.": "That file isn't a {app} copy.",
   "Este equipo no puede cifrar.": "This device can't encrypt.",
-  "Usa una frase de al menos 12 caracteres (por ejemplo, cuatro palabras).": "Use a passphrase of at least 12 characters (for example, four words).",
-  "Muy corta": "Too short",
-  "Aceptable": "Acceptable",
-  "Buena": "Good",
-  "Muy buena": "Very good"
+  "Usa una frase de al menos 12 caracteres (por ejemplo, cuatro palabras).": "Use a passphrase of at least 12 characters (for example, four words)."
  },
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "mejora",
+   "resumen": "Lo que pidieron Repasa y Alcancía: armarVarios/abrirVarios (varios sobres en un archivo, con el AAD, la clave de la versión —claveVersion: \"v\"— y los campos que la app ya usaba: las copias de Repasa se arman y abren tal cual); c.error(codigo) da un error con la marca de la app para lo que revisa ella misma; opción mensajes para frases propias; los errores traen frase y comoDict() (toJSON) además de plantilla y valores; «corta» sale directo de nuevaCabecera; las frases de fuerzaFrase solo se suman a en.json si la app la usa (textos_si_usa).",
+   "migrar": "Nada obligatorio. Repasa: motor/copia.js puede usar C.armarVarios(contenidos, cabecera, llaves, {aad: \"repasa:copia:v1\", extra: {creada}}) y C.abrirVarios(texto, {frase}, {aad: \"repasa:copia:v1\"}) con crear({…, claveVersion: \"v\"}), y C.error(\"no_es\") en vez de su errorCifrado. Si no usas fuerzaFrase, puedes borrar «Muy corta», «Aceptable», «Buena» y «Muy buena» de ui/idiomas/en.json."
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",
    "seguridad": true,
    "resumen": "Primera versión: une Repasa y Alcancía con los mismos formatos de archivo."
   }
- ]
+ ],
+ "textos_si_usa": {
+  "fuerzaFrase": {
+   "Muy corta": "Too short",
+   "Aceptable": "Acceptable",
+   "Buena": "Good",
+   "Muy buena": "Very good"
+  }
+ }
 }

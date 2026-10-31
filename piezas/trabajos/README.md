@@ -33,3 +33,6 @@ de la IA sin `ia_vivo` (mismo resultado). `documentar.detener` puede usar `traba
 `prefijo:`) y `lectorProgreso` de `escritorio/src/servicios.js` (`require("./progreso")`, segundo argumento `{prefijo: "esquema"}`).
 **Las demás** (Corta y Graba con `estado.json` por carpeta, Minuta con `procesar.log`): sus procesos largos no tienen latido ni
 «Detener»; pasarlos a trabajos es una mejora por app, no mecánica.
+
+## Si venías de la 0.1.0
+Nada que cambiar: `terminar` con un error de la IA raro (valores que no son texto) ya no se cae.

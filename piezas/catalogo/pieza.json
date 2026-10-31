@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "catalogo",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Catálogo de la comunidad",
  "icono": "icono.svg",
@@ -90,6 +90,21 @@
    "responde": "catalogoQuitado",
    "cola": "escritura",
    "limite": 30
+  },
+  "catalogoUltima": {
+   "script": "catalogo.py",
+   "args": [
+    "ultima"
+   ],
+   "entrada": "archivo",
+   "datos": {
+    "tipo": {
+     "tipo": "texto",
+     "max": 31
+    }
+   },
+   "responde": "catalogoUltima",
+   "limite": 30
   }
  },
  "textos": {
@@ -106,10 +121,27 @@
  },
  "cambios": [
   {
+   "version": "0.2.0",
+   "tipo": "rompe",
+   "seguridad": true,
+   "resumen": "Seguridad: el validador de la app recibe el objeto ENTERO (antes se recortaba a CAMPOS primero y un campo de más entraba sin él en vez de rechazarse); se recorta después. La frase de un error va en «frase» (antes «plantilla», que chocaba con el objeto descargado cuando singular es «plantilla»). Lo que pidieron las apps: sin conexión, la galería muestra la última lista validada (catalogo.py ultima, acción catalogoUltima; el host la usa solo, con sin_conexion: true); «categoria»: false para un catálogo plano (<carpeta>/<id>.json); «carpeta» (en el catálogo), «local» (en la carpeta de datos) e «incluidos» (en la app) distintos del id del tipo; «mayusculas»: true para ids como pt-BR (sin repetir aunque cambie una mayúscula); «funcion» y «campos» para el validador; «clave» de la lista en el índice y un índice que es solo una lista; generar y validar sin nucleo.py ni app.json en el repo del catálogo (--validador=, --opciones=). pieza.py agregar suma un esqueleto de «catalogo» a app.json.",
+   "migrar": "1. La interfaz traduce el error con Tp(r.frase) en vez de Tp(r.plantilla) (r.error sigue igual). 2. Revisa que tu validador acepte el objeto completo tal como viene del catálogo: si rechaza campos que antes se recortaban en silencio, ahora esa entrada no entra (ajústalo o agrega el campo a CAMPOS). 3. Swift: vuelve a compilar el target PiezaCatalogo. 4. Opcional: Minuta puede pasar a \"categoria\": false con \"carpeta\"/\"local\" propios y \"mayusculas\": true en idiomas (y dejar la categoría «comunidad»); Corta puede quitar el alias CAMPOS = CLAVES con \"campos\": \"CLAVES\"; el workflow del catálogo puede correr catalogo.py generar con --validador= sin copiar nucleo.py ni app.json."
+  },
+  {
    "version": "0.1.0",
    "tipo": "inicial",
    "seguridad": true,
    "resumen": "Primera versión: une Esquema y Corta. SHA-256 obligatorio (en Corta era opcional al instalar), el id se busca solo en el último índice validado y la categoría tiene que ser la carpeta."
   }
- ]
+ ],
+ "app_json": {
+  "catalogo": {
+   "esqueleto": {
+    "repo": "dueño/repo",
+    "rama": "main",
+    "tipos": {}
+   },
+   "que": "«repo» es el repo de solo datos del catálogo, como «ana-app/ana-catalogo», y en «tipos» va un tipo por cosa, con su validador de bin/; ver piezas/catalogo/README.md"
+  }
+ }
 }

@@ -13,7 +13,14 @@ const { contenido } = await c.abrir(texto, { frase });              // o { raw: 
 const sobre = await c.cifrarJSON(llaves, valor, "perfiles/ana");    // descifrarJSON(llaves, sobre, "perfiles/ana")
 const nombre = await c.nombreOpaco(llaves, "perfiles/ana.json");    // 32 hex
 PiezaCifrado.fuerzaFrase(frase)  // {nivel 0..3, texto: "Muy corta" | "Aceptable" | "Buena" | "Muy buena"}
+// Varios sobres en un archivo (el formato de la copia de Repasa):
+const t2 = await c.armarVarios([a, b], cabecera, llaves, { aad: "ana:copia:v1", extra: { creada: hoy } });
+const { contenidos, archivo } = await c.abrirVarios(t2, { frase }, { aad: "ana:copia:v1" });   // archivo.creada
+throw c.error("no_es");          // un error con las frases y la marca de esta app (para lo que revisa la app misma)
 ```
+
+**Desde un ES module:** es un script clásico. En el navegador (o el WebView), cargar `<script src="cifrado.js">` antes del módulo y
+usar `globalThis.PiezaCifrado`; en Node, `createRequire(import.meta.url)("./cifrado.js")`.
 
 | Opción de `crear` | Para qué |
 |---|---|
@@ -21,9 +28,18 @@ PiezaCifrado.fuerzaFrase(frase)  // {nivel 0..3, texto: "Muy corta" | "Aceptable
 | `verificador`, `aadVerificador` | Si un formato viejo usaba otros (Alcancía) |
 | `marca`, `tipo`, `formato` | Cómo se reconoce un archivo de `armar` (`{[marca]: tipo, version: formato, …}`); uno con versión mayor da `version` |
 | `maximo` | Un texto más grande ni se intenta leer (100 MB por defecto) |
+| `claveVersion`, `claveSobres` | Los nombres que ya usaba la app (`"v"` en Repasa; `"archivos"` por defecto para `armarVarios`) |
+| `mensajes` | `{codigo: frase}`: las frases propias de la app (con `{app}` si quiere); las demás, las de la pieza |
 
 Errores: `ErrorCifrado` con `codigo` (`frase`, `danado`, `version`, `no_es`, `sin_cifrado`, `corta`), `plantilla` y `valores`
-(`{app}`): `Tp(e.plantilla, e.valores)`. Nunca acepta menos de 100.000 vueltas.
+(`{app}`): `Tp(e.plantilla, e.valores)`; `e.frase` (= `message`) ya rellena y `e.comoDict()` / `JSON.stringify(e)` →
+`{ok: false, codigo, plantilla, valores, error}`. Nunca acepta menos de 100.000 vueltas. Las frases de `fuerzaFrase` solo se suman
+al `en.json` de la app si la usa (`textos_si_usa`).
+
+## Si venías de la 0.1
+Nada obligatorio. **Repasa:** `crear({app: "Repasa", contexto: "repasa", claveVersion: "v"})` y la copia con `armarVarios` /
+`abrirVarios` (`aad: "repasa:copia:v1"`, `extra: {creada}`): el mismo archivo de siempre; `C.error("no_es")` en vez de su
+`errorCifrado`. **Todas:** si no usas `fuerzaFrase`, puedes borrar «Muy corta», «Aceptable», «Buena» y «Muy buena» de `en.json`.
 
 ## Pasar una app a esta pieza
 **Repasa** (`motor/cifrado.js`, ES module): borrarlo y agregar `ui/cifrado.js` (script clásico: `window.PiezaCifrado`; en el motor,

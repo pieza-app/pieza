@@ -14,8 +14,30 @@ segs = transcribir.transcribir(wav, energia_=transcribir.energia(wav))          
 - `MODELOS` (`turbo`, `small`, `vad`) con tamaño, SHA-256 y URL de Hugging Face: los mismos de todas las apps. El host los
   descarga y verifica; `verificar(id)`, `modelos()` (acción `modelosVoz`), `modelo_elegido(preferido)` y `ruta_modelo(id)`
   (`<carpeta de datos>/modelos`). Con `vad` descargado, whisper salta los silencios.
-- Limpieza: marcas (`[Música]`), inventos (`ALUCINACIONES`, normalizados), bucles (más de 2 veces la misma frase seguida).
-- Errores: `ErrorTranscribir` con `codigo` (`sin_modelo`, `sin_transcriptor`, `fallo`, `ruta`), `plantilla` y `detalle`.
+- Limpieza (`limpiar(segs, energia_, partir=None)`): marcas (`[Música]`), créditos que nadie dice (`CREDITOS`: «…Amara.org»,
+  siempre; dentro del segmento solo como palabras completas), bucles (más de 2 veces la misma frase seguida) y, con la energía,
+  lo que cae en silencio. Las frases que whisper inventa pero la gente también dice (`ALUCINACIONES`: «Gracias», «Thank you»,
+  «Gracias por ver»; coincidencia **exacta** con el segmento entero, así «Gracias, Ana» nunca cuenta) solo se quitan si caen en
+  silencio o casi (`UMBRAL_INVENTO`, con la energía) o si no hay nada más en toda la transcripción (sin la energía).
+  `partir(segs) -> segs` corre antes de filtrar (p. ej. partir por silencios).
+- `whisper_de(segs)`: lo inverso de `segmentos_de` (el JSON de whisper, en milisegundos) para guardar y releer después.
+- VAD: `vad=None` (por defecto: con segmentos sí, palabra por palabra no: cortaría la palabra al borde), `True`, `False` o la ruta
+  del modelo (`ruta_vad`).
+- Modelos en otra carpeta: `"transcribir": {"modelos": "~/ana/models"}` en `app.json` (con `~`, absoluta o relativa a la de
+  datos; sin `..`). Para pruebas: `<ID>_MODELO_PRUEBA=<archivo>` es un modelo falso de cualquier tamaño (nunca dentro de la
+  app: si está `<ID>_RECURSOS`, no cuenta).
+- `transcriptor()`: primero las carpetas de la app (`<ID>_PROGRAMAS`, `<ID>_HERRAMIENTAS`, `bin/`) con todos los nombres, después
+  el sistema.
+- Errores: `ErrorTranscribir` con `codigo` (`sin_modelo`, `sin_transcriptor`, `fallo`, `ruta`), `detalle`, `plantilla` +
+  `valores` (con detalle: «La transcripción falló: {detalle}»), `frase` (ya rellena) y `como_dict()`. `str(e)` es la frase corta.
+
+## Si venías de la 0.1
+- **Minuta:** quita `transcribir.carpeta_modelos = lambda: …` de `procesar.py` y pon `"transcribir": {"modelos": "~/minuta/models"}`
+  en `app.json`. Con `energia_`, ahora un «Gracias.» dicho con voz queda en la nota.
+- **Graba:** `transcripcion.json` con `transcribir.whisper_de(segs)`; el error con `e.frase` (o `e.como_dict()` para traducir)
+  en vez de armar «frase: detalle»; en las pruebas, `GRABA_MODELO_PRUEBA=<archivo>` en vez del archivo disperso del tamaño exacto.
+- **Corta:** palabra por palabra ya va sin VAD (lo que Corta quería); `vad=True` si lo quieres igual.
+- Sin la energía, «Gracias por ver el video» al final de un video ahora queda (antes se borraba aunque se hubiera dicho).
 - **Fase del host:** el binario Swift (`Sources/Transcribir`, whisper.xcframework con Metal + `--prompt-archivo`) y la descarga de
   modelos (`ModeloWhisper`) siguen en cada app hasta el host genérico.
 

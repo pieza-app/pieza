@@ -988,6 +988,34 @@ test("cifrado: frase mala, sobre cambiado, AAD de otro lugar, versión más nuev
   assert.equal(PiezaCifrado.fuerzaFrase("uno dos tres cuatro cinco seis").nivel, 3);
 });
 
+test("cifrado: varios sobres con el formato de Repasa, frases propias, error() con la marca y «corta» directo", async () => {
+  const c = PiezaCifrado.crear({ app: "Prueba", contexto: "prueba", marca: "prueba", tipo: "copia", claveVersion: "v",
+    mensajes: { no_es: "Eso no es una copia de {app}, revisa el archivo.", inventado: "x" } });
+  const { cabecera, llaves } = await c.nuevaCabecera(FRASE);
+  const texto = await c.armarVarios([{ ruta: "a.json" }, { ruta: "b.json" }], cabecera, llaves,
+    { aad: "prueba:copia:v1", extra: { creada: "2026-10-31", kdf: "no pisa" } });
+  const obj = JSON.parse(texto);
+  assert.deepEqual(Object.keys(obj), ["prueba", "v", "creada", "kdf", "cifrado", "verificador", "archivos"], "el orden de Repasa");
+  assert.equal(obj.archivos.length, 2);
+  // Un sobre armado a mano como lo hacía Repasa (cifrarJSON con su AAD fijo) se abre igual.
+  const r = await c.abrirVarios(texto, { frase: FRASE }, { aad: "prueba:copia:v1" });
+  assert.deepEqual(r.contenidos, [{ ruta: "a.json" }, { ruta: "b.json" }]);
+  assert.equal(r.archivo.creada, "2026-10-31");
+  const codigo = async (p) => { try { await p; return "ok"; } catch (e) { return e.codigo; } };
+  assert.equal(await codigo(c.abrirVarios(texto, { frase: FRASE }, { aad: "otro" })), "danado", "el AAD ata cada sobre");
+  assert.equal(await codigo(c.abrirVarios(JSON.stringify({ ...obj, v: 2 }), { frase: FRASE })), "version");
+  const e = await c.abrir('{"otra":1}', { frase: FRASE }).catch((x) => x);
+  assert.deepEqual([e.codigo, e.plantilla, e.frase, e.valores.app], ["no_es", "Eso no es una copia de {app}, revisa el archivo.",
+    "Eso no es una copia de Prueba, revisa el archivo.", "Prueba"], "la frase propia de la app, con {app}");
+  assert.deepEqual(JSON.parse(JSON.stringify(e)), { ok: false, codigo: "no_es", plantilla: e.plantilla, valores: { app: "Prueba" }, error: e.frase });
+  const propio = c.error("version");
+  assert.ok(propio instanceof PiezaCifrado.ErrorCifrado);
+  assert.equal(propio.frase, "Este archivo viene de una versión más nueva de Prueba. Actualiza la app.");
+  const corta = await c.nuevaCabecera("corta").catch((x) => x);
+  assert.deepEqual([corta.codigo, corta.plantilla, corta.message], ["corta", PiezaCifrado.MENSAJES.corta, PiezaCifrado.MENSAJES.corta]);
+  assert.equal(c.revisarFrase("corta"), PiezaCifrado.MENSAJES.corta);
+});
+
 test("cifrado: abre lo que armaba la copia de Alcancía (llave de 256 bits) con su contexto", async () => {
   const s = crypto.webcrypto.subtle;
   const sal = crypto.randomBytes(16);
@@ -1077,6 +1105,28 @@ test("catálogo (Electron): solo del índice validado, con huella, sin redirecci
   } finally { srv.close(); }
   assert.throws(() => Cat.leerConfig({ catalogo: { repo: "../x" } }));
   assert.throws(() => Cat.leerConfig({ catalogo: { repo: "a/b", tipos: { plantillas: { indice: "../index.json" } } } }));
+});
+
+test("catálogo (Electron): sin conexión, la última lista; plano, otra carpeta y mayúsculas; el error en «frase»", async () => {
+  const llamadas = [];
+  const procesador = { async conEntrada(s, accion, d) { llamadas.push(accion); return { ok: true, tipo: d.tipo, idiomas: [{ id: "pt-BR" }], fecha: "2026-10-30T10:00:00" }; } };
+  const sinRed = async () => { throw new Error("sin red"); };
+  const cat = Cat.crear({ fetch: sinRed, procesador, appJson: { catalogo: { repo: "ana-app/ana-catalogo", tipos: {
+    idiomas: { validador: "x", carpeta: "traducciones", categoria: false, mayusculas: true }, plantillas: { validador: "x" } } } } });
+  const r = await cat.listar("idiomas");
+  assert.equal(r.ok, true);
+  assert.equal(r.sin_conexion, true);
+  assert.equal(r.frase, "No pude conectarme. Revisa tu conexión.");
+  assert.deepEqual(llamadas, ["ultima"]);
+  assert.equal((await cat.descargar("idiomas", "pt-BR")).codigo, "no_esta", "lo guardado se ve, pero no se descarga sin un índice nuevo");
+  const t = cat.config.tipos.idiomas;
+  assert.equal(t.indice, "traducciones/index.json");
+  assert.ok(t.patron.test("traducciones/pt-BR.json") && !t.patron.test("traducciones/x/pt-BR.json") && !t.patron.test("idiomas/pt-BR.json"));
+  assert.ok(!cat.config.tipos.plantillas.patron.test("plantillas/basicas/Mayus.json"));
+  const vacio = Cat.crear({ fetch: sinRed, procesador: { async conEntrada() { return { ok: false, codigo: "sin_conexion" }; } },
+    appJson: { catalogo: { repo: "a/b", tipos: { plantillas: { validador: "x" } } } } });
+  const e = await vacio.listar("plantillas");
+  assert.deepEqual([e.ok, e.codigo, e.frase, e.plantilla], [false, "sin_conexion", "No pude conectarme. Revisa tu conexión.", undefined]);
 });
 
 // ───────────── trabajos: el lector de progreso (Electron) ─────────────

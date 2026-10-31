@@ -4,8 +4,10 @@
   pieza.py listar                         Las piezas disponibles.
   pieza.py iniciar <app> <id> <Nombre> [--plataformas=mac,windows,linux] [--datos=sistema|visible]
                                           Crea app.json en una app que aún no lo tiene.
-  pieza.py agregar <pieza> <app> [--sin-revisar] [--sin-config=clave,…]
-                                          Copia la pieza (y lo que requiere) a la app y la anota en piezas.json. Oficial o de la
+  pieza.py agregar <pieza> <app> [--sin-revisar] [--sin-config=clave,…] [--forzar]
+                                          Copia la pieza (y lo que requiere) a la app y la anota en piezas.json. Si un archivo ya
+                                          existe y es distinto (la pieza salió de esa app, o la app tiene un módulo con el mismo
+                                          nombre), no copia nada y lo explica; --forzar lo reemplaza. Oficial o de la
                                           comunidad: las de la comunidad revisadas se verifican con su huella; las que aún no se
                                           revisan solo con --sin-revisar (bajo tu responsabilidad). --sin-config=tema no suma
                                           esa clave opcional a app.json (p. ej. una app sin «Apariencia» en Ajustes); sobre una
@@ -224,8 +226,12 @@ def ruta_relativa_ok(r):
 FORMA = {"version": str, "estado": str, "nombre": str, "icono": str, "categoria": str, "descripcion": str, "recomendar": dict,
          "requiere": list, "compatible": dict, "plataformas": list, "pantallas": list, "permisos": dict, "red": list,
          "red_nota": str, "tareas_persona": list, "archivos": dict, "solo": dict, "config": dict, "config_opcional": dict,
-         "acciones": dict, "textos": dict,
+         "acciones": dict, "textos": dict, "textos_si_usa": dict, "app_json": dict,
          "cambios": list, "tomar_de": (str, list), "origen": str}
+
+
+#: Las claves de app.json que son de la app (o de nucleo): una pieza no puede sumarlas con «app_json».
+APP_JSON_PROPIAS = {"formato", "id", "nombre", "repo", "datos", "privado", "plataformas", "config", "acciones", "ia"}
 
 
 def errores_forma(p):
@@ -244,6 +250,12 @@ def errores_forma(p):
         e.append("«archivos» es {origen: destino} con textos")
     if not all(isinstance(k, str) and k in p.get("config", {}) and isinstance(v, str) for k, v in p.get("config_opcional", {}).items()):
         e.append("«config_opcional» es {clave de «config»: cuándo la suma la app}")
+    if not all(isinstance(k, str) and re.match(r"^[A-Za-z_$][\w$]{1,60}$", k) and isinstance(v, dict)
+               and all(isinstance(a, str) and isinstance(b, str) for a, b in v.items()) for k, v in p.get("textos_si_usa", {}).items()):
+        e.append("«textos_si_usa» es {identificador que usa la app: {frase: traducción}}")
+    if not all(isinstance(k, str) and re.match(r"^[a-z][a-z0-9_]{1,30}$", k) and k not in APP_JSON_PROPIAS and isinstance(v, dict)
+               and isinstance(v.get("esqueleto"), dict) and isinstance(v.get("que"), str) for k, v in p.get("app_json", {}).items()):
+        e.append("«app_json» es {sección de app.json (no una de la app): {esqueleto: {…}, que: \"qué completar\"}}")
     if not all(isinstance(v, str) for v in p.get("compatible", {}).values()):
         e.append("«compatible» es {pieza: rango}")
     for a in p.get("acciones", {}).values():
@@ -542,13 +554,15 @@ def copiar(pid, app, forzar=False, lock=None):
             continue  # el archivo es de una plataforma que esta app no tiene (app.json → «plataformas»)
         dst = destino_seguro(app, destino)
         anterior = antes.get("archivos", {}).get(destino)
+        fuente = os.path.join(carpeta_de(pid), origen)
         if os.path.exists(dst) and not forzar:
-            cambiado_por_la_app = anterior is None or huella(dst) != anterior
+            # Ya estaba sin estar anotado: si es igual al de la pieza, es el mismo (no lo cambió la app).
+            igual = anterior is None and os.path.isfile(fuente) and huella(dst) == huella(fuente)
+            cambiado_por_la_app = not igual and (anterior is None or huella(dst) != anterior)
             if cambiado_por_la_app:
                 saltados.append(destino)
                 copiados[destino] = anterior or ""
                 continue
-        fuente = os.path.join(carpeta_de(pid), origen)
         if not ruta_relativa_ok(origen) or not ruta_relativa_ok(destino) or not destino.startswith(PREFIJOS_DESTINO) \
                 or os.path.islink(fuente):
             sys.exit(f"{pid}: no copio {origen} → {destino} (ruta no permitida o enlace)")
@@ -588,6 +602,26 @@ def copiar(pid, app, forzar=False, lock=None):
         if nuevas:
             textos.update(nuevas)
             escribir(en, d)
+    # Frases que solo hacen falta si la app usa algo opcional de la pieza (p. ej. fuerzaFrase de «cifrado»): solo si lo nombra.
+    if en and p.get("textos_si_usa"):
+        usados = _usa(app, set(p["textos_si_usa"]), set(copiados))
+        d = leer(en, {})
+        textos = d.setdefault("textos", {})
+        nuevas = {k: v for nombre in sorted(usados) for k, v in p["textos_si_usa"][nombre].items() if k not in textos}
+        if nuevas:
+            textos.update(nuevas)
+            escribir(en, d)
+        for nombre in sorted(set(p["textos_si_usa"]) - usados):
+            print(f"    · no sumé las frases de «{nombre}» a en.json (la app no lo usa; si lo usas después, vuelve a correr"
+                  f" pieza.py actualizar {app} {pid} --forzar o cópialas de pieza.json → textos_si_usa)")
+    # Secciones de app.json que la pieza necesita (p. ej. «catalogo»): se suma un esqueleto si falta, nunca se pisa.
+    if a is not None and p.get("app_json"):
+        faltan = {k: v for k, v in p["app_json"].items() if k not in a}
+        if faltan:
+            for k, v in faltan.items():
+                a[k] = json.loads(json.dumps(v["esqueleto"]))
+                print(f"    ! sumé «{k}» a app.json con un esqueleto: complétalo ({v['que']})")
+            escribir(ruta_app, a)
     # Si algún archivo quedó sin actualizar (la app lo cambió), la versión anotada no avanza: estado sigue avisando.
     version = p["version"] if not saltados else antes.get("version", "0.0.0")
     lock["piezas"][pid] = {"version": version, "archivos": copiados,
@@ -602,6 +636,47 @@ def copiar(pid, app, forzar=False, lock=None):
         lock["piezas"][pid]["fuente"] = _FUENTE[pid]
     escribir(os.path.join(app, "piezas.json"), lock)
     return saltados
+
+
+#: Dónde se busca si la app usa algo opcional de una pieza (textos_si_usa): su código propio, sin dependencias ni lo copiado.
+_CODIGO_APP = ("ui", "bin", "motor", "escritorio/src", "app/Sources", "app/web", "movil/host")
+_EXT_CODIGO = (".js", ".mjs", ".py", ".swift", ".html", ".kt")
+
+
+def _usa(app, nombres, copiados):
+    """Cuáles de `nombres` aparecen como palabra en el código de la app (fuera de los archivos que copió la pieza)."""
+    encontrados = set()
+    patron = re.compile(r"\b(" + "|".join(re.escape(n) for n in sorted(nombres)) + r")\b")
+    for raiz in _CODIGO_APP:
+        for carpeta, dirs, archivos in os.walk(os.path.join(app, raiz)):
+            dirs[:] = [d for d in dirs if d not in ("node_modules", ".build", "build", "dist") and not d.startswith(".")]
+            for nombre in archivos:
+                ruta = os.path.join(carpeta, nombre)
+                if not nombre.endswith(_EXT_CODIGO) or os.path.relpath(ruta, app).replace(os.sep, "/") in copiados:
+                    continue
+                try:
+                    with open(ruta, encoding="utf-8", errors="replace") as f:
+                        encontrados |= set(patron.findall(f.read(2 * 1024 * 1024)))
+                except OSError:
+                    continue
+                if encontrados == nombres:
+                    return encontrados
+    return encontrados
+
+
+def choques(pid, app, lock):
+    """Archivos de la pieza que ya existen en la app sin estar anotados y son distintos: [(destino, origen)]."""
+    p = pieza(pid)
+    plataformas_app = set((leer(os.path.join(app, "app.json"), {}) or {}).get("plataformas") or PLATAFORMAS)
+    anotados = set(lock["piezas"].get(pid, {}).get("archivos", {}))
+    r = []
+    for origen, destino in p.get("archivos", {}).items():
+        if not plataformas_app & set(p.get("solo", {}).get(origen, PLATAFORMAS)) or destino in anotados:
+            continue
+        dst, fuente = destino_seguro(app, destino), os.path.join(carpeta_de(pid), origen)
+        if os.path.isfile(dst) and os.path.isfile(fuente) and huella(dst) != huella(fuente):
+            r.append((destino, origen))
+    return r
 
 
 #: Las piezas que leen acciones.json (el host genérico). Con alguna de ellas en la app, agregar/actualizar lo arman solos.
@@ -708,7 +783,7 @@ def avisar_sin_config_desconocida(pids):
         print(f"! --sin-config={k}: ninguna de estas piezas tiene «{k}» como clave opcional; no hice nada con ella")
 
 
-def agregar(pid, app, sin_revisar=False):
+def agregar(pid, app, sin_revisar=False, forzar=False):
     if not ID.match(pid):
         sys.exit("El id de una pieza va en minúsculas, números y guiones.")
     if not os.path.isfile(os.path.join(app, "app.json")):
@@ -721,11 +796,21 @@ def agregar(pid, app, sin_revisar=False):
     for p in con_requisitos(pid):
         if pieza(p).get("estado") == "planeada":
             sys.exit(f"«{p}» aún no está extraída. Se toma de: {pieza(p)['tomar_de']}. Extráela primero (ver AGENTS.md).")
+    # Antes de copiar nada: un archivo que ya existe y es distinto dejaría piezas.json a medias (versión 0.0.0, huella vacía).
+    malos = [(p, d, o) for p in con_requisitos(pid) if p not in lock["piezas"] for d, o in choques(p, app, lock)]
+    if malos and not forzar:
+        lineas = "\n".join(f"  {d}  (de «{p}»; compara: diff {os.path.join(app, d)} {os.path.join(carpeta_de(p), o)})"
+                           for p, d, o in malos)
+        sys.exit(f"No agregué «{pid}»: estos archivos ya existen en la app y son distintos de los de la pieza:\n{lineas}\n"
+                 f"- Si la pieza salió de ese archivo (o quieres el de la pieza): pieza.py agregar {pid} {app} --forzar\n"
+                 f"  (lo reemplaza: guarda antes tus cambios en git y pasa a la app lo que la pieza no traiga).\n"
+                 f"- Si es otro módulo de la app que se llama igual: renómbralo (y sus import) y vuelve a agregar la pieza.")
+    for p in con_requisitos(pid):
         if p in lock["piezas"]:
             print(f"· {p} ya estaba")
             anotar_sin_config(app, lock, [p])
             continue
-        saltados = copiar(p, app, lock=lock)
+        saltados = copiar(p, app, forzar=forzar and any(x == p for x, _, _ in malos), lock=lock)
         print(f"+ {p} {pieza(p)['version']}")
         for k, cuando in pieza(p).get("config_opcional", {}).items():
             if k in _SIN_CONFIG:
@@ -1055,7 +1140,7 @@ def main(a):
         for x in resto:
             if x.startswith("--sin-config="):
                 _SIN_CONFIG.update(k for k in x.split("=", 1)[1].split(",") if k)
-        agregar(libres[0], os.path.abspath(libres[1]), "--sin-revisar" in resto)
+        agregar(libres[0], os.path.abspath(libres[1]), "--sin-revisar" in resto, forzar)
     elif orden == "estado" and len(resto) == 1:
         estado(os.path.abspath(resto[0]), como_json)
     elif orden == "aviso" and len(resto) == 1:

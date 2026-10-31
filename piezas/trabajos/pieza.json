@@ -3,7 +3,7 @@
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "id": "trabajos",
- "version": "0.1.0",
+ "version": "0.1.1",
  "estado": "lista",
  "nombre": "Trabajos largos",
  "categoria": "datos",
@@ -58,6 +58,11 @@
   "nucleo": ">=0.7.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.1.1",
+   "tipo": "arreglo",
+   "resumen": "terminar con un error de la IA raro (valores que no son texto, None o una lista en vez de un objeto) ya no se cae: cada valor pasa a texto."
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

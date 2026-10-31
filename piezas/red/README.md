@@ -15,8 +15,17 @@ except red.ErrorRed as e:
 - Tope de tamaño (cortado al leer, sin confiar en `Content-Length`: `grande`) y de tiempo del pedido entero (`demora`).
 - Códigos: `no_permitida`, `redireccion`, `llave` (401/403), `esperar` (429), `error` (`{estado}`), `sin_conexion`, `demora`,
   `grande`, `no_entendi`. La frase nunca trae la credencial; `e.cuerpo` (hasta 2000 caracteres) es solo para registros.
+- **Subidas grandes** (`r.subir(url, archivo, parte=8 MB, avance=fn, cabeceras=…)`): un PUT por parte con
+  `Content-Range: bytes a-b/total`; mientras falta, el servicio responde 308 (sin `Location`) con `Range: bytes=0-n` y se sigue
+  desde ahí; al final, su JSON. `desde=` para retomar. `pedir(…, datos=bytes, tipo=…)` manda un cuerpo tal cual.
+- User-Agent: «<Nombre> (<repo>)» de `app.json` (`"repo": "dueño/repo"`; si no tiene esa forma, solo el nombre), siempre en
+  ASCII.
 - Pruebas: `<ID>_RED_PRUEBA=http://127.0.0.1:<puerto>` manda todo a un servidor falso (`/<dominio>/<ruta>`), solo fuera de la
   app (si el host puso `<ID>_RECURSOS`, se ignora).
+
+## Si venías de la 0.1
+Nada obligatorio: el User-Agent ya no rompe el pedido con un nombre fuera de latin-1. Graba (YouTube) puede usar `subir` cuando
+pase a la pieza `youtube`.
 
 ## Pasar una app a esta pieza
 **Alcancía** (la única que la usa hoy, en `bin/conectores/` y `sincronizar.py`): `pieza.py actualizar alcancia red --forzar`.

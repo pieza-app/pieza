@@ -62,6 +62,8 @@ enruten solos.
 | `config_opcional` | `{clave: "cuándo"}`: claves de `config` que solo sirven si la app ofrece algo (p. ej. `tema`: «Apariencia» en Ajustes). Se suman igual, salvo `pieza.py agregar … --sin-config=tema` (o `actualizar … --sin-config=tema`; sobre una pieza ya instalada, quita la clave de `app.json` si la app no la cambió); esa decisión queda en `piezas.json` (`sin_config`) y `actualizar` la respeta. |
 | `acciones` | Las acciones tipo (a) que trae la pieza (abajo). |
 | `textos` | Frases en español → inglés. Se suman al `ui/idiomas/en.json` de la app si faltan. |
+| `textos_si_usa` | `{identificador: {frase: traducción}}`: frases de algo opcional de la pieza (p. ej. `fuerzaFrase` de «cifrado»). Se suman solo si el código propio de la app (`ui/`, `bin/`, `motor/`, `escritorio/src/`, `app/Sources/`, `app/web/`, `movil/host/`, sin lo copiado por la pieza) nombra ese identificador. |
+| `app_json` | `{sección: {esqueleto, que}}`: una sección de `app.json` que la pieza necesita (p. ej. `catalogo`). `agregar` suma el esqueleto si falta (nunca pisa una que ya está) y dice qué completar. No puede ser una clave de la app (`id`, `nombre`, `datos`, `config`, `acciones`…). |
 | `estado` | `lista` (trae código) o `planeada` (aún por extraer: sin `archivos`, con `tomar_de`). |
 | `categoria` | `base`, `ia`, `interfaz`, `datos`, `medios`, `conexiones`, `plataforma` o `repo`. |
 | `recomendar` | `{"cuando": "…", "siempre": true?, "palabras": […]?}`: cuándo sugerirla al crear una app. `siempre` = va en toda app de esas plataformas. |
@@ -138,6 +140,10 @@ red). Así el catálogo se recorre mirando, no leyendo.
 {"nombre": "Esquema", "id": "esquema", "datos": "sistema", "plataformas": ["mac", "windows", "linux"],
  "config": {"idioma_ui": ["es", "en"], "tema": ["sistema", "claro", "oscuro"], "bienvenida": "bool", "ia": ["claude", "codex", "gemini"]}}
 ```
+
+Claves que usan las piezas además: `"repo": "dueño/repo"` (el repo de GitHub de la app, p. ej. `"ana-app/ana"`: «red» lo pone en
+el User-Agent; si no tiene esa forma, se ignora), `"privado": true` (todo archivo
+0600) y las secciones propias de una pieza (`catalogo`, `transcribir`, `ia`…: ver su README).
 
 Es la única descripción de la app que leen las piezas: de aquí sale el prefijo de las variables (`ESQUEMA_DATOS`,
 `ESQUEMA_RECURSOS`), dónde se guardan los datos y qué claves de config se aceptan. `"icono": "docs/favicon.svg"` (opcional)

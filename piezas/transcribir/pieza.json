@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "transcribir",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Transcribir",
  "icono": "icono.svg",
@@ -77,7 +77,8 @@
   "Detector de voz": "Voice detector",
   "El mejor resultado; recomendado con 8 GB de RAM o más.": "The best result; recommended with 8 GB of RAM or more.",
   "Más rápido y pequeño; para equipos con poca memoria.": "Faster and smaller; for computers with little memory.",
-  "Salta los silencios: menos inventos y más rápido.": "Skips silences: fewer made-up lines and faster."
+  "Salta los silencios: menos inventos y más rápido.": "Skips silences: fewer made-up lines and faster.",
+  "La transcripción falló: {detalle}": "Transcription failed: {detalle}"
  },
  "permisos": {
   "mac": [
@@ -92,6 +93,12 @@
   "nucleo": ">=0.7.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "mejora",
+   "resumen": "Arreglo importante: «Gracias», «Thank you» y las demás frases que whisper inventa ya no se borran siempre (en una reunión se perdía lo dicho): con la energía del audio se quitan solo si caen en silencio o casi; sin ella, solo si no hay nada más en toda la transcripción. Los créditos («…Amara.org») se van siempre, como palabras completas («Tamara organizó» queda). Lo que pidieron las apps: carpeta de modelos en app.json («transcribir»: {«modelos»}) y vad=<ruta>; <ID>_MODELO_PRUEBA para un modelo falso en las pruebas; whisper_de(segmentos) (lo inverso de segmentos_de); ErrorTranscribir con frase, plantilla, valores y como_dict() (detalle ya puesto); partir= antes de filtrar; el transcriptor se busca primero en las carpetas de la app con todos los nombres; palabra por palabra va sin VAD por defecto; una energía vacía ya no borra todo.",
+   "migrar": "Nada obligatorio. Minuta: borra el reemplazo de transcribir.carpeta_modelos y pon \"transcribir\": {\"modelos\": \"~/minuta/models\"} en app.json. Graba: usa transcribir.whisper_de(segs) para escribir transcripcion.json, e.frase (o e.como_dict()) en vez de armar «frase: detalle», y PRUEBA… → <ID>_MODELO_PRUEBA en vez del archivo disperso. Corta: si quería VAD palabra por palabra, pasa vad=True. Quien pasaba energia_: igual; ahora un «Gracias.» con voz queda."
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

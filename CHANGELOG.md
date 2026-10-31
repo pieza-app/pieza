@@ -1,6 +1,19 @@
 # Cambios
 
 ## Sin publicar
+- **Lo que salió al pasar las seis apps a las piezas de datos:** `transcribir` 0.2.0: «Gracias», «Thank you» y las demás frases
+  que whisper inventa ya **no se borran siempre** (en una reunión se perdía lo dicho): con la energía del audio se quitan solo si
+  caen en silencio o casi; sin ella, solo si no hay nada más; los créditos («…Amara.org») siempre, como palabras completas
+  («Tamara organizó» queda). Suma carpeta de modelos en `app.json`, `vad=<ruta>`, `<ID>_MODELO_PRUEBA`, `whisper_de`, `partir=`,
+  `ErrorTranscribir.frase`/`como_dict()`, el transcriptor de la app primero y palabra por palabra sin VAD. `catalogo` 0.2.0
+  (rompe, seguridad): el validador recibe el **objeto entero** (antes se recortaba primero y un campo de más entraba), la frase de
+  error va en `frase`, última lista sin conexión, catálogo plano, carpetas e índice con otro nombre, ids con mayúsculas, `funcion`
+  y `campos` configurables, `generar` sin `nucleo.py` en el repo del catálogo. `red` 0.2.0 (User-Agent en ASCII, `subir` por
+  partes), `cifrado` 0.2.0 (varios sobres, `error()`, `mensajes`, `frase`), `ia` 0.6.2 (sin ResourceWarning) y `trabajos` 0.1.1.
+  `pieza.py agregar` ya no deja una pieza anotada como 0.0.0 cuando un archivo ya existe: si es igual lo cuenta, si es distinto
+  no copia nada, explica y ofrece `--forzar`; suma un esqueleto de la sección que la pieza pide en `app.json` (`app_json`) y las
+  frases opcionales solo si la app las usa (`textos_si_usa`). Pendientes anotados en `docs/catalogo.md`: modelos en el host, pieza
+  `youtube` y el dictado de Minuta.
 - **Lo que salió al pasar las seis apps a las piezas de interfaz 0.2:** `pieza.py actualizar` va en orden de dependencias y
   cuenta lo que se actualiza en la misma pasada (`componentes` que necesita el `tema` nuevo ya no se niega: se actualizan las dos,
   aunque se pida solo una; `estado` y `aviso` dicen «se actualizan juntas» con el comando), acepta varias piezas y `--sin-config`,

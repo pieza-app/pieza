@@ -226,11 +226,12 @@ class Trabajo:
 def _error(error):
     """(texto en español, error_ia o None): un error de la IA llega como {codigo, plantilla, valores} (pieza «ia»)."""
     if isinstance(error, dict):
-        ia_ = {"codigo": str(error.get("codigo", "")), "plantilla": str(error.get("plantilla", "")),
-               "valores": {str(k): str(v)[:300] for k, v in (error.get("valores") or {}).items()}}
+        valores = error.get("valores") if isinstance(error.get("valores"), dict) else {}
+        ia_ = {"codigo": str(error.get("codigo") or ""), "plantilla": str(error.get("plantilla") or ""),
+               "valores": {str(k): ("" if v is None else str(v))[:300] for k, v in valores.items()}}
         texto = ia_["plantilla"]
         for k, v in ia_["valores"].items():
-            texto = texto.replace("{" + k + "}", v)
+            texto = texto.replace("{" + k + "}", str(v))
         return texto.strip()[:600], ia_
     return str(error or "")[:600], None
 

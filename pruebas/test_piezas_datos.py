@@ -82,6 +82,64 @@ class App(unittest.TestCase):
         json.dump(a, open(ruta, "w"), ensure_ascii=False)
 
 
+# ───────────── pieza.py agregar con lo que ya está en la app ─────────────
+
+class Agregar(App):
+    def agregar(self, *args):
+        return correr(PIEZA, "agregar", *args, self.app)
+
+    def lock(self):
+        ruta = os.path.join(self.app, "piezas.json")
+        return json.load(open(ruta))["piezas"] if os.path.exists(ruta) else {}
+
+    def test_archivo_que_ya_existe(self):
+        os.makedirs(self.bin, exist_ok=True)
+        propio = os.path.join(self.bin, "contenido.py")
+        open(propio, "w").write("# el módulo propio de la app\n")
+        r = self.agregar("contenido")
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("bin/contenido.py", r.stderr)
+        self.assertIn("--forzar", r.stderr)
+        self.assertIn("renómbralo", r.stderr)
+        self.assertNotIn("contenido", self.lock(), "no queda anotada a medias (antes: versión 0.0.0 y huella vacía)")
+        self.assertEqual(open(propio).read(), "# el módulo propio de la app\n", "no se tocó nada")
+        r = correr(PIEZA, "agregar", "contenido", self.app, "--forzar")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        info = self.lock()["contenido"]
+        self.assertEqual(info["version"], json.load(open(os.path.join(BASE, "piezas/contenido/pieza.json")))["version"])
+        self.assertEqual(info["archivos"]["bin/contenido.py"], hashlib.sha256(open(propio, "rb").read()).hexdigest())
+
+    def test_archivo_igual_al_de_la_pieza(self):
+        os.makedirs(self.bin, exist_ok=True)
+        import shutil
+        shutil.copy(os.path.join(BASE, "piezas/red/python/red.py"), os.path.join(self.bin, "red.py"))
+        r = self.agregar("red")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertNotIn("no lo pisé", r.stdout)
+        self.assertNotEqual(self.lock()["red"]["version"], "0.0.0", "el mismo archivo de la pieza cuenta como copiado")
+
+    def test_seccion_de_app_json_y_textos_si_usa(self):
+        r = self.agregar("catalogo")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("«catalogo»", r.stdout)
+        a = json.load(open(os.path.join(self.app, "app.json")))
+        self.assertEqual(a["catalogo"]["tipos"], {}, "esqueleto de «catalogo» en app.json")
+        r = subprocess.run([sys.executable, "-c", "import catalogo; catalogo.config()"], cwd=self.bin, env=self.env, capture_output=True, text=True)
+        self.assertIn("dueño/repo", r.stderr, "el esqueleto sin completar da un error claro")
+        en = os.path.join(self.app, "ui", "idiomas", "en.json")
+        self.assertEqual(self.agregar("cifrado").returncode, 0)
+        textos = json.load(open(en))["textos"]
+        self.assertIn("La frase no es la correcta.", textos)
+        self.assertNotIn("Muy corta", textos, "la app no usa fuerzaFrase: sus frases no entran")
+        otra = os.path.join(self.tmp.name, "otra")
+        os.makedirs(os.path.join(otra, "ui", "idiomas"))
+        json.dump({"codigo": "en", "textos": {}}, open(os.path.join(otra, "ui", "idiomas", "en.json"), "w"))
+        open(os.path.join(otra, "ui", "app.js"), "w").write("const f = PiezaCifrado.fuerzaFrase(x);\n")
+        correr(PIEZA, "iniciar", otra, "otra", "Otra")
+        self.assertEqual(correr(PIEZA, "agregar", "cifrado", otra).returncode, 0)
+        self.assertIn("Muy corta", json.load(open(os.path.join(otra, "ui", "idiomas", "en.json")))["textos"])
+
+
 # ───────────── red ─────────────
 
 class _Servidor(http.server.BaseHTTPRequestHandler):
@@ -94,7 +152,7 @@ class _Servidor(http.server.BaseHTTPRequestHandler):
         _Servidor.vistos.append(self.path)
         ruta = self.path
         if ruta.startswith("/api.ejemplo.com/ok"):
-            cuerpo = json.dumps({"saldo": 100, "auth": self.headers.get("Authorization")}).encode()
+            cuerpo = json.dumps({"saldo": 100, "auth": self.headers.get("Authorization"), "agente": self.headers.get("User-Agent")}).encode()
             self.send_response(200); self.send_header("Content-Length", str(len(cuerpo))); self.end_headers(); self.wfile.write(cuerpo)
         elif ruta.startswith("/api.ejemplo.com/redirige"):
             self.send_response(302); self.send_header("Location", "http://127.0.0.1:1/robar"); self.end_headers()
@@ -109,6 +167,28 @@ class _Servidor(http.server.BaseHTTPRequestHandler):
             self.send_response(401); self.send_header("Content-Length", "2"); self.end_headers(); self.wfile.write(b"no")
         else:
             self.send_response(404); self.end_headers()
+
+
+    recibido = b""
+
+    def do_PUT(self):
+        # Una subida «resumable»: guarda cada parte, responde 308 con lo que tiene (la primera vez se «pierde» la mitad de la parte,
+        # para probar que se retoma desde lo que dice el servicio) y 200 al completar.
+        rango = self.headers.get("Content-Range", "")
+        datos = self.rfile.read(int(self.headers.get("Content-Length") or 0))
+        _Servidor.vistos.append(rango)
+        a, total = rango.split(" ")[1].split("/")
+        inicio = int(a.split("-")[0])
+        if inicio != len(_Servidor.recibido):
+            self.send_response(400); self.end_headers(); return
+        guardo = datos[: len(datos) // 2] if len(_Servidor.vistos) == 1 else datos
+        _Servidor.recibido += guardo
+        if len(_Servidor.recibido) < int(total):
+            self.send_response(308); self.send_header("Range", f"bytes=0-{len(_Servidor.recibido) - 1}")
+            self.send_header("Content-Length", "0"); self.end_headers()
+        else:
+            cuerpo = json.dumps({"id": "video-1", "bytes": len(_Servidor.recibido)}).encode()
+            self.send_response(200); self.send_header("Content-Length", str(len(cuerpo))); self.end_headers(); self.wfile.write(cuerpo)
 
 
 class Red(App):
@@ -160,6 +240,31 @@ class Red(App):
     def test_respuesta_grande_se_corta(self):
         r = self.pedir("https://api.ejemplo.com/grande", crudo=True)
         self.assertEqual(r["codigo"], "grande")
+
+    def test_agente_en_ascii_con_repo(self):
+        self.app_json(nombre="Pruebaña ☃", repo="ana-app/prueba")
+        r = self.pedir("https://api.ejemplo.com/ok")
+        self.assertEqual(r["r"]["agente"], "Pruebana (ana-app/prueba)", "un nombre fuera de latin-1 ya no rompe el pedido")
+        self.app_json(repo="no es un repo")
+        self.assertEqual(self.pedir("https://api.ejemplo.com/ok")["r"]["agente"], "Pruebana")
+
+    def test_subir_por_partes_con_avance(self):
+        _Servidor.recibido = b""
+        archivo = os.path.join(self.tmp.name, "video.bin")
+        datos = os.urandom(700 * 1024)
+        open(archivo, "wb").write(datos)
+        r = self.py(f"""
+            import json, red
+            avance = []
+            r = red.Red(["upload.ejemplo.com"], "Videos")
+            res = r.subir("https://upload.ejemplo.com/subida?id=1", {archivo!r}, parte=256 * 1024, avance=lambda a, t: avance.append([a, t]))
+            print(json.dumps({{"res": res, "avance": avance}}))
+            """)
+        self.assertEqual(_Servidor.recibido, datos)
+        self.assertEqual(r["res"], {"id": "video-1", "bytes": len(datos)})
+        self.assertEqual(r["avance"][-1], [len(datos), len(datos)])
+        self.assertEqual(_Servidor.vistos[0], f"bytes 0-{256 * 1024 - 1}/{len(datos)}")
+        self.assertEqual(_Servidor.vistos[1].split(" ")[1].split("-")[0], str(128 * 1024), "sigue desde lo que el servicio dice tener")
 
     def test_dentro_de_la_app_no_hay_servidor_falso(self):
         self.env["PRUEBA_RECURSOS"] = self.app
@@ -230,8 +335,8 @@ class Catalogo(App):
         ]
         r = self.indice([buena] + malas)
         self.assertTrue(r["ok"])
-        self.assertEqual([x["id"] for x in r["plantillas"]], ["buena", "campos"])
-        self.assertNotIn("script", r["plantillas"][1], "solo los campos del formato")
+        self.assertEqual([x["id"] for x in r["plantillas"]], ["buena"],
+                         "un campo de más que el validador no acepta se rechaza (antes se recortaba y entraba)")
         # «archivo» y «bytes» (el nombre que usaba Corta) también sirven
         alias = {k: v for k, v in buena.items() if k not in ("ruta", "tamano")}
         r = self.indice([{**alias, "archivo": buena["ruta"], "bytes": buena["tamano"]}])
@@ -270,6 +375,70 @@ class Catalogo(App):
         self.assertEqual([(x["nombre"], x["origen"]) for x in lista], [("Hola", "incluido")])
         self.assertFalse(self.script("catalogo.py", "quitar", {"tipo": "plantillas", "id": "../../app"})["ok"])
         self.assertEqual(self.script("catalogo.py", "listar", {"tipo": "otro"})["codigo"], "no_valido")
+
+    def test_se_valida_entero_y_se_recorta_despues(self):
+        with open(os.path.join(self.bin, "formato_suelto.py"), "w") as f:
+            f.write("CLAVES = ('formato', 'id', 'categoria', 'nombre')\n"
+                    "def revisar(p):\n    return [] if p.get('formato') == 1 and 'script' not in p else ['no']\n")
+        self.app_json(catalogo={"repo": "ana-app/ana-catalogo", "tipos": {
+            "plantillas": {"validador": "formato_suelto", "funcion": "revisar", "campos": "CLAVES"}}})
+        buena, _ = self.entrada({**self.p("buena", "Buena"), "nota": "se acepta pero no se guarda"})
+        mala, _ = self.entrada({**self.p("mala", "Mala"), "script": "alert(1)"})
+        r = self.indice([buena, mala])
+        self.assertEqual([x["id"] for x in r["plantillas"]], ["buena"], "la función y los campos salen de app.json")
+        self.assertNotIn("nota", r["plantillas"][0], "lo que acepta el validador se recorta a sus campos después")
+
+    def test_plano_otra_carpeta_mayusculas_y_sin_conexion(self):
+        with open(os.path.join(self.bin, "idioma_prueba.py"), "w") as f:
+            f.write("CAMPOS = ('id', 'nombre')\ndef validar(p):\n    return [k for k in p if k not in CAMPOS]\n")
+        self.app_json(catalogo={"repo": "ana-app/ana-catalogo", "tipos": {"idiomas": {
+            "validador": "idioma_prueba", "categoria": False, "mayusculas": True, "carpeta": "traducciones", "local": "lenguas",
+            "singular": "plantilla"}}})
+        self.assertEqual(self.script("catalogo.py", "ultima", {"tipo": "idiomas"})["codigo"], "sin_conexion")
+        def e(i):
+            crudo = json.dumps({"id": i, "nombre": i}).encode()
+            return {"id": i, "nombre": i, "ruta": f"traducciones/{i}.json", "sha256": hashlib.sha256(crudo).hexdigest(),
+                    "tamano": len(crudo)}, crudo
+        pt, crudo = e("pt-BR")
+        ruta = os.path.join(self.tmp.name, "index.json")
+        json.dump({"formato": 1, "idiomas": [pt, e("pt-br")[0], {**e("de")[0], "ruta": "traducciones/x/de.json"}]}, open(ruta, "w"))
+        r = self.script("catalogo.py", "indice", {"tipo": "idiomas", "archivo": ruta})
+        self.assertEqual([x["id"] for x in r["idiomas"]], ["pt-BR"], "mayúsculas sí; repetido sin distinguir mayúsculas no; plano")
+        sin = self.script("catalogo.py", "ultima", {"tipo": "idiomas"})
+        self.assertEqual(([x["id"] for x in sin["idiomas"]], sin["guardada"]), (["pt-BR"], True), "la última lista, sin conexión")
+        json.dump([pt], open(ruta, "w"))
+        self.assertEqual([x["id"] for x in self.script("catalogo.py", "indice", {"tipo": "idiomas", "archivo": ruta})["idiomas"]], ["pt-BR"],
+                         "un índice que es solo una lista también sirve")
+        archivo = os.path.join(self.tmp.name, "b.json")
+        open(archivo, "wb").write(crudo)
+        r = self.script("catalogo.py", "instalar", {"tipo": "idiomas", "archivo": archivo, "id": "pt-BR", "sha256": pt["sha256"]})
+        self.assertEqual(r["plantilla"]["id"], "pt-BR", "con singular «plantilla», ahí va el objeto")
+        self.assertTrue(os.path.isfile(os.path.join(self.datos, "lenguas", "pt-BR.json")), "guardado en «local»")
+        mal = self.script("catalogo.py", "instalar", {"tipo": "idiomas", "archivo": archivo, "id": "pt-BR", "sha256": "0" * 64})
+        self.assertEqual((mal["frase"], "plantilla" in mal), ("Ya no está en el catálogo. Vuelve a abrirlo.", False),
+                         "la frase del error va en «frase»: no choca con el objeto")
+
+    def test_generar_en_el_repo_del_catalogo_sin_nucleo(self):
+        repo = os.path.join(self.tmp.name, "repo-catalogo")
+        os.makedirs(os.path.join(repo, "herramientas"))
+        os.makedirs(os.path.join(repo, "traducciones"))
+        import shutil
+        shutil.copy(os.path.join(self.bin, "catalogo.py"), os.path.join(repo, "herramientas"))
+        with open(os.path.join(repo, "herramientas", "idioma_formato.py"), "w") as f:
+            f.write("CAMPOS = ('id', 'nombre')\ndef validar(p):\n    return [k for k in p if k not in CAMPOS]\n")
+        self.guardar(os.path.join(repo, "traducciones", "pt-BR.json"), {"id": "pt-BR", "nombre": "Português"})
+        self.guardar(os.path.join(repo, "traducciones", "mal.json"), {"id": "mal", "nombre": "x", "extra": 1})
+        r = subprocess.run([sys.executable, "herramientas/catalogo.py", "generar", "idiomas", ".", "traducciones/index.json",
+                            "--validador=herramientas/idioma_formato.py",
+                            '--opciones={"categoria": false, "mayusculas": true, "carpeta": "traducciones"}'],
+                           cwd=repo, capture_output=True, text=True, env={"PATH": "/usr/bin:/bin"})
+        self.assertEqual(r.returncode, 1, r.stderr)
+        self.assertIn("mal.json", r.stdout)
+        d = json.load(open(os.path.join(repo, "traducciones", "index.json")))
+        self.assertEqual([x["ruta"] for x in d["idiomas"]], ["traducciones/pt-BR.json"])
+        r = subprocess.run([sys.executable, "herramientas/catalogo.py", "generar", "idiomas", ".", "x.json"], cwd=repo,
+                           capture_output=True, text=True)
+        self.assertIn("--validador", r.stderr, "sin app.json ni --validador, lo dice claro")
 
     def test_generar_el_indice_del_repo(self):
         raiz = os.path.join(self.tmp.name, "repo")
@@ -314,7 +483,8 @@ if "-ml" in args:
     t = [seg(0, 400, "Hola"), seg(400, 450, ","), seg(500, 900, "Ana")]
 else:
     t = [seg(0, 2000, "Hola, soy Ana."), seg(2000, 2500, "[Música]"), seg(2500, 4000, "Gracias por ver el video."),
-         seg(4000, 5000, "Sí."), seg(5000, 6000, "Sí."), seg(6000, 7000, "sí"), seg(7000, 8000, "Sí.")]
+         seg(4000, 5000, "Sí."), seg(5000, 6000, "Sí."), seg(6000, 7000, "sí"), seg(7000, 8000, "Sí."),
+         seg(8000, 9000, "Subtítulos realizados por la comunidad de Amara.org")]
 json.dump({"transcription": t}, open(salida + ".json", "w"))
 '''
 
@@ -352,7 +522,8 @@ class Transcribir(App):
         r = self.revisar_vocabulario()
         self.assertTrue(r["argv"][1].startswith("@"))
         self.assertIn("es", r["args"])
-        self.assertEqual([s["texto"] for s in segs], ["Hola, soy Ana.", "Sí.", "Sí."], "sin marcas, sin inventos y sin bucles")
+        self.assertEqual([s["texto"] for s in segs], ["Hola, soy Ana.", "Gracias por ver el video.", "Sí.", "Sí."],
+                         "sin marcas, sin créditos y sin bucles; sin la energía, un «gracias» puede haberse dicho: queda")
 
     def test_binario_de_la_app_con_prompt_archivo(self):
         self.cli("prueba-transcribir", WHISPER)
@@ -368,6 +539,88 @@ class Transcribir(App):
         self.assertEqual(pal, [{"t": "Hola,", "i": 0.0, "f": 0.45}, {"t": "Ana", "i": 0.5, "f": 0.9}])
         r = json.load(open(self.registro))
         self.assertEqual(r["args"][r["args"].index("-l") + 1], "auto", "un idioma raro no entra")
+
+    def test_inventos_con_y_sin_energia(self):
+        r = self.py("""
+            import json, transcribir as t
+            s = lambda d, h, x: {"desde": d, "hasta": h, "texto": x}
+            segs = [s(0, 1, "Hola, Ana."), s(1, 2, "Gracias."), s(2, 3, "Gracias, Ana, por venir."), s(3, 4, "Thank you."),
+                    s(4, 5, "Tamara organizó todo."), s(5, 6, "Subtítulos realizados por la comunidad de Amara.org y más")]
+            # 0-2 s se habla fuerte; 3-4 s, ruido de fondo (bajo UMBRAL_INVENTO pero sobre el silencio); el resto, voz
+            energia = [0.1] * 20 + [0.1] * 10 + [0.007] * 10 + [0.1] * 20
+            print(json.dumps({
+                "sin": [x["texto"] for x in t.limpiar(segs)],
+                "con": [x["texto"] for x in t.limpiar(segs, energia)],
+                "solo": t.limpiar([s(0, 1, "Gracias."), s(1, 2, "Thank you.")]),
+                "vacia": [x["texto"] for x in t.limpiar(segs[:2], [])],
+                "exacta": [t.es_alucinacion("Gracias."), t.es_alucinacion("Gracias, Ana"), t.es_credito("amara.org"),
+                           t.es_credito("Tamara organizó")],
+                "partir": [x["texto"] for x in t.limpiar([s(0, 2, "Hola. Gracias.")], energia,
+                                                          partir=lambda ss: [s(0, 1, "Hola."), s(3, 4, "Gracias.")])],
+            }))
+            """)
+        self.assertEqual(r["sin"], ["Hola, Ana.", "Gracias.", "Gracias, Ana, por venir.", "Thank you.", "Tamara organizó todo."],
+                         "sin la energía solo se quitan los créditos (subcadena con palabras completas: «Tamara organizó» queda)")
+        self.assertEqual(r["con"], ["Hola, Ana.", "Gracias.", "Gracias, Ana, por venir.", "Tamara organizó todo."],
+                         "con la energía, «Thank you» sobre ruido se va y el «Gracias.» dicho con voz queda")
+        self.assertEqual(r["solo"], [], "sin nada real en toda la transcripción, los inventos se van")
+        self.assertEqual(r["vacia"], ["Hola, Ana.", "Gracias."], "energía vacía (WAV raro) es como no tenerla: no borra todo")
+        self.assertEqual(r["exacta"], [True, False, True, False])
+        self.assertEqual(r["partir"], ["Hola."], "partir corre antes de filtrar: cada parte se filtra sola")
+
+    def test_vad_carpeta_de_modelos_y_modelo_de_prueba(self):
+        self.cli("whisper-cli", WHISPER)
+        modelos = os.path.join(self.tmp.name, "mis-modelos")
+        self.app_json(transcribir={"modelos": modelos})
+        os.makedirs(modelos)
+        open(os.path.join(modelos, "ggml-silero-v5.1.2.bin"), "wb").write(b"vad")
+        self.transcribir()
+        self.assertIn("--vad", json.load(open(self.registro))["args"], "con segmentos, el VAD de la carpeta de app.json")
+        self.transcribir(palabras=True)
+        self.assertNotIn("--vad", json.load(open(self.registro))["args"], "palabra por palabra, sin VAD por defecto")
+        otro = os.path.join(self.tmp.name, "otro-vad.bin")
+        open(otro, "wb").write(b"v")
+        self.transcribir(palabras=True, vad=otro)
+        a = json.load(open(self.registro))["args"]
+        self.assertEqual(a[a.index("-vm") + 1], otro, "vad=<ruta> usa ese modelo")
+        self.transcribir(vad=False)
+        self.assertNotIn("--vad", json.load(open(self.registro))["args"])
+        falso = os.path.join(self.tmp.name, "falso.bin")
+        open(falso, "wb").write(b"x")
+        r = self.py("import json, transcribir; print(json.dumps(transcribir.modelo_elegido()))", env={"PRUEBA_MODELO_PRUEBA": falso})
+        self.assertEqual(r, falso)
+        r = self.py("import json, transcribir; print(json.dumps(transcribir.modelo_elegido()))",
+                    env={"PRUEBA_MODELO_PRUEBA": falso, "PRUEBA_RECURSOS": self.app})
+        self.assertIsNone(r, "dentro de la app el modelo de prueba no cuenta")
+        self.app_json(transcribir={"modelos": "../fuera"})
+        r = subprocess.run([sys.executable, "-c", "import transcribir; transcribir.carpeta_modelos()"], cwd=self.bin, env=self.env,
+                           capture_output=True, text=True)
+        self.assertIn("transcribir.modelos", r.stderr)
+
+    def test_primero_las_carpetas_de_la_app_con_todos_los_nombres(self):
+        programas = os.path.join(self.tmp.name, "programas")
+        os.makedirs(programas)
+        self.cli("prueba-transcribir", "raise SystemExit(9)")  # en el PATH
+        propio = os.path.join(programas, "whisper-cli")
+        open(propio, "w").write("#!/bin/sh\n")
+        os.chmod(propio, 0o755)
+        r = self.py("import json, transcribir; print(json.dumps(transcribir.transcriptor()))", env={"PRUEBA_PROGRAMAS": programas})
+        self.assertEqual(r, propio, "el whisper-cli que trae la app gana sobre un <id>-transcribir del sistema")
+
+    def test_whisper_de_es_lo_inverso_y_el_error_con_detalle(self):
+        r = self.py("""
+            import json, transcribir as t
+            segs = [{"desde": 0.0, "hasta": 1.25, "texto": "Hola."}, {"desde": 1.25, "hasta": 2.0, "texto": "Chao."}]
+            e = t.ErrorTranscribir("fallo", "error: \\n  no pude abrir el modelo")
+            print(json.dumps({"ida": t.segmentos_de(t.whisper_de(segs)) == segs, "w": t.whisper_de(segs)["transcription"][0],
+                              "e": e.como_dict(), "str": str(e), "sin": t.ErrorTranscribir("fallo").como_dict()}))
+            """)
+        self.assertTrue(r["ida"])
+        self.assertEqual(r["w"], {"offsets": {"from": 0, "to": 1250}, "text": "Hola."})
+        self.assertEqual(r["e"]["error"], "La transcripción falló: error: no pude abrir el modelo")
+        self.assertEqual((r["e"]["plantilla"], r["e"]["valores"]), ("La transcripción falló: {detalle}", {"detalle": "error: no pude abrir el modelo"}))
+        self.assertEqual(r["str"], "La transcripción falló.", "str(e) sigue siendo la frase corta de siempre")
+        self.assertEqual((r["sin"]["plantilla"], r["sin"]["valores"]), ("La transcripción falló.", {}))
 
     def test_sin_modelo_o_sin_transcriptor_da_codigo(self):
         r = self.py("""
@@ -434,6 +687,17 @@ class Trabajos(App):
         self.assertEqual(r[:3], ["Claude se demoró.", "demora", "cola"])
         self.assertEqual(r[3], [r[5]])
         self.assertEqual(r[4], ["A", "B"])
+
+    def test_error_de_la_ia_con_valores_raros(self):
+        r = self.py("""
+            import json, trabajos
+            t = trabajos.Trabajo.nuevo("x", "/c", ["a"], {})
+            t.terminar("error", {"codigo": None, "plantilla": "{ia} tardó {n} min ({nada}).", "valores": {"ia": "Claude", "n": 20, "nada": None}})
+            u = trabajos.Trabajo.nuevo("x", "/c", ["a"], {})
+            u.terminar("error", {"codigo": "x", "plantilla": "Falló.", "valores": ["no", "es", "objeto"]})
+            print(json.dumps([t.vista()["error"], t.vista()["error_ia"]["valores"], u.vista()["error"]]))
+            """)
+        self.assertEqual(r, ["Claude tardó 20 min ().", {"ia": "Claude", "n": "20", "nada": ""}, "Falló."])
 
 
 # ───────────── contenido ─────────────
@@ -626,6 +890,20 @@ class IAVivo(App):
         self.assertIn("--json", argv)
         self.assertIn("read-only", argv)
         self.assertNotIn(SECRETO, " ".join(argv))
+
+    def test_codex_lee_su_salida_cerrando_el_archivo(self):
+        codigo = textwrap.dedent("""
+            import gc, json, ia
+            t, e = ia.preguntar("hola", ia="codex")
+            t2, e2 = ia.preguntar_vivo("hola", ia="codex")
+            gc.collect()
+            print(json.dumps([t.strip(), t2.strip()]))
+            """)
+        r = subprocess.run([sys.executable, "-X", "dev", "-W", "always::ResourceWarning", "-c", codigo], cwd=self.bin, env=self.env,
+                           capture_output=True, text=True)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertEqual(json.loads(r.stdout.strip().splitlines()[-1]), ["listo", "listo"])
+        self.assertNotIn("ResourceWarning", r.stderr)
 
 
 if __name__ == "__main__":

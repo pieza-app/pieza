@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "red",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Red segura",
  "icono": "icono.svg",
@@ -43,6 +43,12 @@
   "nucleo": ">=0.7.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "mejora",
+   "resumen": "Arreglo: un nombre de app fuera de latin-1 (un emoji, letras de otros alfabetos) rompía el pedido en el User-Agent: ahora va en ASCII («Alcancía» → «Alcancia»), y «repo» de app.json solo entra si es «dueño/repo». Nuevo: subir(url, archivo, parte, avance) sube un archivo grande por partes con Content-Range (subidas «resumable»: retoma desde lo que el servicio dice tener con 308 + Range) y pedir(datos=bytes, tipo=) para un cuerpo tal cual.",
+   "migrar": "Nada obligatorio. Pon \"repo\": \"dueño/repo\" en app.json si quieres el repo en el User-Agent."
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",
