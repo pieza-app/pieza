@@ -1,0 +1,40 @@
+{
+ "formato": 1,
+ "id": "contrato",
+ "version": "0.1.0",
+ "estado": "lista",
+ "nombre": "Contrato del puente",
+ "icono": "icono.svg",
+ "licencia": "MPL-2.0",
+ "categoria": "repo",
+ "descripcion": "Una prueba que revisa que la interfaz y cada plataforma (Mac, Windows/Linux, celular, vista previa) digan lo mismo: cada acción atendida (registrada, del host o declarada), acciones.json al día, las respuestas existen y la seguridad común. Lo propio de la app va en un archivo chico.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Toda app con interfaz y al menos un host (Mac, Windows/Linux o celular)."
+ },
+ "requiere": [],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux",
+  "ios",
+  "android"
+ ],
+ "origen": "Lo común de pruebas/contrato.py de las seis apps: Corta y Graba (registradas + del host + declaradas, `copiado` solo si se usa «copiar», registrada y declarada a la vez), Esquema (CSP, Electron con sandbox, acciones.json en extraResources, la misma versión en Info.plist y package.json), Alcancía y Repasa (celular: ACCIONES/SOLO_MAC, métodos nativos en Swift, Kotlin y el Capacitor falso, Capacitor y Android sin red ni respaldo, ATS; bundle id igual en Info.plist y la firma), Minuta ($campo solo enum o entero, excepciones con motivo en un lugar). Nuevo: leer el JS por bloques (no por sangría), las comunes de la vista previa, excepciones que avisan cuando sobran, --app para revisar otra app sin escribir nada, y que docs/pagina.json → «usa» diga lo que el código usa.",
+ "archivos": {
+  "python/contrato.py": "pruebas/contrato.py"
+ },
+ "config": {},
+ "acciones": {},
+ "permisos": {},
+ "red": [],
+ "pantallas": [],
+ "tareas_persona": [],
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "resumen": "Primera versión: el contrato común del puente (pruebas/contrato.py) con su extensión propia (pruebas/contrato_app.py)."
+  }
+ ]
+}

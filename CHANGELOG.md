@@ -14,6 +14,23 @@
   `LICENSE`). `pieza.py repo configurar <app> [--aplicar]`: topics con `hecho-con-pieza`, Discussions, reporte privado de fallas,
   aprobar las pruebas de quien aporta, ruleset de la rama principal y etiquetas. Prueba que la pieza reproduce el `Info.plist` de
   las seis apps y el `empaquetar.sh` de Esquema, Corta y Graba. `correr.sh` revisa también los workflows de las plantillas.
+- **Pieza nueva «pagina» 0.1.0:** la página pública bilingüe de una app **generada desde `docs/pagina.json`** (lo propio: frase,
+  funciones, comparación, preguntas, capturas, color) con el mecanismo de plantillas (`generar`/`datos_app`): `docs/index.html` sin
+  nada en línea (CSP `script-src 'self'`), SEO (canonical, `hreflang`, Open Graph/Twitter, `sitemap.xml`; `robots.txt` y la redirección
+  para `<org>.github.io`), descarga según el sistema con los nombres fijos de los Releases, demo en `/demo/`, sello «Hecho con Pieza»
+  y `.github/workflows/pagina.yml` (actions por SHA, permisos mínimos). **«Permisos e internet» y las preguntas comunes** (cómo se
+  actualiza, «no puede verificar la app» con los pasos de macOS 15 y Windows, dónde están mis datos, qué IA uso, permisos, costo)
+  salen de lo que ya sabe Pieza (`docs/pagina-comunes.json`), según las piezas y plataformas de la app, y el **JSON-LD
+  `SoftwareApplication` + `FAQPage` se arma de los mismos textos que se ven**. `herramientas/pagina_capturas.mjs`: servir como en
+  Pages, capturas desde la vista previa (por datos, sin red), `compartir.png` y la revisión (es/en, 390 px, textos sin traducir,
+  contraste AA, JSON-LD = lo visible), que también corre en `pruebas/pagina.mjs`.
+- **Pieza nueva «contrato» 0.1.0:** `pruebas/contrato.py` común para todas las apps (antes, uno de 120–240 líneas en cada una): cada
+  acción de la interfaz atendida en cada plataforma (registrada, del host o declarada) y en la vista previa, nada que sobre,
+  `acciones.json` al día, las funciones de `window.<App>` y la seguridad común (CSP, IA solo por `bin/ia.py`, ATS, bundle id = firma,
+  `acciones.json` en el paquete, Electron con sandbox, celular sin red ni respaldo y sus métodos nativos). Lo propio en
+  `pruebas/contrato_app.py` (excepciones con motivo que avisan si sobran, patrones y `revisar`). Corrido contra las seis apps: ver su
+  README (Graba y Corta pasan; Alcancía, Repasa y Esquema con 1–4 cosas a decidir; Minuta necesita su extensión y tiene 47 acciones
+  sin vista previa).
 - **Flujo de crear (versión 11, plugin 0.8.1):** la línea de `CONTRIBUTING.md` ya no dice que los flujos de Pieza «se instalan
   solos al abrir el repo»: con `extraKnownMarketplaces` Claude Code los **ofrece**. A propósito no se suma `enabledPlugins` a lo que
   deja `pieza.py iniciar` (activaría el plugin a quien abra el repo sin preguntarle; la prueba lo revisa). `docs/catalogo.md`: lo que
