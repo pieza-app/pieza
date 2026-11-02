@@ -138,12 +138,14 @@ las piezas nuevas sin ejecutar su código):
 | Marca | Qué hace |
 |---|---|
 | `{{nombre}}`, `{{app.empaquetado.categoria}}` | El valor. Si no existe, **error** (un tipeo nunca pasa callado). Un texto solo entra si es «seguro» (sin comillas, acento grave, `$`, `\`, `<`, `>`, `&`, llaves, barra vertical, `;` ni saltos de línea); si no, la plantilla dice cómo escaparlo. |
-| `{{x\|filtro\|filtro}}` | Escapar: `xml`, `json`, `yaml`, `sh`. Transformar: `ascii` (Alcancía → Alcancia), `minus`, `mayus`. Validar (fallan si no calza): `https`, `sha256`, `nombre`, `ruta`, `version`, `id` y `linea` (texto libre de una línea, solo donde nada se interpreta: un heredoc entre comillas, Markdown). |
+| `{{x\|filtro\|filtro}}` | Escapar: `xml`, `json` (también deja `<`, `>`, `&`, U+2028 y U+2029 como `\u…`: sirve dentro de un `<script>`), `yaml`, `sh`. Transformar: `ascii` (Alcancía → Alcancia), `minus`, `mayus`. Validar (fallan si no calza): `https`, `sha256`, `nombre`, `ruta`, `version`, `id`, `color` (`#rgb`, `#rrggbb`, `#rrggbbaa`, `rgb()`/`rgba()`/`hsl()`/`hsla()` con números: para CSS) y `linea` (texto libre de una línea, solo donde nada se interpreta: un heredoc entre comillas, Markdown). |
 | `{{#si x}}…{{#sino}}…{{/si}}`, `{{#no x}}…{{/no}}` | Condición (`false`, `0`, `""`, `[]`, `{}` y lo que falta cuentan como no). |
 | `{{#cada lista como b}}…{{b.url}}…{{/cada}}` | Recorrer; adentro también `b_primero` y `b_ultimo`. |
 | `{{! comentario }}` | No sale. |
 
-`${{ … }}` (GitHub Actions) no es una marca y queda tal cual. Una línea que solo tiene una marca de bloque desaparece entera.
+`${{ … }}` (GitHub Actions) no es una marca y queda tal cual en la plantilla; un **valor** que se inserta (de `app.json` o de
+los datos) nunca puede traer `${{`, `{{` ni `}}`: es un error (así un dato no se vuelve una expresión de Actions). Una línea que
+solo tiene una marca de bloque desaparece entera.
 
 **Contexto** (lo que ve toda plantilla; `python3 herramientas/plantillas.py contexto app.json` lo muestra):
 
@@ -165,8 +167,9 @@ las piezas nuevas sin ejecutar su código):
 otra vez lo generado de **todas** las piezas instaladas (una pieza nueva puede cambiar lo de otra). La huella de cada archivo queda
 en `piezas.json` → `generados`: si la app lo cambió, la pieza ya no lo toca (`estado` lo dice; `diferencias` muestra lo generado
 contra lo de la app; `--forzar` lo reemplaza). Un archivo que ya existía y es distinto queda como de la app (no detiene `agregar`).
-Lo de `.github/` **nunca se actualiza solo**: el token de Actions no puede escribir workflows y uno nuevo lo tiene que ver una
-persona; «Pieza al día» lo pone en el issue. Una pieza de la comunidad no puede generar archivos.
+Lo de `.github/` y `.claude/` **nunca se actualiza solo**: el token de Actions no puede escribir workflows, y un workflow o unos
+ajustes de la IA (que pueden definir hooks) los tiene que ver una persona; «Pieza al día» lo pone en el issue. Lo generado se
+escribe con un temporal nuevo en la misma carpeta (sin seguir enlaces) que reemplaza al archivo. Una pieza de la comunidad no puede generar archivos.
 
 ## Licencia
 

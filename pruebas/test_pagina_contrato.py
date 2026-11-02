@@ -150,6 +150,31 @@ class Pagina(unittest.TestCase):
         xml.dom.minidom.parseString(leer(os.path.join(self.app, "docs", "sitemap.xml")))
         self.assertIn("Sitemap: https://ana-app.github.io/ana/sitemap.xml", leer(os.path.join(self.app, "herramientas", "org.github.io", "robots.txt")))
 
+    def test_lo_de_la_app_no_cierra_el_script_ni_el_css(self):
+        """Un texto de pagina.json que intenta cerrar el <script type="application/ld+json"> no sale tal cual, y un acento que
+        no es un color no llega a colores.css."""
+        malo = '</script><meta http-equiv="refresh" content="0;url=https://evil.example">'
+        self.iniciar()
+        self.completar(descripcion={"es": malo, "en": "x"},
+                       preguntas=[{"pregunta": {"es": malo, "en": "q"}, "respuesta": {"es": malo, "en": "a"}}])
+        self.generar()
+        idx = leer(os.path.join(self.app, "docs", "index.html"))
+        self.assertNotIn("</script><meta", idx)
+        self.assertNotIn('<meta http-equiv="refresh"', idx)
+        p = Faq()
+        p.feed(idx)
+        ld = json.loads("".join(p.ld))
+        self.assertEqual(ld["@graph"][0]["description"], malo)  # el JSON-LD dice lo mismo, escapado
+        self.assertEqual(idx.count("<script"), idx.count("</script>"))
+        css = os.path.join(self.app, "docs", "colores.css")
+        antes = leer(css)
+        self.completar(acento={"claro": "#fff;}body{background:url(https://evil.example)", "oscuro": "#111"})
+        r = correr(PIEZA, "generar", self.app)
+        self.assertNotEqual(r.returncode, 0)
+        self.assertIn("color", r.stdout + r.stderr)
+        self.assertEqual(leer(css), antes)
+        self.assertNotIn("evil.example", leer(css))
+
     def test_sin_actualizaciones_ni_ia_y_solo_mac(self):
         self.iniciar(plataformas="mac")
         self.completar(preguntas=[])

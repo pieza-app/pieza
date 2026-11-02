@@ -52,7 +52,8 @@ Todo junto (ver «Preguntar todo junto»; si no responde, usa los valores por de
 
 ## 2. Ficha (mostrarla y confirmar antes de crear nada)
 `python3 herramientas/pieza.py ficha <piezas> --plataformas <plataformas>` da pantallas, config, permisos por plataforma, red,
-acciones y lo que solo puede hacer la persona. Súmale lo propio: qué es, las **pantallas de la app** (principal, flujo central,
+acciones y lo que solo puede hacer la persona (si la app no sale a ninguna red, dilo: «funciona sin internet»). Súmale lo
+propio: qué es, las **pantallas de la app** (principal, flujo central,
 vacíos), los repos (`<org>/<app>`, `<org>/<app>-catalogo` si hay catálogo, `<org>/.github`, `<org>/<org>.github.io`), las acciones
 propias (cuáles solo corren un script: se **declaran**) y dónde no está una pieza (`faltan_en`). Muéstrala en un documento que la
 persona guarde (después va a `docs/ficha.md`); con su sí, crea la lista de tareas con las fases de abajo.
@@ -78,7 +79,9 @@ host, demo y pruebas). Al final imprime **qué le toca a la IA**: haz eso y nada
    ficticios, `pruebas/test_app.py` e `interfaz.mjs`) por las pantallas de la ficha. Una acción que solo corre un script va en
    `app.json` → `acciones` (después `pieza.py acciones .`), nunca en Swift ni en `main.js`; lo nativo propio, con `p.registrar` y
    `host.acciones.registrar` (las dos). Cada texto nuevo con su inglés en `ui/idiomas/en.json`. Para lo de escritorio, la skill
-   **app-escritorio-multiplataforma**; para todo el diseño, **diseno-y-calidad-de-producto**.
+   **app-escritorio-multiplataforma**; para todo el diseño, **diseno-y-calidad-de-producto**. El texto sobre el acento se elige
+   por contraste WCAG (#fff o #111), con prueba. Comentarios desde la app (issue prellenado): **nunca obligatorios ni sugeridos**,
+   solo cuando la persona los pide.
 3. `app.json` → `empaquetado` (descripción, categoría, permisos) y, si cambias `app.json`, `pieza.py generar .`.
 Primero lo mínimo de punta a punta en una plataforma, muéstraselo a la persona, después amplía. `bash pruebas/correr.sh` en verde
 y `pieza.py estado .` limpio antes de cada commit; `bash herramientas/revisar_privacidad.sh` también (ejemplos con Ana Pérez,
@@ -88,9 +91,9 @@ Matías Soto). Nada de lo que es de una pieza se edita a mano: si hace falta, el
 - Conecta el repo con permiso de escritura (ver «Conectar un repo»). Autor de commits: el usuario de GitHub de la persona con su
   correo `@users.noreply.github.com` + las líneas de atribución que pida la sesión. Nunca reescribas historia publicada.
 - **Publicar es visible para todos**: subir ramas, abrir PRs o cambiar la org se confirma con la persona antes.
-- Con el repo arriba: `python3 <pieza>/herramientas/pieza.py repo configurar . --aplicar` (topics con `hecho-con-pieza`,
-  Discussions, reporte privado de fallas, aprobar las pruebas de quien aporta desde un fork, ruleset de la rama principal,
-  etiquetas). Sin `--aplicar` muestra los comandos. La app aparece en la página de Pieza «Sin revisar» hasta que la aprueben (el
+- Con el repo arriba: `python3 <pieza>/herramientas/pieza.py repo configurar .` **sin** `--aplicar` muestra los comandos (topics
+  con `hecho-con-pieza`, Discussions, reporte privado de fallas, aprobar las pruebas de quien aporta desde un fork, ruleset de la
+  rama principal, etiquetas): enséñaselos a la persona y corre `--aplicar` solo con su sí. La app aparece en la página de Pieza «Sin revisar» hasta que la aprueben (el
   sello «Aprobada por la comunidad ✓» se pide en Discussions de Pieza).
 - Publicar una versión = subir `version` en `app.json` + `pieza.py generar .` + push: `publicar.yml` arma todo y crea el Release.
 

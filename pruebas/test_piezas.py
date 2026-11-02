@@ -1143,6 +1143,35 @@ class Plantillas(unittest.TestCase):
         with self.assertRaises(plantillas.PlantillaMala):
             plantillas.llenar("{{v}}", {**self.ctx, "v": "{{id}}"})
 
+    def test_json_sirve_dentro_de_un_script(self):
+        malo = '</script><meta http-equiv="refresh" content="0;url=https://evil.example"> & \u2028'
+        r = plantillas.llenar("{{v|json}}", {**self.ctx, "v": malo})
+        for x in ("<", ">", "&", "\u2028"):
+            self.assertNotIn(x, r)
+        self.assertEqual(json.loads(r), malo)  # sigue siendo el mismo JSON
+
+    def test_ningun_valor_trae_expresiones_de_actions(self):
+        for v in ("${{ secrets.TOKEN }}", "a }} b", "x {{ y", ["ok", "${{ github.token }}"], {"k": "${{ x }}"},
+                  {"${{ k }}": 1}):
+            for t in ("{{v|json}}", "{{v|yaml}}", "{{v|sh}}", "{{v|xml}}", "{{v|linea}}"):
+                if isinstance(v, (list, dict)) and t not in ("{{v|json}}", "{{v|yaml}}"):
+                    continue
+                with self.assertRaisesRegex(plantillas.PlantillaMala, "Actions", msg=f"{t} {v}"):
+                    plantillas.llenar(t, {**self.ctx, "v": v})
+        with self.assertRaises(plantillas.PlantillaMala):
+            plantillas.llenar("{{#cada v como x}}{{x|linea}}{{/cada}}", {**self.ctx, "v": ["${{ github.ref }}"]})
+        # En el texto de la plantilla sí (son de GitHub Actions), y un objeto con }} propio del JSON también.
+        self.assertEqual(plantillas.llenar("${{ github.ref }} {{v|json}}", {**self.ctx, "v": {"a": {"b": 1}}}),
+                         '${{ github.ref }} {"a": {"b": 1}}')
+
+    def test_filtro_color(self):
+        for bueno in ("#fff", "#1a2b3c", "#1a2b3c80", "rgb(1, 2, 3)", "rgba(1 2 3 / 50%)", "hsl(210 50% 40%)"):
+            self.assertEqual(plantillas.llenar("{{v|color}}", {**self.ctx, "v": bueno}), bueno)
+        for malo in ("red", "#ffff0", "#fff;}body{background:url(https://evil.example)", "rgb(1,2,3) url(x)",
+                     "expression(alert(1))", "rgb(a,b,c)", "", 3):
+            with self.assertRaises(plantillas.PlantillaMala, msg=malo):
+                plantillas.llenar("{{v|color}}", {**self.ctx, "v": malo})
+
     def test_contexto(self):
         c = plantillas.contexto({"id": "ana", "nombre": "Ána", "datos": "visible", "repo": "ana-app/ana", "version": "1.2.3"})
         self.assertEqual((c["bundle"], c["repo"], c["web"], c["datos_mac"], c["version"]),
@@ -1387,6 +1416,65 @@ class Generar(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("cambio de prueba", self.leer(app, ".github/workflows/publicar.yml"))
         self.assertIn("arreglo de prueba", self.leer(app, "build.sh"))
+
+    def test_lo_de_claude_nunca_va_solo(self):
+        """.claude/ (ajustes que pueden definir hooks, agentes) va al aviso igual que .github/: nunca con --automatico."""
+        import shutil
+        app = self.app("mac", piezas=("host-mac", "github"))
+        cat = os.path.join(self.tmp.name, "catalogo")
+        shutil.copytree(os.path.join(BASE, "piezas"), cat)
+        pj = os.path.join(cat, "github", "pieza.json")
+        p = json.load(open(pj))
+        p["version"] = "9.9.9"
+        p["cambios"].insert(0, {"version": "9.9.9", "tipo": "arreglo", "resumen": "Prueba."})
+        json.dump(p, open(pj, "w"), ensure_ascii=False)
+        ajustes = os.path.join(cat, "github", "plantillas", "claude", "settings.json")
+        a = json.load(open(ajustes))
+        a["hooks"] = {"SessionStart": [{"hooks": [{"type": "command", "command": "echo hola"}]}]}
+        json.dump(a, open(ajustes, "w"))
+        env = {**os.environ, "PIEZA_CATALOGO": cat}
+        e = json.loads(correr(PIEZA, "estado", app, "--json", env=env).stdout)
+        gh = next(x for x in e if x["pieza"] == "github")
+        self.assertFalse(gh["automatico"])
+        self.assertIn(".claude/settings.json", gh["github"])
+        self.assertIn(".claude/settings.json", correr(PIEZA, "aviso", app, env=env).stdout)
+        correr(PIEZA, "actualizar", app, "--automatico", env=env)
+        self.assertNotIn("hooks", self.leer(app, ".claude/settings.json"))
+        r = correr(PIEZA, "actualizar", app, "github", env=env)  # a mano, sí
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("echo hola", self.leer(app, ".claude/settings.json"))
+
+    def test_nunca_sigue_un_enlace_al_escribir(self):
+        """Un «Info.plist.tmp» o un «Info.plist» que son enlaces a otro lado: generar no escribe ahí y deja un archivo normal."""
+        app = self.app("mac", piezas=("host-mac", "empaquetado"))
+        fuera = os.path.join(self.tmp.name, "fuera.txt")
+        with open(fuera, "w") as f:
+            f.write("no tocar\n")
+        plist = os.path.join(app, "app", "Info.plist")
+        os.symlink(fuera, plist + ".tmp")
+        r = correr(PIEZA, "generar", app, "empaquetado", "--forzar")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertFalse(os.path.islink(plist))
+        self.assertIn("CFBundleIdentifier", self.leer(app, "app/Info.plist"))
+        os.remove(plist)
+        os.symlink(fuera, plist)
+        r = correr(PIEZA, "generar", app, "empaquetado", "--forzar")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertFalse(os.path.islink(plist))
+        self.assertIn("CFBundleIdentifier", self.leer(app, "app/Info.plist"))
+        self.assertEqual(open(fuera).read(), "no tocar\n")
+        self.assertTrue(os.path.islink(plist + ".tmp"))
+        self.assertEqual([x for x in os.listdir(os.path.join(app, "app")) if x.endswith(".tmp") and x != "Info.plist.tmp"], [])
+        # Lo mismo al copiar los archivos de una pieza (host-mac) sobre un enlace.
+        lock = json.load(open(os.path.join(app, "piezas.json")))
+        destino = next(iter(lock["piezas"]["host-mac"]["archivos"]))
+        ruta = os.path.join(app, destino)
+        os.remove(ruta)
+        os.symlink(fuera, ruta)
+        r = correr(PIEZA, "actualizar", app, "host-mac", "--forzar")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.assertFalse(os.path.islink(ruta))
+        self.assertEqual(open(fuera).read(), "no tocar\n")
 
     def test_destinos_y_comunidad(self):
         sys.path.insert(0, os.path.join(BASE, "herramientas"))

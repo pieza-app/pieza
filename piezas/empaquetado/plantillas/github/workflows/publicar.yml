@@ -27,7 +27,11 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: { persist-credentials: false }
       - name: Pruebas rápidas (no se publica una versión rota)
-        run: for p in pruebas/contrato.py pruebas/test_python.py; do [ ! -f "$p" ] || python3 "$p"; done
+        # Las mismas de revisar.yml (sin Playwright, la interfaz se salta): contrato, todos los pruebas/test_*.py y privacidad.
+        run: |
+          if [ -f pruebas/correr.sh ]; then bash pruebas/correr.sh
+          else [ ! -f pruebas/contrato.py ] || python3 pruebas/contrato.py
+            if ls pruebas/test_*.py >/dev/null 2>&1; then python3 -m unittest discover -s pruebas -p 'test_*.py'; fi; fi
       - id: v
         env: { GH_TOKEN: "${{ github.token }}", REF: "${{ github.ref }}", REF_NOMBRE: "${{ github.ref_name }}" }
         run: |

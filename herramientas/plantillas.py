@@ -7,15 +7,18 @@ al día» puede leer las piezas nuevas sin ejecutar su código). La sintaxis, en
   {{ruta}}                     El valor (app.id, nombre, piezas.host-mac…). Un texto solo pasa si es «seguro» (sin comillas,
                                $, `, \\, <, >, &, {, }, |, ; ni saltos de línea); si no, la plantilla tiene que decir cómo
                                escaparlo con un filtro. Si la ruta no existe, es un error (así un error de tipeo no pasa callado).
-  {{ruta|filtro|filtro}}       Filtros, en orden. Para escapar: xml, json, yaml, sh. Para transformar: ascii, minus, mayus.
-                               Para validar (fallan si no calza): https, sha256, nombre, ruta, version, id, y linea (texto
-                               libre de una línea, solo donde nada se interpreta: un heredoc entre comillas, Markdown).
+  {{ruta|filtro|filtro}}       Filtros, en orden. Para escapar: xml, json (también < > & U+2028 U+2029: sirve en un <script>),
+                               yaml, sh. Para transformar: ascii, minus, mayus. Para validar (fallan si no calza): https,
+                               sha256, nombre, ruta, version, id, color (CSS: #rgb, #rrggbb, #rrggbbaa, rgb()/hsl() con
+                               números), y linea (texto libre de una línea, solo donde nada se interpreta: un heredoc entre
+                               comillas, Markdown).
   {{#si ruta}}…{{#sino}}…{{/si}}   Si el valor existe y no está vacío (false, 0, "", [], {} y lo que falta cuentan como no).
   {{#no ruta}}…{{/no}}         Al revés.
   {{#cada ruta como x}}…{{/cada}}  Por cada elemento de una lista; adentro, {{x}} o {{x.campo}}. También {{#si x_ultimo}}.
   {{! comentario }}            No sale en el archivo.
 
-`${{ … }}` (las expresiones de GitHub Actions) NO es una marca: queda tal cual. Una línea que solo tiene una marca de bloque
+`${{ … }}` (las expresiones de GitHub Actions) NO es una marca: queda tal cual. Pero un VALOR insertado nunca puede traer
+`${{`, `{{` ni `}}` (error): así un dato de app.json no se vuelve una expresión en un workflow. Una línea que solo tiene una marca de bloque
 (`{{#si …}}`, `{{/si}}`, `{{#cada …}}`…) desaparece entera, así el archivo generado queda limpio.
 
 Uso desde Python: `plantillas.llenar(texto, contexto)` → texto, o `PlantillaMala` con la línea. `plantillas.contexto(app_json,
@@ -62,6 +65,19 @@ def _yaml(v):
     return json.dumps(v, ensure_ascii=False)
 
 
+def _json(v):
+    # JSON que también sirve dentro de un <script> (ld+json o JS) y en HTML: «</script>», «<!--» y «&…;» nunca salen tal
+    # cual, y U+2028/U+2029 (fin de línea en JS antiguo) tampoco. Sigue siendo el mismo JSON.
+    return (json.dumps(v, ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e").replace("&", "\\u0026")
+            .replace("\u2028", "\\u2028").replace("\u2029", "\\u2029"))
+
+
+_NUM = r"\s*-?(?:\d+(?:\.\d+)?|\.\d+)(?:%|deg)?\s*"
+#: Un color de CSS sin nada más: #rgb, #rgba, #rrggbb, #rrggbbaa, rgb()/rgba()/hsl()/hsla() con números (con comas o espacios).
+COLOR = re.compile(r"#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|(?:rgba?|hsla?)\("
+                   + _NUM + r"(?:[,\s/]" + _NUM + r"){2,3}\)")
+
+
 def _escalar(f):
     def g(v):
         if isinstance(v, (dict, list)):
@@ -72,7 +88,7 @@ def _escalar(f):
 
 FILTROS = {
     "xml": lambda v: _escalar(str)(v).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;").replace("'", "&apos;"),
-    "json": lambda v: json.dumps(v, ensure_ascii=False),
+    "json": _json,
     "yaml": _yaml,
     "sh": lambda v: shlex.quote(_escalar(str)(v)),
     "ascii": _ascii,
@@ -84,12 +100,13 @@ FILTROS = {
     "ruta": _validar("una ruta relativa simple", r"(?!.*(^|/)\.\.?(/|$))[A-Za-z0-9_][A-Za-z0-9._/-]{0,200}"),
     "version": _validar("una versión X.Y.Z", r"\d+\.\d+\.\d+"),
     "id": _validar("un id (minúsculas y números)", r"[a-z][a-z0-9]{0,30}"),
+    "color": _validar("un color (#rgb, #rrggbb, #rrggbbaa, rgb(), rgba(), hsl() con números)", COLOR.pattern),
     # Un texto libre de una línea, para donde nada se interpreta (un heredoc entre comillas, un comentario, Markdown).
     "linea": _validar("una línea de texto (sin saltos ni caracteres de control)", r"[^\x00-\x1f\x7f]{0,500}"),
 }
 #: Los filtros que dejan el valor listo para insertar (escapan): después de ellos no se exige «seguro».
 ESCAPAN = {"xml", "json", "yaml", "sh", "linea"}
-VALIDAN = {"https", "sha256", "nombre", "ruta", "version", "id", "ascii"}
+VALIDAN = {"https", "sha256", "nombre", "ruta", "version", "id", "color", "ascii"}
 
 
 def buscar(ctx, ruta):
@@ -177,6 +194,21 @@ def _arbol(partes):
     return raiz
 
 
+#: Lo que nunca puede traer un valor insertado (en cualquier parte, también dentro de una lista u objeto): `${{` sería una
+#: expresión de GitHub Actions en un workflow generado, y `{{`/`}}` una marca a medias.
+PROHIBIDO_EN_VALOR = ("${{", "{{", "}}")
+
+
+def _con_marca(v):
+    if isinstance(v, str):
+        return next((x for x in PROHIBIDO_EN_VALOR if x in v), None)
+    if isinstance(v, dict):
+        return next((m for x in (*v.keys(), *v.values()) if (m := _con_marca(x))), None)
+    if isinstance(v, list):
+        return next((m for x in v if (m := _con_marca(x))), None)
+    return None
+
+
 def _render(nodos, ctx, salida):
     for n in nodos:
         if n[0] == "texto":
@@ -186,6 +218,10 @@ def _render(nodos, ctx, salida):
             v = buscar(ctx, ruta)
             if v is FALTA or v is None:
                 raise PlantillaMala(f"línea {linea}: falta «{ruta}» (en app.json o en el contexto)")
+            marca = _con_marca(v)
+            if marca:
+                raise PlantillaMala(f"línea {linea}: «{ruta}» trae «{marca}»: un dato no puede traer marcas de plantilla ni"
+                                    " expresiones de GitHub Actions")
             escapado = False
             for f in filtros:
                 try:

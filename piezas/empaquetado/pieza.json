@@ -83,8 +83,7 @@
   }
  },
  "tareas_persona": [
-  "Un Mac con Apple Silicon y Xcode para compilar la app de Mac la primera vez (después la arma GitHub en cada versión)",
-  "Permitir que GitHub Actions cree Releases (Settings → Actions → Workflow permissions: lo pide publicar.yml con contents: write en un solo job)"
+  "Un Mac con Apple Silicon y Xcode para compilar la app de Mac la primera vez (después la arma GitHub en cada versión)"
  ],
  "cambios": [
   {

@@ -55,9 +55,9 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import subprocess
 import sys
+import tempfile
 
 BASE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #: De dónde se leen las piezas. «Pieza al día» corre esta herramienta fijada a una versión y le pasa las piezas nuevas solo
@@ -174,10 +174,26 @@ def escribir(ruta, valor, indent=None):
                         break
         except OSError:
             pass
-    tmp = ruta + ".tmp"
-    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
-        f.write(json.dumps(valor, ensure_ascii=False, indent=indent) + "\n")
-    os.replace(tmp, ruta)
+    escribir_atomico(ruta, (json.dumps(valor, ensure_ascii=False, indent=indent) + "\n").encode("utf-8"))
+
+
+def escribir_atomico(ruta, contenido, modo=0o644):
+    """Escribe `contenido` (bytes) en `ruta` de una vez y sin seguir enlaces: el temporal es nuevo (mkstemp, O_EXCL) en la misma
+    carpeta, se le ponen los permisos con fchmod y reemplaza a `ruta` (si `ruta` era un enlace, se reemplaza el enlace, no lo
+    que apunta). Así un «x.tmp» o un «x» que sean enlaces a otro lado nunca hacen escribir fuera de la app."""
+    carpeta = os.path.dirname(ruta) or "."
+    fd, tmp = tempfile.mkstemp(dir=carpeta, prefix="." + os.path.basename(ruta) + ".", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.write(contenido)
+            os.fchmod(f.fileno(), modo)
+        os.replace(tmp, ruta)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
 
 
 def huella(ruta):
@@ -411,9 +427,21 @@ def _errores_regla(donde, r, maximo=MAXIMO_ENTRADA):
 
 
 def destino_seguro(app, relativa):
-    ruta = os.path.realpath(os.path.join(app, relativa))
-    if os.path.isabs(relativa) or not ruta.startswith(os.path.realpath(app) + os.sep):
+    """La ruta donde escribir `relativa` dentro de la app. Se resuelven los enlaces de las carpetas (tienen que quedar dentro),
+    pero no el del archivo: si el destino es un enlace, se reemplaza el enlace (escribir_atomico), nunca lo que apunta."""
+    nombre = os.path.basename(relativa)
+    carpeta = os.path.realpath(os.path.dirname(os.path.join(app, relativa)))
+    ruta = os.path.join(carpeta, nombre)
+    if os.path.isabs(relativa) or nombre in ("", ".", "..") or not ruta.startswith(os.path.realpath(app) + os.sep):
         sys.exit(f"Destino fuera de la app: {relativa}")
+    return ruta
+
+
+def origen_seguro(app, relativa):
+    """Para LEER algo de la app: aquí sí se sigue el enlace, pero lo que apunta tiene que quedar dentro."""
+    ruta = os.path.realpath(destino_seguro(app, relativa))
+    if not ruta.startswith(os.path.realpath(app) + os.sep):
+        sys.exit(f"Fuera de la app: {relativa}")
     return ruta
 
 
@@ -425,6 +453,10 @@ def destino_seguro(app, relativa):
 #: Los únicos lugares con punto donde una pieza OFICIAL puede generar (workflows, plantillas de GitHub, agentes de la IA): ahí un
 #: archivo ejecuta código, así que una pieza de la comunidad nunca genera, y lo de .github/ nunca se actualiza solo.
 PUNTO_GENERADO = (".github/", ".claude/agents/", ".claude/settings.json", ".gitignore", "escritorio/.npmrc")
+#: Lo generado que «Pieza al día» (--automatico) nunca actualiza solo: va al aviso para que lo vea una persona. En .github/ un
+#: workflow corre con los permisos del repo (y el token de Actions no puede escribirlos); en .claude/ unos ajustes pueden
+#: definir hooks que corren en el computador de quien abre el repo con su IA.
+A_MANO = (".github/", ".claude/")
 #: Lo que escribe pieza.py o la app: una plantilla nunca lo pisa.
 NO_GENERAR = {"app.json", "piezas.json", "acciones.json"}
 
@@ -493,7 +525,7 @@ def contexto_de(pid, app, lock):
     a = leer(os.path.join(app, "app.json"), {}) or {}
     datos = {}
     for nombre, ruta in (p.get("datos_app") or {}).items():
-        datos[nombre] = leer(destino_seguro(app, ruta)) if ruta_relativa_ok(ruta) else None
+        datos[nombre] = leer(origen_seguro(app, ruta)) if ruta_relativa_ok(ruta) else None
     ctx = plantillas.contexto(a, piezas=sorted(set(lock["piezas"]) | {pid}), datos=datos)
     ctx["pieza"] = {"id": pid, "version": p["version"]}
     # Las piezas instaladas con su nombre, versión y archivos (para la tabla «Piezas» de AGENTS.md y lo que no se edita a mano).
@@ -543,12 +575,7 @@ def _huella_texto(texto):
 
 def _escribir_texto(ruta, texto):
     os.makedirs(os.path.dirname(ruta) or ".", exist_ok=True)
-    tmp = ruta + ".tmp"
-    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
-        f.write(texto)
-    if ruta.endswith((".sh", ".command")):
-        os.chmod(tmp, 0o755)
-    os.replace(tmp, ruta)
+    escribir_atomico(ruta, texto.encode("utf-8"), 0o755 if ruta.endswith((".sh", ".command")) else 0o644)
 
 
 def generar_pieza(pid, app, lock, forzar=False, automatico=False):
@@ -590,8 +617,8 @@ def generar_pieza(pid, app, lock, forzar=False, automatico=False):
                 print(f"    ! no regeneré {destino}: la app lo cambió (pieza.py diferencias {app} {pid})")
             generados[destino] = anotada if anotada is not None else ""
             continue
-        if automatico and destino.startswith(".github/"):
-            # El token de Actions no puede escribir workflows, y un workflow nuevo lo tiene que ver una persona.
+        if automatico and destino.startswith(A_MANO):
+            # El token de Actions no puede escribir workflows, y un workflow o unos ajustes de la IA (hooks) los ve una persona.
             print(f"    ! {destino} cambia: va a mano (pieza.py generar . {pid})")
             continue
         _escribir_texto(ruta, texto)
@@ -629,10 +656,11 @@ def generar_todo(app, solas=None, forzar=False, automatico=False):
 
 
 def pendientes_github(pid, app, lock):
-    """Los archivos de .github/ que la versión de la base generaría distinto de lo que hay (y que la app no cambió)."""
+    """Los archivos de .github/ y .claude/ (A_MANO) que la versión de la base generaría distinto de lo que hay (y que la app no
+    cambió): van al aviso, nunca solos."""
     info = lock["piezas"].get(pid) or {}
     p = todas().get(pid) or {}
-    if info.get("fuente") or not any(r["destino"].startswith(".github/") for r in reglas_generar(p).values()):
+    if info.get("fuente") or not any(r["destino"].startswith(A_MANO) for r in reglas_generar(p).values()):
         return []
     try:
         salida = generados_de(pid, app, lock)
@@ -640,7 +668,7 @@ def pendientes_github(pid, app, lock):
         return []
     r = []
     for destino, texto, solo_una in salida:
-        if texto is None or solo_una or not destino.startswith(".github/"):
+        if texto is None or solo_una or not destino.startswith(A_MANO):
             continue
         ruta = os.path.join(app, destino)
         actual = huella(ruta) if os.path.isfile(ruta) else None
@@ -811,7 +839,8 @@ def iniciar(app, aid, nombre, plataformas=None, datos="sistema"):
     flujo = os.path.join(app, ".github", "workflows", "pieza-al-dia.yml")
     if not os.path.exists(flujo):
         os.makedirs(os.path.dirname(flujo), exist_ok=True)
-        shutil.copy2(os.path.join(BASE, "plantillas", "pieza-al-dia.yml"), flujo)
+        with open(os.path.join(BASE, "plantillas", "pieza-al-dia.yml"), "rb") as f:
+            escribir_atomico(flujo, f.read())
         print(f"+ {flujo}")
     # Quien abra el repo en Claude Code recibe la sugerencia de instalar el plugin de Pieza (mismos flujos para aportar).
     ajustes_ruta = os.path.join(app, ".claude", "settings.json")
@@ -959,7 +988,8 @@ def copiar(pid, app, forzar=False, lock=None):
                 or os.path.islink(fuente):
             sys.exit(f"{pid}: no copio {origen} → {destino} (ruta no permitida o enlace)")
         os.makedirs(os.path.dirname(dst), exist_ok=True)
-        shutil.copy2(fuente, dst)
+        with open(fuente, "rb") as f:
+            escribir_atomico(dst, f.read(), os.stat(fuente).st_mode & 0o777)
         copiados[destino] = huella(dst)
     # Archivos que la versión anterior traía y esta ya no: nunca se borran solos (la app puede usarlos); se avisa y salen del candado.
     for viejo in antes.get("archivos", {}):
@@ -1067,7 +1097,7 @@ def choques(pid, app, lock):
     for origen, destino in p.get("archivos", {}).items():
         if not plataformas_app & set(p.get("solo", {}).get(origen, PLATAFORMAS)) or destino in anotados:
             continue
-        dst, fuente = destino_seguro(app, destino), os.path.join(carpeta_de(pid), origen)
+        dst, fuente = origen_seguro(app, destino), os.path.join(carpeta_de(pid), origen)
         if os.path.isfile(dst) and os.path.isfile(fuente) and huella(dst) != huella(fuente):
             r.append((destino, origen))
     return r
@@ -1295,7 +1325,7 @@ def estado_app(app):
         choques = [x for x in incompatibles(con_esta) if pid in (x[0], x[1])]
         pide_mas = bool(p) and bool(pendientes) and info.get("ficha") != {k: p.get(k, [] if k != "permisos" else {})
                                                                      for k in ("requiere", "permisos", "red")}
-        # Lo generado: lo que la app cambió (la pieza ya no lo toca) y lo de .github/ que cambiaría (nunca va solo).
+        # Lo generado: lo que la app cambió (la pieza ya no lo toca) y lo de .github/ y .claude/ que cambiaría (nunca va solo).
         gen_app = [d for d, h in info.get("generados", {}).items()
                    if h == "" or (os.path.isfile(os.path.join(app, d)) and huella(os.path.join(app, d)) != h)]
         github = pendientes_github(pid, app, lock) if p else []
@@ -1408,8 +1438,9 @@ def aviso(app):
         l.append(f"### {x['pieza']} {x['actual']} → {x['nueva']}" + (" · seguridad" if x["seguridad"] else "")
                  if not x["al_dia"] else f"### {x['pieza']} {x['actual']}")
         if x.get("github"):
-            l.append(f"- Cambia lo que genera en {', '.join(f'`{d}`' for d in x['github'])}: un workflow nuevo lo revisa una "
-                     f"persona (y el token de Actions no puede escribirlo). Míralo y aplícalo con "
+            l.append(f"- Cambia lo que genera en {', '.join(f'`{d}`' for d in x['github'])}: un workflow o unos ajustes de la IA "
+                     f"(pueden traer hooks) los revisa una persona (y el token de Actions no puede escribir workflows). "
+                     f"Míralo y aplícalo con "
                      f"`pieza.py {'actualizar' if not x['al_dia'] else 'generar'} . {x['pieza']}`.")
         for c in x["cambios"]:
             l.append(f"- **{c['version']}** ({c['tipo']}{', seguridad' if c.get('seguridad') else ''}): {c['resumen']}")
@@ -1625,9 +1656,7 @@ def skills_instalar(donde):
             if LOCAL in anterior:
                 local = "\n" + anterior[anterior.index(LOCAL):].rstrip("\n") + "\n"
         os.makedirs(os.path.dirname(ruta), exist_ok=True)
-        with open(ruta + ".tmp", "w", encoding="utf-8", newline="\n") as f:
-            f.write(texto + local)
-        os.replace(ruta + ".tmp", ruta)
+        escribir_atomico(ruta, (texto + local).encode("utf-8"))
         print(f"✓ {nombre} versión {version_flujo(texto)}" + (" (con tu configuración local)" if local else "") + f" → {ruta}")
 
 

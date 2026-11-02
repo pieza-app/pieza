@@ -1,6 +1,17 @@
 # Cambios
 
 ## Sin publicar
+- **Revisión de seguridad de las plantillas y de `pieza.py` (antes de publicar):** el filtro `json` también deja `<`, `>`, `&`,
+  U+2028 y U+2029 como `\u…` (un texto de `docs/pagina.json` ya no puede cerrar el `<script type="application/ld+json">` de la
+  página); filtro nuevo `color` (solo `#rgb`, `#rrggbb`, `#rrggbbaa`, `rgb()`/`hsl()` con números) para el acento de `colores.css`;
+  un valor insertado desde `app.json` o los datos nunca puede traer `${{`, `{{` ni `}}` (no se vuelve una expresión de Actions en
+  un workflow generado). `pieza.py` escribe lo generado, lo copiado de una pieza y sus JSON con un temporal nuevo (`mkstemp`, sin
+  seguir enlaces) que reemplaza al archivo: un `x.tmp` o un `x` que sean enlaces ya no hacen escribir fuera de la app. Lo generado
+  en `.claude/` (ajustes que pueden definir hooks) va al aviso de «Pieza al día» igual que `.github/`, nunca con `--automatico`.
+  `publicar.yml` generado corre `pruebas/correr.sh` antes de publicar (antes buscaba un `test_python.py` que una app nueva no
+  tiene). `empaquetado` ya no pide «permitir que Actions cree Releases» (se contradecía con `repo configurar`). El flujo 12 corre
+  `repo configurar` primero sin `--aplicar` y lo aplica con el sí de la persona, y vuelve a decir «si no sale a ninguna red,
+  decirlo», comentarios desde la app nunca obligatorios ni sugeridos y el texto sobre el acento por contraste WCAG.
 - **`pieza.py crear`: una app nueva andando de una vez** (`crear <carpeta> --id … --nombre … --plataformas mac,windows,linux
   [--piezas ia,…] [--repo dueño/repo]`): `iniciar` + las piezas de siempre para esas plataformas + las pedidas + la pieza nueva
   **`esqueleto` 0.1.0** (lo propio mínimo, escrito una vez y desde ahí de la app: `ui/` con bienvenida e idioma primero, una pantalla
