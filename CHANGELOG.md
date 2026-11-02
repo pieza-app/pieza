@@ -1,6 +1,37 @@
 # Cambios
 
 ## Sin publicar
+- **Flujo de crear (versión 11, plugin 0.8.1):** la línea de `CONTRIBUTING.md` ya no dice que los flujos de Pieza «se instalan
+  solos al abrir el repo»: con `extraKnownMarketplaces` Claude Code los **ofrece**. A propósito no se suma `enabledPlugins` a lo que
+  deja `pieza.py iniciar` (activaría el plugin a quien abra el repo sin preguntarle; la prueba lo revisa). `docs/catalogo.md`: lo que
+  anotaron las seis apps al pasar al host, agrupado por pieza (lo hecho y lo pendiente), y las brechas que siguen (las de la primera
+  comparación ya las cerraron las migraciones; quedan los scripts largos de Minuta sin límite y la frase de `CONTRIBUTING.md`).
+- **Lo que salió al pasar las seis apps al host (capacidades):** `host-mac` 0.3.0 y `host-escritorio` 0.3.0 (seguridad): un
+  enlace https tocado en la ventana pasa por el `abrirEnlace` que registró la app (Repasa, para niños, no podía limitar un
+  `<a href>`); `~/<Nombre>` recién creada con `"datos": "visible"` queda 0700 como en `nucleo`; «Guardar como» con `privado`
+  (0600) y `guardarArchivo`, que distingue cancelar de un error o del tamaño. Variables de la app para todos los scripts, también
+  los declarados (`Procesador.entornoApp` / `crearHost({entorno})`, lo de la copia de Corta; Graba y Minuta lo necesitaban), con el
+  mismo filtro de nombres y sin pisar `<ID>_RECURSOS/_DATOS/_PROGRESO/_LATIDO`. En Mac: app de barra de menú (`barraDeMenu`,
+  `abrirAlArrancar`, también al reabrir), `alCrearVentana`, `barraTransparente` con franja para mover la ventana, `vidrio`,
+  `nombreVentana` (apps con tilde), soltar archivos (`alSoltar`, `soltado(nombre)`), `tituloAjustes` y `menuApp`, ⌘W sin menú
+  Archivo, `Menus()` público, `elegirArchivos(mensaje:)`, `limiteEstado` y `estadoEnFila`. En Electron: `ventana.frame`,
+  `abrirAlArrancar` (y `--oculta`), `userData: "sistema"`, `before-quit` que guarda con la ventana que se esconde, más de una
+  ventana en el puente (`host.ventanas.agregar`, la respuesta va a la que pidió), `tituloAjustes`/`menuApp`,
+  `dialogos.archivos({mensaje})`, `limiteEstado` y `estadoEnFila`. `bienvenida` 0.4.0: «Ajustes» configurable (`ajustes: {es, en}`),
+  «Lo hago después» y botón propio en el último paso (`saltable: true`, `despues`, `fin: {texto, principal, accion}`),
+  `data-autofoco` en el idioma sugerido, `detalle` por idioma y `logo`. Cada README dice qué rodeo de qué app se borra («Si venías
+  de la 0.2.0» / «de 0.3.0»). **Revisar en el Mac** (Swift no compila aquí): `bash pruebas/swift/revisar_host_mac.sh` y la lista
+  «Revisar a mano en el Mac (0.3.0)» del README de `host-mac` (barra de menú y Dock, barra transparente y franja, vidrio, soltar
+  con `performDragOperation` en la subclase de WKWebView, enlace por `abrirEnlace`, ⌘W, `nombreVentana`, `guardarArchivo`).
+- **Lo que salió al pasar las seis apps al host (arreglos y seguridad):** `catalogo` 0.2.1: un campo `archivo` o `bytes` del
+  contenido ya no se quita (eran los nombres viejos de `ruta`/`tamano` y se borraban de todo objeto: ninguna plantilla de Esquema
+  pasaba el validador); ahora solo se quitan en una entrada del índice y si están en vez de `ruta`/`tamano` (el arreglo de la copia
+  de Esquema, con su prueba). `nucleo` 0.7.1 (seguridad): `ruta_en` con una base vacía, relativa o que no existe da `None` (antes
+  `ruta_en("", "a.md")` caía en la carpeta de trabajo del script). `trabajos` 0.2.1: `mantener_vivo()` también hace que SIGTERM
+  (el host al cerrar) salga con `SystemExit`, así corren los `finally` y se borran los temporales; un manejador propio de la app
+  gana. `pieza.py revisar` exige que `migrar` sea una lista de pasos (el `migrar` de `catalogo` 0.2.0 era un texto y el aviso de
+  «Pieza al día» salía con una viñeta por letra; también los de `cifrado`, `red` y `transcribir`), y `aviso` aguanta un texto de
+  antes como un solo paso.
 - **Lo que salió al pasar Esquema a `host-mac`/`host-escritorio` (0.2.0, antes de que migren las otras cinco):** `"limite":
   "trabajo"` (sin tope mientras lata: la pieza `trabajos` 0.2.0 toca `<ID>_LATIDO`; si deja de latir por 45 s, se corta) y
   límites por orden (`{"segun": "orden", "valores": {…}, "otro": …}`); `maximo` por acción (la entrada hasta 50 MB) y `vigilar`

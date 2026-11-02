@@ -537,6 +537,108 @@ test("host: menú Ayuda opcional; esperarLibre espera también a los scripts", a
   assert.equal(await host.esperarLibre(400), true);
 });
 
+test("procesador: las variables de la app llegan a todos los scripts, sin pisar las del host", async () => {
+  const { raiz, datos } = crearApp();
+  const p = procesadorDe(raiz, datos, { entornoApp: { ANA_PROGRAMAS: "/app/MacOS", ANA_DATOS: "/otra", ANA_LATIDO: "/x", "mal nombre": "x" } });
+  const r = await p.correrJSON("eco.py", ["abrir"]);
+  assert.deepEqual(r.env, ["ANA_DATOS", "ANA_PROGRAMAS", "ANA_RECURSOS"]);
+  assert.equal(r.latido, false, "ANA_LATIDO solo lo pone el host");
+  const otra = await p.correr("eco.py", ["abrir"], { entorno: { ANA_PROGRAMAS: "/de/la/llamada", ANA_RECURSOS: "/no" } });
+  assert.deepEqual(otra.respuesta.env, ["ANA_DATOS", "ANA_PROGRAMAS", "ANA_RECURSOS"]);
+  p.entornoApp = () => ({ ANA_HERRAMIENTAS: "/h" });
+  assert.ok((await p.correrJSON("eco.py", ["abrir"])).env.includes("ANA_HERRAMIENTAS"), "una función se lee en cada script");
+});
+
+test("enchufe: «datos»: «visible» deja ~/<Nombre> recién creada solo para la persona", { skip: process.platform === "win32" }, () => {
+  const casa = fs.mkdtempSync(path.join(os.tmpdir(), "casa-"));
+  const ruta = E.carpetaDatos({ id: "ana", nombre: "Ana", datos: "visible" }, { casa });
+  E.prepararCarpeta(ruta, { visible: true });
+  assert.equal(fs.statSync(path.join(casa, "Ana")).mode & 0o777, 0o700);
+  assert.equal(fs.statSync(ruta).mode & 0o777, 0o700);
+  const ya = path.join(casa, "Otra");
+  fs.mkdirSync(ya, { mode: 0o755 }); fs.chmodSync(ya, 0o755);
+  E.prepararCarpeta(path.join(ya, ".otra"), { visible: true });
+  assert.equal(fs.statSync(ya).mode & 0o777, 0o755, "una que ya existía no se toca");
+});
+
+test("host: un enlace tocado pasa por el abrirEnlace de la app; otras ventanas hablan con el puente", async () => {
+  const { host, electron, v, enviar } = await hostListo({ entorno: { ANA_PROGRAMAS: "/p" } });
+  const pedidos = [];
+  host.acciones.registrar("abrirEnlace", (d) => pedidos.push(d.url));
+  v.webContents._on["will-navigate"]({ preventDefault() {} }, "https://otro.example/");
+  v.webContents.abrir({ url: "https://otro.example/ventana" });
+  await new Promise((ok) => setImmediate(ok));
+  assert.deepEqual(pedidos, ["https://otro.example/", "https://otro.example/ventana"]);
+  assert.deepEqual(electron.abiertos, [], "la app decidió: no se abrió nada");
+  // Una declarada corre con las variables de la app.
+  await enviar("nivel", { n: 1 });
+  assert.ok(llamadasA(electron, "nivelListo")[0].env.includes("ANA_PROGRAMAS"));
+  // Otra ventana (el panel): con las mismas guardas, y la respuesta va a ella.
+  const panel = new electron.BrowserWindow({ webPreferences: host.ventanas.preferencias() });
+  assert.equal(panel.opciones.webPreferences.sandbox, true);
+  const enviarPanel = (accion, d, cambio = {}) => electron.ipc.ana({ sender: panel.webContents, senderFrame: panel.webContents.mainFrame, ...cambio }, { accion, datos: d });
+  const enPanel = () => electron.llamadas.length;
+  const antes = enPanel();
+  await enviarPanel("copiar", { texto: "x" });
+  assert.equal(enPanel(), antes, "una ventana que no se agregó no habla con el puente");
+  host.ventanas.agregar(panel);
+  const vistos = [];
+  panel.webContents.executeJavaScript = (js) => { vistos.push(js); return Promise.resolve(); };
+  electron.llamadas.length = 0;
+  await enviarPanel("probarIA", { ia: "codex" });
+  await enviarPanel("listo", {});
+  assert.equal(llamadasA(electron, "iaProbada").length, 0, "la principal no recibe la respuesta del panel");
+  assert.ok(vistos.some((js) => js.includes("window.Ana.iaProbada(") && js.includes('"ia":"codex"')));
+  assert.ok(vistos.some((js) => js.includes("window.Ana.estado(")));
+  await enviarPanel("copiar", { texto: "x" }, { senderFrame: { url: "ana://ui/index.html" } });   // un iframe del panel
+  assert.equal(vistos.filter((js) => js.includes("copiado")).length, 0);
+  assert.equal(host.ventanas.todas().length, 2);
+});
+
+test("host: ventana sin marco, escondida al arrancar, userData de siempre y app.quit() que guarda", async () => {
+  const { raiz, datos } = crearApp();
+  const electron = electronFalso();
+  const rutas = [];
+  electron.app.setPath = (k, v) => rutas.push([k, v]);
+  const host = crearHost({ electron, recursos: raiz, datos, python: PYTHON, estadoScript: null, userData: "sistema", abrirAlArrancar: () => false,
+    ventana: { frame: false, alCerrar: "esconder" }, tituloAjustes: "Para adultos…", menuApp: ({ item }) => [item("Abrir la carpeta", "carpeta")] });
+  host.iniciar();
+  await new Promise((ok) => setImmediate(ok));
+  const v = electron.ventanas[0];
+  assert.equal(v.opciones.frame, false);
+  assert.equal(v._on["ready-to-show"], undefined, "no se muestra al crearla");
+  assert.deepEqual(rutas, [], "userData queda donde estaba");
+  const archivo = electron.menus.at(-1)[0].submenu.map((x) => x.label);
+  assert.deepEqual(archivo.slice(0, 2), ["Para adultos…", "Abrir la carpeta"]);
+  let frenado = false;
+  electron.app._on["before-quit"]({ preventDefault() { frenado = true; } });
+  assert.ok(frenado);
+  await new Promise((ok) => setTimeout(ok, 500));
+  assert.ok(electron.salio, "salió por host.salir (guardando)");
+  const otro = crearApp();
+  const e2 = electronFalso();
+  crearHost({ electron: e2, recursos: otro.raiz, datos: otro.datos, python: PYTHON, estadoScript: null, tituloAjustes: false }).iniciar();
+  await new Promise((ok) => setImmediate(ok));
+  assert.ok(e2.ventanas[0]._on["ready-to-show"], "sin --oculta ni abrirAlArrancar, se muestra");
+  assert.ok(!e2.menus.at(-1)[0].submenu.some((x) => x.label === "Ajustes…"));
+});
+
+test("host: guardar como dice si se canceló o falló, privado con app.json", { skip: process.platform === "win32" }, async () => {
+  const { host, electron, raiz } = await hostListo();
+  let respuesta = { canceled: true };
+  electron.dialog.showSaveDialog = async () => respuesta;
+  assert.deepEqual(await host.dialogos.guardarArchivo({ extension: "md", contenido: "hola" }), { ok: false, codigo: "cancelado" });
+  assert.deepEqual(await host.dialogos.guardarArchivo({ extension: "md", contenido: "" }), { ok: false, codigo: "vacio" });
+  assert.deepEqual(await host.dialogos.guardarArchivo({ extension: "md", contenido: "hola", maximo: 2 }), { ok: false, codigo: "tamano" });
+  respuesta = { canceled: false, filePath: path.join(raiz, "copia") };
+  const r = await host.dialogos.guardarArchivo({ extension: "copia", contenido: "cifrado", privado: true });
+  assert.deepEqual(r, { ok: true, ruta: path.join(raiz, "copia.copia") });
+  assert.equal(fs.statSync(r.ruta).mode & 0o777, 0o600);
+  respuesta = { canceled: false, filePath: path.join("/proc", "no-se-puede.md") };
+  assert.equal((await host.dialogos.guardarArchivo({ extension: "md", contenido: "x" })).codigo, "escribir");
+  assert.equal(await host.dialogos.guardarComo({ extension: "md", contenido: "x" }), null);
+});
+
 test("host: la pieza no trae nada de una app", () => {
   const todo = fs.readdirSync(DIR).map((f) => fs.readFileSync(path.join(DIR, f), "utf8")).join("\n");
   for (const app of ["Esquema", "Graba", "Minuta", "Corta", "Repasa", "Alcancia", "Alcancía"]) {

@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "bienvenida",
- "version": "0.3.0",
+ "version": "0.4.0",
  "estado": "lista",
  "nombre": "Bienvenida",
  "icono": "icono.svg",
@@ -53,7 +53,9 @@
   "Lo hago después": "I'll do it later",
   "Empezar": "Start",
   "Todo listo": "All set",
-  "Ya puedes empezar. Todo lo que elegiste se cambia cuando quieras en Ajustes.": "You're ready to go. You can change anything you chose at any time in Settings."
+  "Ya puedes empezar. Todo lo que elegiste se cambia cuando quieras en Ajustes.": "You're ready to go. You can change anything you chose at any time in Settings.",
+  "Ya puedes empezar. Todo lo que elegiste se cambia cuando quieras en {donde}.": "You're ready to go. You can change anything you chose at any time in {donde}.",
+  "Ya puedes empezar.": "You're ready to go."
  },
  "permisos": {},
  "red": [],
@@ -61,6 +63,15 @@
   "i18n": ">=0.1.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.4.0",
+   "tipo": "mejora",
+   "resumen": "Lo que salió al pasar las seis apps: `crear({ajustes: {es, en}})` cambia «Ajustes» en la nota del idioma y en «Todo listo» (una app para niños: «Para adultos»; `false`: sin nota); el último paso puede tener «Lo hago después» (`saltable: true` o `despues: \"texto\"`) y su propio botón para terminar (`fin: {texto, principal, accion}`), y `terminar(como, paso)` dice si fue «fin» o «despues»; el idioma sugerido lleva `data-autofoco` (con «componentes», `ui.despuesDePintar()` lo enfoca solo); `detalle` por idioma («Continuar en español») y `logo` arriba del paso del idioma.",
+   "migrar": [
+    "Nada obligatorio.",
+    "Si usas `ajustes`, traduce su `es` en tu en.json (va por T) y suma las dos frases nuevas de la pieza (`pieza.py actualizar` las agrega)."
+   ]
+  },
   {
    "version": "0.3.0",
    "tipo": "rompe",

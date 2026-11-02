@@ -40,5 +40,15 @@ tiene tope de tiempo en `host-mac`/`host-escritorio` 0.2: el host pone `<ID>_LAT
 (`trabajos.latir_host()`). Si deja de latir por 45 s (120 s el primero), el host lo corta. Algo largo que no es un `Trabajo`:
 `trabajos.mantener_vivo()` al empezar. Sin host que lo pida, nada cambia.
 
+## Al cerrar la app (0.2.1)
+Al salir, el host manda SIGTERM a lo que siga corriendo. Con `mantener_vivo()` el script sale con `SystemExit` (código 143): corren
+sus `finally` y sus `with`, así borra sus temporales (un `.wav` a medias, una carpeta de trabajo). Si la app ya puso su propio
+manejador de SIGTERM, gana el suyo; `mantener_vivo(limpiar_al_cortar=False)` no toca la señal. `trabajos.cortar_con_systemexit()`
+hace solo eso, para un script que no late.
+
+## Si venías de la 0.2.0
+Nada que cambiar. **Corta** puede borrar la línea `signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))` que sigue a
+`trabajos.mantener_vivo()` en `bin/render.py` y `bin/importar.py` (y el `import signal` si ya no se usa): ahora lo hace la pieza.
+
 ## Si venías de la 0.1.0 o 0.1.1
 Nada que cambiar: 0.2.0 solo suma el latido para el host, y desde 0.1.1 `terminar` con un error de la IA raro (valores que no son texto) ya no se cae.

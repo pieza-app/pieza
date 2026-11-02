@@ -94,6 +94,9 @@ class Nucleo(AppDePrueba):
     def test_ruta_en_no_sale(self):
         salida = self.py("import nucleo; print([nucleo.ruta_en('/tmp', p) is None for p in ['a/b', '../x', '/etc', '', 'a/../../x']])")
         self.assertEqual(salida.strip(), "[False, True, True, True, True]")
+        # Una base vacía o relativa (el inyector carpetaActual manda "" sin carpeta) nunca es la carpeta de trabajo del script.
+        salida = self.py("import nucleo; print([nucleo.ruta_en(b, 'a.md') is None for b in ['', '.', 'docs', None, '/tmp', '/no/existe/x']])")
+        self.assertEqual(salida.strip(), "[True, True, True, True, False, True]")
 
     def test_contrato_error_como_json(self):
         entrada, salida = os.path.join(self.tmp.name, "e.json"), os.path.join(self.tmp.name, "s.json")
@@ -360,6 +363,17 @@ class Herramienta(AppDePrueba):
                                    "datos": {"pedido": {"tipo": "texto", "max": 100}}}}}
         errores = " ".join(pieza.errores_pieza("mala", mala, {}))
         self.assertIn("solo puede ser un campo enum o entero", errores)
+
+    def test_migrar_es_una_lista_de_pasos(self):
+        sys.path.insert(0, os.path.join(BASE, "herramientas"))
+        import pieza
+        base = {"id": "x", "version": "0.2.0", "archivos": {}, "categoria": "base", "descripcion": "x", "recomendar": {"cuando": "x"},
+                "licencia": "MPL-2.0"}
+        texto = {**base, "cambios": [{"version": "0.2.0", "tipo": "rompe", "resumen": "x", "migrar": "1. Haz esto. 2. Y esto."},
+                                     {"version": "0.1.0", "tipo": "inicial", "resumen": "x"}]}
+        lista = {**texto, "cambios": [{**texto["cambios"][0], "migrar": ["Haz esto.", "Y esto."]}, texto["cambios"][1]]}
+        self.assertIn("«migrar» es una lista", " ".join(pieza.errores_pieza("x", texto, {})))
+        self.assertNotIn("«migrar»", " ".join(pieza.errores_pieza("x", lista, {})))
 
 
 if __name__ == "__main__":
@@ -1003,6 +1017,25 @@ class HostGenerico(unittest.TestCase):
         r = subprocess.run([sys.executable, "-c", codigo], cwd=self.app, env=env, capture_output=True, text=True)
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertFalse(os.path.exists(latido))
+
+    def test_mantener_vivo_limpia_al_cortar(self):
+        """El host manda SIGTERM al cerrar la app: con mantener_vivo() el script sale con SystemExit y corren sus finally."""
+        self.assertEqual(correr(PIEZA, "agregar", "trabajos", self.app).returncode, 0)
+        marca = os.path.join(self.tmp.name, "limpio")
+        codigo = ("import sys, time; sys.path.insert(0, 'bin'); import trabajos\n"
+                  "trabajos.mantener_vivo()\n"
+                  f"try:\n    print('listo', flush=True); time.sleep(30)\nfinally:\n    open({marca!r}, 'w').write('si')\n")
+        env = {**os.environ, "PRUEBA_DATOS": os.path.join(self.tmp.name, "datos")}
+        p = subprocess.Popen([sys.executable, "-c", codigo], cwd=self.app, env=env, stdout=subprocess.PIPE, text=True)
+        self.assertEqual(p.stdout.readline().strip(), "listo")
+        p.terminate()
+        self.assertEqual(p.wait(10), 143)
+        self.assertTrue(os.path.exists(marca), "el finally corrió")
+        propio = ("import signal, sys; sys.path.insert(0, 'bin'); import trabajos\n"
+                  "signal.signal(signal.SIGTERM, lambda *a: None)\n"
+                  "trabajos.mantener_vivo(); print(signal.getsignal(signal.SIGTERM) is not trabajos._salir_por_senal)\n")
+        r = subprocess.run([sys.executable, "-c", propio], cwd=self.app, env=env, capture_output=True, text=True)
+        self.assertEqual(r.stdout.strip(), "True", "un manejador propio de la app gana")
 
     def test_nada_de_una_app_en_el_host(self):
         import re
