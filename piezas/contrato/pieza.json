@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "contrato",
- "version": "0.1.0",
+ "version": "0.1.1",
  "estado": "lista",
  "nombre": "Contrato del puente",
  "icono": "icono.svg",
@@ -31,6 +31,11 @@
  "pantallas": [],
  "tareas_persona": [],
  "cambios": [
+  {
+   "version": "0.1.1",
+   "tipo": "arreglo",
+   "resumen": "«probarIA» (lo manda «componentes» desde las filas de «Tu IA») ya no se exige a una app sin la pieza «ia» que no pinta esas filas: antes fallaba con «Mac no atiende probarIA» aunque nadie lo pidiera."
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

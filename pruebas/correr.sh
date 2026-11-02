@@ -6,6 +6,9 @@ python3 herramientas/pieza.py revisar
 python3 -W ignore -m unittest -q pruebas/test_piezas.py pruebas/test_piezas_datos.py
 # Las piezas «pagina» y «contrato» con una app ficticia (sin navegador; la página en Chromium va abajo, con Playwright).
 python3 -W ignore -m unittest -q pruebas/test_pagina_contrato.py
+# «pieza.py crear»: dos apps nuevas (Mac + Windows + Linux con IA, y solo Mac) y sus propias pruebas en verde (con Playwright, también
+# su interfaz; con ELECTRON, la app de Linux abierta de verdad).
+python3 -W ignore -m unittest -q pruebas/test_crear.py
 # Las piezas de JavaScript (i18n, bienvenida, actualizaciones de Electron): Node, sin dependencias.
 node --test pruebas/piezas_js.mjs > /dev/null || node --test pruebas/piezas_js.mjs
 # El host de Windows y Linux en Node (Electron falso, Python de verdad) y, si ELECTRON apunta a uno, con Electron de verdad y Xvfb.

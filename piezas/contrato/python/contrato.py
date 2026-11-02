@@ -63,6 +63,11 @@ COMANDO_IA = re.compile(r'"--disallowedTools"|"--strict-mcp-config"|"--skip-git-
 
 # ── Leer JS sin ejecutarlo: lo justo para encontrar bloques y claves ─────────────────────────────────────────────────────────
 
+#: Acciones que manda una pieza de interfaz solo si la app usa la parte que la manda (acción → lo que la app tiene que llamar).
+#: Sin esa pieza instalada y sin que la app lo llame, no se exige.
+USO_PIEZAS_UI = {"probarIA": ("ia", r"\bfilasIA\(|\bprobarIA\(")}
+
+
 def sin_comentarios(texto):
     """Quita los comentarios de línea completa (los ejemplos de las piezas nombran acciones que no existen)."""
     return re.sub(r"^\s*(//|///|\*|/\*\*|#).*$", "", texto or "", flags=re.M)
@@ -276,6 +281,13 @@ class Contrato:
             self.acciones |= set(re.findall(patron, sin_comentarios(self.ui_todo)))
         for texto in piezas_ui.values():
             self.acciones |= set(re.findall(r'(?<![\w.])enviar\("(\w+)"', sin_comentarios(texto)))
+        # Lo que una pieza de interfaz manda solo si la app usa esa parte: «probarIA» sale de las filas de «Tu IA» de
+        # «componentes»; una app sin la pieza «ia» que no las pinta nunca lo pide.
+        instaladas = set((self.lock.get("piezas") or {}))
+        for accion, (pieza, usa) in USO_PIEZAS_UI.items():
+            if accion in self.acciones and pieza not in instaladas and not re.search(usa, sin_comentarios(self.ui_todo)) \
+                    and not re.search(rf'enviar\(\s*"{accion}"', sin_comentarios(self.ui_todo)):
+                self.acciones.discard(accion)
         # El nombre global (window.<App>) sale de crearHost de la pieza «host-ui».
         m = re.search(r'crearHost\(\{[^}]*?global:\s*"(\w+)"', self.ui_todo)
         self.global_ = m.group(1) if m else (self.app.get("nombre") or "App")

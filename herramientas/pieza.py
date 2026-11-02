@@ -2,6 +2,12 @@
 """pieza — enchufa piezas de esta base en una app. Solo biblioteca estándar.
 
   pieza.py listar                         Las piezas disponibles.
+  pieza.py crear <carpeta> --id <id> --nombre <Nombre> [--plataformas mac,windows,linux] [--piezas ia,…] [--repo dueño/repo]
+          [--datos sistema|visible]
+                                          Una app nueva andando de una vez: app.json, las piezas de siempre para esas plataformas,
+                                          las pedidas, lo propio mínimo (pieza «esqueleto»: interfaz con bienvenida, pantalla y
+                                          script de ejemplo, Mac y Windows/Linux, demo y pruebas), acciones.json y lo generado
+                                          (empaquetado, repo, página). Al final dice qué le toca a la IA y qué a la persona.
   pieza.py iniciar <app> <id> <Nombre> [--plataformas=mac,windows,linux] [--datos=sistema|visible]
                                           Crea app.json en una app que aún no lo tiene.
   pieza.py agregar <pieza> <app> [--sin-revisar] [--sin-config=clave,…] [--forzar]
@@ -818,6 +824,107 @@ def iniciar(app, aid, nombre, plataformas=None, datos="sistema"):
           " ícono en docs/favicon.svg (solo formas, ≤ 8 KB): así la app aparece con su ícono en la página de Pieza.")
 
 
+# ── Crear una app nueva de una vez ──────────────────────────────────────────────────────────────────────────────────────────
+# iniciar + las piezas de siempre para esas plataformas + las pedidas + «esqueleto» (lo propio mínimo, andando) + «github» al final
+# (su AGENTS.md lista las demás), la acción de ejemplo en app.json, acciones.json y todo lo generado. Lo propio de la app sale de
+# las plantillas de la pieza «esqueleto» (una vez; desde ahí es de la app): aquí no hay nada de ninguna app.
+
+#: La acción de ejemplo que llama bin/ejemplo.py (de la pieza «esqueleto»): el texto va por archivo, nunca como argumento.
+ACCION_EJEMPLO = {"script": "ejemplo.py", "args": ["contar"], "entrada": "archivo",
+                  "datos": {"texto": {"tipo": "texto", "max": 20000}}, "responde": "ejemploListo", "limite": 30}
+#: Archivos generados que nunca son «para completar» aunque digan «La app:» (de piezas, o la explicación de un formato).
+_SIN_PENDIENTE = ("herramientas/org.github.io/",)
+
+
+def pendientes_ia(app):
+    """{archivo: líneas} con lo que dice «La app:» (lo que completa la IA), sin los archivos copiados de las piezas."""
+    lock = candado(app)
+    # Lo copiado y lo que se vuelve a generar (docs/index.html sale de docs/pagina.json) es de las piezas: no se completa ahí.
+    copiados = {d for i in lock["piezas"].values() for k in ("archivos", "generados") for d in i.get(k, {})}
+    r = {}
+    for carpeta, dirs, archivos in os.walk(app):
+        dirs[:] = sorted(d for d in dirs if d not in (".git", "node_modules", "dist", ".build", "vendor"))
+        for nombre in sorted(archivos):
+            ruta = os.path.join(carpeta, nombre)
+            rel = os.path.relpath(ruta, app).replace(os.sep, "/")
+            if rel in copiados or rel in NO_GENERAR or rel.startswith(_SIN_PENDIENTE) or os.path.getsize(ruta) > 512 * 1024:
+                continue
+            try:
+                n = sum(1 for l in open(ruta, encoding="utf-8") if re.search(r"\bLa app:", l))
+            except (OSError, UnicodeDecodeError):
+                continue
+            if n:
+                r[rel] = n
+    return r
+
+
+def crear(app, aid, nombre, plataformas, extra=(), repo=None, datos="sistema"):
+    import contextlib
+    import io
+    import plantillas
+    if not re.match(r"^[a-z][a-z0-9]{0,30}$", aid):  # la regla de iniciar (y de nucleo.app()), antes de crear la carpeta
+        sys.exit("El id va en minúsculas, solo letras y números (ej. receta).")
+    if os.path.exists(os.path.join(app, "app.json")) or (os.path.isdir(app) and os.listdir(app)):
+        sys.exit(f"{app} ya existe y no está vacía: crear es para una app nueva (en una que ya existe: iniciar y agregar).")
+    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9]{0,40}", plantillas._ascii(nombre) or "-") or not re.fullmatch(r"\w+", nombre) \
+            or len(nombre) > 40:
+        sys.exit("El nombre es una palabra que empieza con letra (puede llevar tildes: «Alcancía»): con él se llaman la app, su"
+                 " carpeta de Mac y los archivos de las versiones.")
+    plataformas = list(plataformas or ("mac", "windows", "linux"))
+    if set(plataformas) & {"ios", "android"}:
+        sys.exit("El celular todavía no: «host-movil» está por extraer (docs/catalogo.md). Crea la app de escritorio y súmalo después.")
+    if repo is not None and not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9._-]{1,100}", repo):
+        sys.exit("--repo es «dueño/repo» (p. ej. ana-app/ana).")
+    for pid in extra:
+        if pid not in todas():
+            sys.exit(f"No conozco la pieza «{pid}» (pieza.py catalogo).")
+        if pieza(pid).get("estado") == "planeada":
+            sys.exit(f"«{pid}» está por extraer (de {pieza(pid)['tomar_de']}): extráela primero en Pieza (AGENTS.md).")
+    f = ficha(list(extra) + ["esqueleto"], plataformas)
+    # Las de «siempre» que aún están por extraer (p. ej. «privacidad», que hoy trae «github») no detienen nada: se dicen al final.
+    # «esqueleto» y «github» van al final: lo que escriben una vez mira qué piezas ya están (el Swift suma las actualizaciones,
+    # AGENTS.md lista todas).
+    orden = [x["id"] for x in f["piezas"] if x["id"] not in ("esqueleto", "github") and x["estado"] == "lista"] + ["esqueleto", "github"]
+    os.makedirs(app, exist_ok=True)
+    detalle = io.StringIO()
+    with contextlib.redirect_stdout(detalle):
+        iniciar(app, aid, nombre, plataformas, datos)
+        if repo:
+            ruta = os.path.join(app, "app.json")
+            a = leer(ruta)
+            a["repo"] = repo
+            escribir(ruta, a)
+        for pid in orden:
+            agregar(pid, app)
+        # La acción de ejemplo, ahora que bin/ejemplo.py existe (la generó «esqueleto»), y todo lo generado otra vez: lo que
+        # depende de otro generado (la página, de docs/pagina.json) sale en esta pasada.
+        ruta = os.path.join(app, "app.json")
+        a = leer(ruta)
+        a.setdefault("acciones", {})["ejemplo"] = ACCION_EJEMPLO
+        escribir(ruta, a)
+        armar_acciones(app, forzar=True)
+        generar_todo(app)
+    if os.environ.get("PIEZA_DETALLE"):
+        print(detalle.getvalue())
+    lock = candado(app)
+    print(f"✓ {nombre} en {app}")
+    print("  Piezas: " + ", ".join(f"{p} {lock['piezas'][p]['version']}" for p in orden))
+    print("  Pruébala:  bash pruebas/correr.sh   ·   cd ui && python3 -m http.server 8765  (?bienvenida, ?idioma=en)")
+    print("\nLE TOCA A LA IA (solo lo propio; lo demás ya está y se mantiene con pieza.py actualizar/generar):")
+    print("  1. Lo marcado «La app:» en cada archivo:")
+    for rel, n in pendientes_ia(app).items():
+        print(f"     {rel} ({n})")
+    print("  2. Lo propio: reemplazar el ejemplo (ui/app.js, bin/ejemplo.py, la acción «ejemplo» de app.json, ui/demo.json,"
+          " pruebas/test_app.py e interfaz.mjs) por la app; cada texto nuevo con su inglés en ui/idiomas/en.json.")
+    print("  3. app.json → empaquetado (descripcion, categoria) y los íconos (docs/favicon.svg"
+          + (f", app/{plantillas._ascii(nombre)}.icns" if "mac" in plataformas else "")
+          + (", escritorio/iconos/" if set(plataformas) & {"windows", "linux"} else "") + ").")
+    print("  4. docs/pagina.json completo → pieza.py generar . pagina; después bash pruebas/correr.sh en verde.")
+    print("\nLE TOCA A LA PERSONA:")
+    for t in f["tareas_persona"]:
+        print(f"  - {t}")
+
+
 def _textos_en(app):
     """El archivo de inglés de la app, si existe (los tres formatos de hoy guardan las frases en «textos»)."""
     ruta = os.path.join(app, "ui", "idiomas", "en.json")
@@ -1562,6 +1669,25 @@ def main(a):
         return revisar()
     elif orden == "skills" and len(resto) == 2 and resto[0] in ("estado", "instalar"):
         (skills_estado if resto[0] == "estado" else skills_instalar)(resto[1])
+    elif orden == "crear" and resto:
+        op, libres, i = {}, [], 0
+        while i < len(resto):
+            if resto[i] in ("--id", "--nombre", "--piezas", "--repo", "--datos") and i + 1 < len(resto):
+                op[resto[i][2:]] = resto[i + 1]
+                i += 2
+            elif resto[i].startswith("--") and "=" in resto[i]:
+                k, v = resto[i][2:].split("=", 1)
+                op[k] = v
+                i += 1
+            else:
+                libres.append(resto[i])
+                i += 1
+        if len(libres) != 1 or not op.get("id") or not op.get("nombre"):
+            print(__doc__)
+            return 2
+        plats_crear = op["plataformas"].split(",") if op.get("plataformas") else (list(plats) if plats != PLATAFORMAS else None)
+        crear(os.path.abspath(libres[0]), op["id"], op["nombre"], plats_crear,
+              [x for x in op.get("piezas", "").split(",") if x], op.get("repo"), op.get("datos", "sistema"))
     elif orden == "iniciar" and len([x for x in resto if not x.startswith("--")]) == 3:
         plats = next((x.split("=", 1)[1].split(",") for x in resto if x.startswith("--plataformas=")), None)
         datos = next((x.split("=", 1)[1] for x in resto if x.startswith("--datos=")), "sistema")
