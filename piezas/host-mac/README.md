@@ -42,7 +42,8 @@ import PiezaActualizaciones   // opcional
             // Pieza «actualizaciones»: el host atiende buscarActualizacion/actualizar (nunca con algo en curso), revisa cada 6 h con
             // el idioma elegido y suma `actualizacion` al estado.
             Actualizaciones.configurar(.init(repo: "ana-app/ana", nombre: "Ana",
-                archivoDesarrollo: Host.datos.appendingPathComponent("desarrollo"), variableProgreso: Host.prefijo + "PROGRESO"))
+                archivoDesarrollo: Host.datos.appendingPathComponent("desarrollo"), variableProgreso: Host.prefijo + "PROGRESO",
+                appJSON: Host.recursos.appendingPathComponent("app.json")))   // llaves de firma, si las hay (0.4)
             p.actualizaciones = .init(revisar: Actualizaciones.revisar, revisarCadaRato: Actualizaciones.revisarCadaRato,
                 seguir: Actualizaciones.seguir, instalar: Actualizaciones.instalar, aviso: Actualizaciones.aviso,
                 disponible: { Actualizaciones.disponible })

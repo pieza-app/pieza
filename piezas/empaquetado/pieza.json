@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "empaquetado",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Empaquetado",
  "icono": "icono.svg",
@@ -86,6 +86,12 @@
   "Un Mac con Apple Silicon y Xcode para compilar la app de Mac la primera vez (después la arma GitHub en cada versión)"
  ],
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "mejora",
+   "seguridad": true,
+   "resumen": "Con llaves de firma en app.json → `actualizaciones.llaves` («actualizaciones» 0.4.0), `publicar.yml` crea el Release como **borrador** (las apps instaladas no lo ven) y avisa cómo firmarlo y publicarlo desde el Mac de quien mantiene la app (`herramientas/firmar_release.sh` de Pieza). Sin llaves, igual que antes. Unas llaves mal escritas detienen `pieza.py generar`."
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

@@ -1,6 +1,19 @@
 # Cambios
 
 ## Sin publicar
+- **Actualizaciones firmadas (`actualizaciones` 0.4.0, seguridad):** con llaves públicas Ed25519 en `app.json` →
+  `"actualizaciones": {"llaves": ["…"]}` (hasta 2, para rotar), un Release vale solo si cada archivo trae su `.sig`: la firma de
+  `<id>-actualizacion|<versión>|<sha256>` hecha con la llave privada que vive solo en el Llavero del Mac de quien mantiene la app
+  (nunca en GitHub). Alguien que tome la cuenta de GitHub ya no puede publicar una versión falsa ni reetiquetar una vieja. La app
+  revisa huella, versión (la del Release y más nueva que la instalada) y firma antes de tocar nada; si no calza, avisa con el código
+  nuevo `firma`. En el Mac, con firma, la app baja y revisa todo con URLSession y CryptoKit y el guion instala el zip ya revisado;
+  en Electron, `crypto.verify`. Sin llaves, todo igual que antes. Herramientas nuevas para el Mac de quien mantiene:
+  `herramientas/firmar/firmar.swift` (`crear`, `publica`, `respaldo`, `importar`, `firmar`, `verificar`) y
+  `herramientas/firmar_release.sh <dueño/repo> vX.Y.Z <id>` (firma el borrador, sube los `.sig` y lo publica). Pruebas: Node
+  (Release falso con firmas buenas, de otra llave, de otra versión, de otra app y sin `.sig`) y, en el Mac de GitHub,
+  `pruebas/swift/revisar_actualizaciones.sh` (el mismo vector que Node, y `firmar.swift` de verdad en un llavero temporal).
+  **`empaquetado` 0.2.0:** con llaves, `publicar.yml` crea el Release como borrador; llaves mal escritas detienen `pieza.py generar`.
+  **`esqueleto` 0.2.0:** las apps nuevas leen las llaves de `app.json` (`appJSON:` en Swift, `usarApp(host.app)` en Electron).
 - **Revisión de seguridad de las plantillas y de `pieza.py` (antes de publicar):** el filtro `json` también deja `<`, `>`, `&`,
   U+2028 y U+2029 como `\u…` (un texto de `docs/pagina.json` ya no puede cerrar el `<script type="application/ld+json">` de la
   página); filtro nuevo `color` (solo `#rgb`, `#rrggbb`, `#rrggbbaa`, `rgb()`/`hsl()` con números) para el acento de `colores.css`;

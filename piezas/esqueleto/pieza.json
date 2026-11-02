@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "esqueleto",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Esqueleto de una app nueva",
  "icono": "icono.svg",
@@ -116,6 +116,12 @@
   "Listo": "Done"
  },
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "mejora",
+   "seguridad": true,
+   "resumen": "`<Nombre>App.swift` le pasa `appJSON: Host.recursos.appendingPathComponent(\"app.json\")` a `Actualizaciones.configurar` y `escritorio/src/main.js` llama `actualizaciones.usarApp(host.app)`: las llaves de firma de app.json → `actualizaciones.llaves` («actualizaciones» 0.4.0) llegan solas. Solo para apps nuevas (lo del esqueleto se escribe una vez); en una app que ya existe, los pasos están en `cambios` de «actualizaciones» 0.4.0."
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

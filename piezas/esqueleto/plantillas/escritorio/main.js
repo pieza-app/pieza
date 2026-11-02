@@ -12,6 +12,11 @@ const { crear: crearActualizaciones } = require("./actualizaciones");
 {{/si}}
 
 const icono = path.join(__dirname, "..", "iconos", "{{id}}-256.png");
+{{#si piezas.actualizaciones}}
+// Pieza «actualizaciones»: solo los Releases de {{repo}}, verificados con su .sha256 (y su .sig si app.json → actualizaciones.llaves
+// tiene llaves); sin empaquetar no busca.
+const actualizaciones = crearActualizaciones({ app: electron.app, net: electron.net, repo: "{{repo}}", nombre: {{nombre|json}} });
+{{/si}}
 const host = crearHost({
   electron,
   global: "{{nombre_ascii}}",
@@ -19,9 +24,11 @@ const host = crearHost({
   sitio: "{{web|https}}",
   codigo: "https://github.com/{{repo}}",
 {{#si piezas.actualizaciones}}
-  // Pieza «actualizaciones»: solo los Releases de {{repo}}, verificados con su .sha256; sin empaquetar no busca.
-  actualizaciones: crearActualizaciones({ app: electron.app, net: electron.net, repo: "{{repo}}", nombre: {{nombre|json}} }),
+  actualizaciones,
 {{/si}}
 });
+{{#si piezas.actualizaciones}}
+actualizaciones.usarApp(host.app); // las llaves de firma de app.json (sin llaves, solo la huella)
+{{/si}}
 // La app: lo nativo propio, p. ej. host.acciones.registrar("exportar", async (d) => { … }) (el mismo que p.registrar en Mac).
 host.iniciar();

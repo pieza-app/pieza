@@ -24,10 +24,17 @@ python3 herramientas/pieza.py generar <app>                 # después de cambia
 | `escritorio/herramientas/instalador-windows.sh`, `instalador.nsi` | `windows` | NSIS propio por usuario (`%LOCALAPPDATA%\Programs\<Nombre>`), `/S` silencioso, sin Wine. |
 | `instalar.sh` | `mac` o `linux` | Un comando (`curl … \| bash`): baja el último Release, verifica la huella e instala para el usuario. |
 | `instalar.ps1` | `windows` | Lo mismo en PowerShell (`irm … \| iex`). |
-| `.github/workflows/publicar.yml` | siempre | Al cambiar `app.json` (o con una etiqueta `vX.Y.Z`): si la versión no está publicada, compila Mac (macos-15), Linux y Windows (ubuntu-24.04) y crea el Release con `<Nombre>-macOS.zip`, `-Windows.exe`, `-Linux.AppImage`, `-Linux.tar.gz` (y `-Linux.deb` si `deb`), cada uno con `.sha256`. |
+| `.github/workflows/publicar.yml` | siempre | Al cambiar `app.json` (o con una etiqueta `vX.Y.Z`): si la versión no está publicada, compila Mac (macos-15), Linux y Windows (ubuntu-24.04) y crea el Release con `<Nombre>-macOS.zip`, `-Windows.exe`, `-Linux.AppImage`, `-Linux.tar.gz` (y `-Linux.deb` si `deb`), cada uno con `.sha256`. Con llaves de firma en `app.json` → `actualizaciones.llaves` (pieza «actualizaciones» 0.4), el Release queda como **borrador** (abajo). |
 
 **Publicar una versión = subir `version` en `app.json`** y hacer push a `main` (`empaquetar.sh` y CI la ponen en el `Info.plist` y el
 `package.json` empaquetados; `pieza.py generar .` deja también al día los del repo).
+
+**Con actualizaciones firmadas** (`"actualizaciones": {"llaves": ["…"]}` en `app.json`; ver el README de «actualizaciones»): la
+llave privada vive solo en el Llavero del Mac de quien mantiene la app, así que GitHub no puede firmar. `publicar.yml` compila y deja
+el Release como **borrador** (las apps instaladas no lo ven y `instalar.sh` tampoco); después, en ese Mac y desde un checkout de
+Pieza: `bash herramientas/firmar_release.sh <dueño/repo> vX.Y.Z <id>` baja el borrador, revisa cada `.sha256`, firma cada archivo,
+sube los `.sig` y, con tu sí, lo publica como la última versión. Unas llaves mal escritas detienen `pieza.py generar` (no se publica
+como si no firmara).
 
 ## Lo que la app puede personalizar (`app.json` → `empaquetado`, todo opcional)
 

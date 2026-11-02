@@ -1,13 +1,13 @@
 {
  "formato": 1,
  "id": "actualizaciones",
- "version": "0.3.0",
+ "version": "0.4.0",
  "estado": "lista",
  "nombre": "Actualizaciones",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "plataforma",
- "descripcion": "Avisa dentro de la app, descarga solo de los Releases del repo, verifica sha256 y actualiza en un clic sin tocar los datos.",
+ "descripcion": "Avisa dentro de la app, descarga solo de los Releases del repo, verifica sha256 (y, con llaves, la firma Ed25519 de quien mantiene la app) y actualiza en un clic sin tocar los datos.",
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre en escritorio."
@@ -32,9 +32,10 @@
   "release-assets.githubusercontent.com"
  ],
  "tareas_persona": [
-  "Publicar versiones como Releases con los archivos y su .sha256 (lo hace el workflow publicar)"
+  "Publicar versiones como Releases con los archivos y su .sha256 (lo hace el workflow publicar)",
+  "Para firmar las actualizaciones (recomendado antes del primer Release): en tu Mac, `swift herramientas/firmar/firmar.swift crear <id>` de Pieza, guardar el respaldo fuera de línea (`respaldo <id>`), pegar la llave pública en app.json → actualizaciones.llaves y, en cada versión, publicar el borrador con `herramientas/firmar_release.sh <dueño/repo> vX.Y.Z <id>`"
  ],
- "origen": "esquema (Actualizaciones.swift + escritorio/src/actualizaciones.js: esDescargaNuestra, comillas, avance por pasos, .anterior si falla) + repasa (URL sin puerto ni «..», se vuelve a validar al instalar, PATH fijo, revisa que el .app exista) + repasa/alcancia (textos en español que traduce la interfaz). Nuevo: nada de la app adentro (repo, nombre y archivos por parámetro; Swift en su propio target), el guion solo escribe códigos de paso (ningún texto traducido entra a bash), huella de 64 hex obligatoria, versiones que no son números se ignoran, la redirección de GitHub solo por https y Electron inyectable para probarlo en Node.",
+ "origen": "esquema (Actualizaciones.swift + escritorio/src/actualizaciones.js: esDescargaNuestra, comillas, avance por pasos, .anterior si falla) + repasa (URL sin puerto ni «..», se vuelve a validar al instalar, PATH fijo, revisa que el .app exista) + repasa/alcancia (textos en español que traduce la interfaz). Nuevo: nada de la app adentro (repo, nombre y archivos por parámetro; Swift en su propio target), el guion solo escribe códigos de paso (ningún texto traducido entra a bash), huella de 64 hex obligatoria, versiones que no son números se ignoran, la redirección de GitHub solo por https y Electron inyectable para probarlo en Node. Nuevo en 0.4: la firma Ed25519 de las actualizaciones, del diseño de Alcancía (SECURITY.md, «Firma de las actualizaciones»): llave privada solo en el Llavero del Mac de quien mantiene, la versión firmada junto a la huella y, con firma, el Mac baja y revisa todo antes de escribir el guion.",
  "archivos": {
   "mac/Actualizaciones.swift": "app/Sources/PiezaActualizaciones/Actualizaciones.swift",
   "escritorio/actualizaciones.js": "escritorio/src/actualizaciones.js"
@@ -48,11 +49,24 @@
   "Instalando: {app} se cerrará y volverá a abrirse sola": "Installing: {app} will close and reopen on its own",
   "No pude descargar la versión nueva. Revisa tu conexión e intenta de nuevo.": "I couldn't download the new version. Check your connection and try again.",
   "No pude preparar la versión nueva. {app} sigue igual que antes; intenta de nuevo más tarde.": "I couldn't get the new version ready. {app} is just as it was; try again later.",
-  "No encontré la descarga de la versión nueva.": "I couldn't find the download for the new version."
+  "No encontré la descarga de la versión nueva.": "I couldn't find the download for the new version.",
+  "No pude comprobar que la versión nueva sea de {app}: le falta la firma o no es válida. {app} sigue igual que antes.": "I couldn't confirm the new version is really from {app}: its signature is missing or invalid. {app} is just as it was."
  },
  "permisos": {},
  "red_nota": "Solo pregunta a GitHub por la última versión del repo de la app (al abrir y cada 6 horas) y baja de sus Releases; GitHub redirige la descarga a su almacenamiento. Sin datos de la persona.",
  "cambios": [
+  {
+   "version": "0.4.0",
+   "tipo": "mejora",
+   "seguridad": true,
+   "resumen": "Actualizaciones firmadas (opcional): con llaves públicas Ed25519 en app.json → `actualizaciones.llaves` (o `llaves:` en Swift/Electron), un Release vale solo si cada archivo trae su `.sig`, la firma de `<id>-actualizacion|<versión>|<sha256>` hecha en el Mac de quien mantiene la app (herramientas/firmar de Pieza). Alguien que tome la cuenta de GitHub ya no puede publicar una versión falsa ni volver a una vieja. Sin llaves, todo igual que antes. Error nuevo `firma` con su frase (súmala a ui/idiomas/en.json si no usas pieza.py). En Mac, la descarga con firma la hace la app (URLSession) y el guion instala el zip ya revisado.",
+   "migrar": [
+    "Nada obligatorio: sin llaves, la pieza se porta igual que 0.3.",
+    "Para firmar: en tu Mac, `swift herramientas/firmar/firmar.swift crear <id-de-la-app>` (desde un checkout de Pieza) y `respaldo <id>` para guardar la privada fuera de línea; pega la pública en app.json → \"actualizaciones\": {\"llaves\": [\"…\"]}.",
+    "Mac: en `Actualizaciones.configurar(.init(…))` suma `appJSON: Host.recursos.appendingPathComponent(\"app.json\")` (o `llaves: [\"…\"]`). Electron: después de `crearHost`, `actualizaciones.usarApp(host.app)` (o `crear({…, llaves})`).",
+    "`pieza.py generar .` para que publicar.yml cree el Release como borrador; después de cada versión, en tu Mac, `bash herramientas/firmar_release.sh <dueño/repo> vX.Y.Z <id>` (de Pieza) lo firma y lo publica."
+   ]
+  },
   {
    "version": "0.3.0",
    "tipo": "mejora",
