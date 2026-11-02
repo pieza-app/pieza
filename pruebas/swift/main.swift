@@ -115,7 +115,8 @@ Task { @MainActor in
         listo()
     }
     // Un trabajo que late no tiene tope; uno que deja de latir se corta; al salir se corta lo que sigue corriendo (de a uno).
-    Procesador.latidoMuerto = 0.6; Procesador.latidoPrimero = 0.6; Procesador.latidoRevisar = 0.1
+    // El primer latido con margen: en un runner de CI, Python tarda en arrancar con los demás scripts corriendo a la vez.
+    Procesador.latidoMuerto = 0.6; Procesador.latidoPrimero = 5; Procesador.latidoRevisar = 0.1
     Procesador.correrJSON("eco.py", ["latir"], latido: true) { r in
         revisar(r["ok"] as? Bool == true && r["latido"] as? Bool == true, "trabajo que late (2 s) no se corta")
         listo()
