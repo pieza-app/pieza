@@ -1,6 +1,19 @@
 # Cambios
 
 ## Sin publicar
+- **Plantillas: piezas que generan archivos desde `app.json`** (`pieza.json` → `generar`, `herramientas/plantillas.py`, sección
+  «Plantillas» de `docs/enchufe.md`). Solo datos (`{{x}}`, filtros que escapan o validan, `#si`/`#cada`; `${{ … }}` de Actions
+  queda tal cual): nada de una pieza se ejecuta. Lo generado queda con su huella en `piezas.json` → `generados` y nunca se pisa si
+  la app lo cambió; `una_vez` para lo que completa la IA de la app; `agregar`, `actualizar` y el nuevo `pieza.py generar <app>`
+  lo ponen al día con todas las piezas instaladas; lo de `.github/` nunca va en el PR automático de «Pieza al día» (va al issue);
+  una pieza de la comunidad no genera. `iniciar` suma `version` (0.1.0) y `repo` a `app.json`.
+- **`empaquetado` 0.1.0 y `github` 0.1.0 (nuevas):** todo el empaquetado (`Info.plist`, `Package.swift`, `build.sh`,
+  `empaquetar.sh` con un solo `herramientas/python.lock`, Electron, NSIS, `instalar.sh`/`.ps1`, `publicar.yml`; publicar = subir
+  `version` en `app.json`) y el repo para la comunidad (issues, PR, dependabot, `revisar.yml` en ubuntu-24.04 con job `mac`,
+  Pieza al día, `AGENTS.md`/`CONTRIBUTING.md`/`SECURITY.md` con lo que llena la IA marcado, agentes, privacidad, `.gitignore`,
+  `LICENSE`). `pieza.py repo configurar <app> [--aplicar]`: topics con `hecho-con-pieza`, Discussions, reporte privado de fallas,
+  aprobar las pruebas de quien aporta, ruleset de la rama principal y etiquetas. Prueba que la pieza reproduce el `Info.plist` de
+  las seis apps y el `empaquetar.sh` de Esquema, Corta y Graba. `correr.sh` revisa también los workflows de las plantillas.
 - **Flujo de crear (versión 11, plugin 0.8.1):** la línea de `CONTRIBUTING.md` ya no dice que los flujos de Pieza «se instalan
   solos al abrir el repo»: con `extraKnownMarketplaces` Claude Code los **ofrece**. A propósito no se suma `enabledPlugins` a lo que
   deja `pieza.py iniciar` (activaría el plugin a quien abra el repo sin preguntarle; la prueba lo revisa). `docs/catalogo.md`: lo que

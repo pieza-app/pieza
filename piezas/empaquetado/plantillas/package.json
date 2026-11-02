@@ -1,0 +1,118 @@
+{
+  "name": "{{id}}",
+  "productName": "{{nombre_ascii}}",
+  "version": "{{version}}",
+  "description": {{#si app.empaquetado.descripcion}}{{app.empaquetado.descripcion|json}}{{#sino}}{{nombre|json}}{{/si}},
+  "homepage": "{{web}}",
+  "license": "{{#si app.empaquetado.licencia}}{{app.empaquetado.licencia|nombre}}{{#sino}}AGPL-3.0{{/si}}-only",
+  "author": {
+    "name": {{nombre|json}},
+    "email": "{{#si app.empaquetado.correo}}{{app.empaquetado.correo}}{{#sino}}{{dueno}}@users.noreply.github.com{{/si}}"
+  },
+  "main": "src/main.js",
+  "private": true,
+  "scripts": {
+    "inicio": "electron .",
+    "preparar:linux": "bash herramientas/preparar.sh linux",
+    "preparar:windows": "bash herramientas/preparar.sh windows",
+    "empaquetar:linux": "bash herramientas/preparar.sh linux && electron-builder --linux AppImage tar.gz{{#si app.empaquetado.deb}} deb{{/si}}",
+    "empaquetar:windows": "bash herramientas/preparar.sh windows && electron-builder --win dir && bash herramientas/instalador-windows.sh"
+  },
+  "devDependencies": {
+    "electron": "44.9.3",
+    "electron-builder": "26.18.0"
+  },
+  "build": {
+    "appId": "{{bundle_escritorio}}",
+    "productName": "{{nombre_ascii}}",
+    "copyright": "{{#si app.empaquetado.licencia}}{{app.empaquetado.licencia|nombre}}{{#sino}}AGPL-3.0{{/si}} · {{nombre}}",
+    "directories": {
+      "output": "dist",
+      "buildResources": "iconos"
+    },
+    "files": [
+      "src/**",
+      "iconos/**",
+      "package.json"
+    ],
+    "asar": true,
+    "extraResources": [
+      {
+        "from": "../bin",
+        "to": "{{id}}/bin",
+        "filter": [
+          "*.py",
+          "*.json"
+        ]
+      },
+      {
+        "from": "../ui",
+        "to": "{{id}}/ui",
+        "filter": [
+          "**/*",
+          "!demo.json"
+        ]
+      },
+      {
+        "from": "../app.json",
+        "to": "{{id}}/app.json"
+      },
+      {
+        "from": "../acciones.json",
+        "to": "{{id}}/acciones.json"
+      },
+{{#cada app.empaquetado.carpetas como c}}
+      {
+        "from": "../{{c|ruta}}",
+        "to": "{{id}}/{{c|ruta}}"
+      },
+{{/cada}}
+      {
+        "from": "vendor/${os}/herramientas",
+        "to": "herramientas"
+      },
+      {
+        "from": "vendor/${os}/python",
+        "to": "python"
+      },
+      {
+        "from": "iconos/{{id}}-256.png",
+        "to": "{{id}}.png"
+      }
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "tar.gz"{{#si app.empaquetado.deb}},
+        "deb"{{/si}}
+      ],
+      "icon": "iconos/{{id}}.png",
+      "category": "{{#si app.empaquetado.linux_categoria}}{{app.empaquetado.linux_categoria|nombre}}{{#sino}}Utility{{/si}}",
+      "artifactName": "{{nombre_ascii}}-Linux.${ext}",
+      "synopsis": {{#si app.empaquetado.descripcion}}{{app.empaquetado.descripcion|json}}{{#sino}}{{nombre|json}}{{/si}},
+      "syncDesktopName": true,
+      "executableName": "{{id}}"
+    },
+{{#si app.empaquetado.deb}}
+    "deb": {
+      "packageName": "{{id}}",
+      "maintainer": "{{nombre}} <{{#si app.empaquetado.correo}}{{app.empaquetado.correo}}{{#sino}}{{dueno}}@users.noreply.github.com{{/si}}>"
+    },
+{{/si}}
+    "win": {
+      "target": [
+        "dir"
+      ],
+      "icon": "iconos/{{id}}.ico",
+      "artifactName": "{{nombre_ascii}}-Windows.${ext}",
+      "signExecutable": false
+    },
+    "publish": null,
+    "compression": "maximum"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/{{repo}}.git"
+  },
+  "desktopName": "{{id}}.desktop"
+}
