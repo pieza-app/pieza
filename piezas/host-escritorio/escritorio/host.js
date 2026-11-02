@@ -394,7 +394,8 @@ function crearHost(op = {}) {
   /** La ventana nunca navega fuera de ui/ ni abre otras ventanas: un enlace https va por `abrirEnlace` (el de la app si lo
    *  registró: una app para niños solo abre su sitio). */
   function guardarNavegacion(wc) {
-    const enlace = (url) => { despachar("abrirEnlace", { url: String(url) }).catch(() => {}); };
+    // Solo https, igual que en Mac: file:, mailto:, javascript:… nunca llegan al abrirEnlace de la app.
+    const enlace = (url) => { if (/^https:\/\//i.test(String(url))) despachar("abrirEnlace", { url: String(url) }).catch(() => {}); };
     wc.setWindowOpenHandler(({ url }) => { enlace(url); return { action: "deny" }; });
     wc.on("will-navigate", (e, url) => { if (!String(url).startsWith(ORIGEN)) { e.preventDefault(); enlace(url); } });
     wc.on("will-redirect", (e, url) => { if (!String(url).startsWith(ORIGEN)) e.preventDefault(); });

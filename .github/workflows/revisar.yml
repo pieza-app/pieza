@@ -7,8 +7,11 @@ permissions:
 jobs:
   pruebas:
     strategy:
+      # Versiones fijas: ubuntu-latest pasó a 26.04 y Playwright todavía no trae Chromium para ella. Sin fail-fast, una falla
+      # en un sistema no cancela al otro (así el job de Mac siempre compila el Swift).
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-24.04, macos-15]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

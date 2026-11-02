@@ -95,6 +95,7 @@ Cada app anotó lo que le faltó a las piezas al migrar (nov 2026). Agrupado por
 | `pieza.py` | `actualizar` que avise «la versión nueva trae X y la app tiene uno propio distinto» en vez de saltarlo | Esquema | |
 | `pruebas/contrato.py` común | Contemplar `copiado` sin `copiar` y `menu` como respuesta obligatoria | Repasa, Corta, Alcancía | Ya planeado (ver «Después») |
 | `ia`/`componentes` (docs) | Con el host genérico, `elegirIA` tiene que mandar `config {ia}` (`probarIA` declarada no lo guarda) | Repasa | |
+| `host-escritorio` | `host.ventanas.agregar(w)`: revisar que la ventana venga con `sandbox`/`contextIsolation` de `preferencias()` (`getLastWebPreferences()`) y ponerle `render-process-gone` | Revisión de 0.3.0 | Hoy lo dice el README |
 
 ## Brechas encontradas al comparar (arreglar ya en esas apps)
 

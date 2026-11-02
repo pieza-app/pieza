@@ -182,10 +182,10 @@ public final class Puente: NSObject, NSWindowDelegate, WKScriptMessageHandler, W
     public func soltado(_ nombre: String) -> URL? { soltados.first { $0.lastPathComponent == nombre } }
 
     func recibirSoltados(_ urls: [URL]) {
+        // Siempre lo último que se soltó (también vacío): `soltado(nombre)` nunca devuelve lo de una vez anterior.
         let u = urls.filter(\.isFileURL).map { $0.standardizedFileURL.resolvingSymlinksInPath() }
-        guard !u.isEmpty else { return }
         soltados = u
-        alSoltar?(u)
+        if !u.isEmpty { alSoltar?(u) }
     }
 
     /// Corre una acción como si la hubiera pedido la interfaz (para `despues` y para la app).
@@ -532,8 +532,19 @@ public final class Puente: NSObject, NSWindowDelegate, WKScriptMessageHandler, W
         if let desde { panel.directoryURL = desde }
         presentar(panel) { ok in
             guard ok, let u = panel.url else { return fin(.cancelado) }
-            guard (try? datos.write(to: u, options: .atomic)) != nil else { return fin(.error("escribir")) }
-            if soloPersona { try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: u.path) }
+            if soloPersona {
+                // Privado desde el primer byte: un temporal 0600 en la misma carpeta y después se renombra (nunca queda 0644).
+                let tmp = u.deletingLastPathComponent().appendingPathComponent(".\(u.lastPathComponent).\(UUID().uuidString).tmp")
+                guard FileManager.default.createFile(atPath: tmp.path, contents: datos, attributes: [.posixPermissions: 0o600]) else {
+                    return fin(.error("escribir"))
+                }
+                guard rename(tmp.path, u.path) == 0 else {
+                    try? FileManager.default.removeItem(at: tmp)
+                    return fin(.error("escribir"))
+                }
+            } else {
+                guard (try? datos.write(to: u, options: .atomic)) != nil else { return fin(.error("escribir")) }
+            }
             fin(.guardado(u))
         }
     }
@@ -676,7 +687,7 @@ public final class Menus {
 final class WebPieza: WKWebView {
     override func performDragOperation(_ sender: NSDraggingInfo) -> Bool {
         let urls = sender.draggingPasteboard.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL] ?? []
-        MainActor.assumeIsolated { if Puente.shared.alSoltar != nil { Puente.shared.recibirSoltados(urls) } }
+        MainActor.assumeIsolated { Puente.shared.recibirSoltados(urls) }
         return super.performDragOperation(sender)
     }
 }
