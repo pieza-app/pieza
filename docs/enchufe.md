@@ -259,8 +259,9 @@ Cada host, al arrancar y en cada mensaje, sin código por acción:
 Errores del host: `{ok: false, codigo: "datos" | "falta" | "limite" | "fallo", campo?, texto, valores, error}` (`texto` en español
 con marcadores para `T()`; `error` ya traducido para las interfaces de antes).
 
-`pruebas/contrato.py` puede pasar a ser uno solo para todas las apps: lee `acciones.json` y revisa que la UI, la simulación del
-navegador y los scripts digan lo mismo (pendiente: hoy cada app tiene el suyo).
+`pruebas/contrato.py` es uno solo para todas las apps: la pieza «contrato» (`pieza.py agregar contrato .`). Lee `acciones.json`,
+la interfaz, la vista previa y el código de cada host, y revisa que digan lo mismo; lo propio de la app va en
+`pruebas/contrato_app.py` (ver `piezas/contrato/README.md`).
 
 ## Capacidades comunes
 

@@ -1,18 +1,17 @@
 {
  "formato": 1,
  "id": "pagina",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Página pública",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "repo",
- "descripcion": "GitHub Pages bilingüe con descarga según sistema, demo en el navegador, preguntas frecuentes y SEO.",
+ "descripcion": "La página pública bilingüe (GitHub Pages) generada desde docs/pagina.json: descarga según el sistema, demo, permisos e internet que salen de sus piezas, preguntas frecuentes con su JSON-LD, SEO y el sello «Hecho con Pieza».",
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre."
  },
- "tomar_de": "esquema/docs + herramientas/pagina_capturas.mjs",
  "requiere": [],
  "plataformas": [
   "mac",
@@ -21,6 +20,50 @@
   "ios",
   "android"
  ],
+ "origen": "Esquema docs/ (pagina.js sin nada en línea, CSP script-src 'self', hreflang, Open Graph, JSON-LD SoftwareApplication + FAQPage, pagina.yml con permisos mínimos) + herramientas/pagina_capturas.mjs (servir como en Pages, compartir.png, revisar a 390 px) + Corta y Alcancía (sección «Permisos e internet», sello «Hecho con Pieza» en es/en) + Minuta (capturas desde la vista previa con hora fija y sin red, elegidas por datos). Nuevo: un solo HTML generado de datos, las preguntas comunes y lo que pide y a qué se conecta cada pieza escritos una vez (docs/pagina-comunes.json), el JSON-LD de los mismos textos que se ven, y la revisión de textos sin traducir, contraste AA y JSON-LD = lo visible.",
+ "archivos": {
+  "docs/pagina.js": "docs/pagina.js",
+  "docs/pagina.css": "docs/pagina.css",
+  "docs/tema.css": "docs/tema.css",
+  "docs/sello.svg": "docs/sello.svg",
+  "docs/sello-en.svg": "docs/sello-en.svg",
+  "datos/pagina-comunes.json": "docs/pagina-comunes.json",
+  "herramientas/pagina_capturas.mjs": "herramientas/pagina_capturas.mjs"
+ },
+ "generar": {
+  "plantillas/pagina.json": {
+   "destino": "docs/pagina.json",
+   "una_vez": true
+  },
+  "plantillas/favicon.svg": {
+   "destino": "docs/favicon.svg",
+   "una_vez": true
+  },
+  "plantillas/index.html": {
+   "destino": "docs/index.html",
+   "si": "datos.pagina"
+  },
+  "plantillas/colores.css": {
+   "destino": "docs/colores.css",
+   "si": "datos.pagina"
+  },
+  "plantillas/sitemap.xml": "docs/sitemap.xml",
+  "plantillas/org/robots.txt": "herramientas/org.github.io/robots.txt",
+  "plantillas/org/index.html": "herramientas/org.github.io/index.html",
+  "plantillas/github/workflows/pagina.yml": {
+   "destino": ".github/workflows/pagina.yml",
+   "si": "datos.pagina"
+  }
+ },
+ "datos_app": {
+  "pagina": "docs/pagina.json",
+  "comunes": "docs/pagina-comunes.json"
+ },
+ "config": {},
+ "acciones": {},
+ "permisos": {},
+ "red": [],
+ "red_nota": "La página es estática (GitHub Pages): no llama a nada ni tiene analítica. Los enlaces de descarga apuntan a los Releases del repo de la app.",
  "pantallas": [
   {
    "donde": "Web",
@@ -34,6 +77,17 @@
   }
  ],
  "tareas_persona": [
-  "Verificar la página en Google Search Console"
+  "Activar GitHub Pages en el repo de la app (Settings → Pages → Source: GitHub Actions)",
+  "Completar docs/pagina.json (frase, funciones, preguntas propias, capturas y colores) y correr pieza.py generar . pagina",
+  "Crear el repo <org>/<org>.github.io con herramientas/org.github.io/robots.txt e index.html (opcional: la raíz de la organización)",
+  "Verificar la página en Google Search Console",
+  "Mirar docs/img/compartir.png y las capturas antes de subirlas (datos ficticios)"
+ ],
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "resumen": "Primera versión: la página pública generada desde docs/pagina.json, con permisos e internet sacados de las piezas, preguntas comunes con su JSON-LD, SEO, sello, workflow de Pages y la herramienta de capturas y revisión."
+  }
  ]
 }

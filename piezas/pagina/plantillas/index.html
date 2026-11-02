@@ -1,0 +1,304 @@
+{{! Pieza «pagina»: la página pública bilingüe. Se llena desde app.json, docs/pagina.json (lo de la app) y docs/pagina-comunes.json
+    (lo que ya sabe Pieza). Lo que se ve y el JSON-LD salen de los mismos textos. Nada en línea: la CSP solo deja script-src 'self'. }}
+<!doctype html>
+<html lang="es" data-titulo-es="{{datos.pagina.titulo.es|xml}}" data-titulo-en="{{datos.pagina.titulo.en|xml}}" data-id="{{id}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-src 'none'; upgrade-insecure-requests">
+<title>{{datos.pagina.titulo.es|xml}}</title>
+<meta name="description" content="{{datos.pagina.descripcion.es|xml}}">
+<link rel="canonical" href="{{web|https}}">
+<link rel="alternate" hreflang="es" href="{{web|https}}">
+<link rel="alternate" hreflang="en" href="{{web|https}}?lang=en">
+<link rel="alternate" hreflang="x-default" href="{{web|https}}">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="{{nombre}}">
+<meta property="og:url" content="{{web|https}}">
+<meta property="og:locale" content="es_CL"><meta property="og:locale:alternate" content="en_US">
+<meta property="og:title" content="{{datos.pagina.titulo.es|xml}}">
+<meta property="og:description" content="{{datos.pagina.descripcion.es|xml}}">
+<meta property="og:image" content="{{web|https}}img/compartir.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{nombre}}: {{datos.pagina.frase.es|xml}}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{datos.pagina.titulo.es|xml}}">
+<meta name="twitter:description" content="{{datos.pagina.descripcion.es|xml}}">
+<meta name="twitter:image" content="{{web|https}}img/compartir.png">
+<script type="application/ld+json">
+{
+ "@context": "https://schema.org",
+ "@graph": [
+  {
+   "@type": "SoftwareApplication",
+   "name": {{nombre|json}},
+   "url": {{web|https|json}},
+   "image": "{{web|https}}img/compartir.png",
+{{#cada datos.pagina.capturas como c}}
+{{#si c_primero}}
+   "screenshot": "{{web|https}}{{c.archivo|ruta}}",
+{{/si}}
+{{/cada}}
+   "description": {{datos.pagina.descripcion.es|json}},
+   "applicationCategory": {{datos.pagina.categoria|nombre|json}},
+   "operatingSystem": "{{#si mac}}macOS 15{{#si escritorio}}, {{/si}}{{/si}}{{#si windows}}Windows 10, Windows 11{{#si linux}}, {{/si}}{{/si}}{{#si linux}}Linux{{/si}}{{#si movil}}{{#si mac}}, {{#sino}}{{#si escritorio}}, {{/si}}{{/si}}{{#si ios}}iOS{{#si android}}, {{/si}}{{/si}}{{#si android}}Android{{/si}}{{/si}}",
+   "license": {{datos.pagina.licencia_url|https|json}},
+   "isAccessibleForFree": true,
+   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+   "downloadUrl": "https://github.com/{{repo}}/releases/latest",
+   "codeRepository": "https://github.com/{{repo}}",
+   "inLanguage": ["es", "en"]
+  },
+  {
+   "@type": "FAQPage",
+   "mainEntity": [
+{{#cada datos.pagina.preguntas como q}}
+    { "@type": "Question", "name": {{q.pregunta.es|json}}, "acceptedAnswer": { "@type": "Answer", "text": {{q.respuesta.es|json}} } },
+{{/cada}}
+{{#si piezas.actualizaciones}}
+    { "@type": "Question", "name": {{datos.comunes.preguntas.actualizar.p.es|json}}, "acceptedAnswer": { "@type": "Answer", "text": {{datos.comunes.preguntas.actualizar.r.es|json}} } },
+{{#sino}}
+{{#si mac}}
+    { "@type": "Question", "name": {{datos.comunes.preguntas.actualizar_a_mano.p.es|json}}, "acceptedAnswer": { "@type": "Answer", "text": {{datos.comunes.preguntas.actualizar_a_mano.r.es|json}} } },
+{{#sino}}
+{{#si escritorio}}
+    { "@type": "Question", "name": {{datos.comunes.preguntas.actualizar_a_mano.p.es|json}}, "acceptedAnswer": { "@type": "Answer", "text": {{datos.comunes.preguntas.actualizar_a_mano.r.es|json}} } },
+{{/si}}
+{{/si}}
+{{/si}}
+{{#si mac}}
+{{#si windows}}
+    { "@type": "Question", "name": {{datos.comunes.preguntas.verificar_mac_windows.p.es|json}}, "acceptedAnswer": { "@type": "Answer", "text": {{datos.comunes.preguntas.verificar_mac_windows.r.es|json}} } },
+{{#sino}}
+    { "@type": "Question", "name": {{datos.comunes.preguntas.verificar_mac.p.es|json}}, "acceptedAnswer": { "@type": "Answer", "text": {{datos.comunes.preguntas.verificar_mac.r.es|json}} } },
+{{/si}}
+{{#sino}}
+{{#si windows}}
+    { "@type": "Question", "name": {{datos.comunes.preguntas.verificar_windows.p.es|json}}, "acceptedAnswer": { "@type": "Answer", "text": {{datos.comunes.preguntas.verificar_windows.r.es|json}} } },
+{{/si}}
+{{/si}}
+    { "@type": "Question", "name": {{datos.comunes.preguntas.datos.p.es|json}}, "acceptedAnswer": { "@type": "Answer", "text": {{datos.pagina.datos.es|json}} } },
+{{#si piezas.ia}}
+    { "@type": "Question", "name": {{datos.comunes.preguntas.ia.p.es|json}}, "acceptedAnswer": { "@type": "Answer", "text": {{datos.comunes.preguntas.ia.r.es|json}} } },
+{{/si}}
+    { "@type": "Question", "name": {{datos.comunes.preguntas.permisos.p.es|json}}, "acceptedAnswer": { "@type": "Answer", "text": {{datos.comunes.preguntas.permisos.r.es|json}} } },
+    { "@type": "Question", "name": {{datos.comunes.preguntas.costo.p.es|json}}, "acceptedAnswer": { "@type": "Answer", "text": {{datos.comunes.preguntas.costo.r.es|json}} } }
+   ]
+  }
+ ]
+}
+</script>
+<link rel="stylesheet" href="tema.css">
+<link rel="stylesheet" href="pagina.css">
+<link rel="stylesheet" href="colores.css">
+<script src="pagina.js" defer></script>
+</head>
+<body>
+<a class="saltar" href="#contenido"><span data-es>Ir al contenido</span><span data-en>Skip to content</span></a>
+<header class="barra"><div class="ancho">
+  <a class="marca" href="./"><img src="favicon.svg" alt="" width="28" height="28"><span data-sin-traducir>{{nombre}}</span></a>
+  <nav aria-label="Secciones">
+    <a href="#funciones"><span data-es>Funciones</span><span data-en>Features</span></a>
+{{#si datos.pagina.pasos}}
+    <a href="#como-funciona"><span data-es>Cómo funciona</span><span data-en>How it works</span></a>
+{{/si}}
+{{#si datos.pagina.comparacion}}
+    <a href="#comparar"><span data-es>Comparación</span><span data-en>Comparison</span></a>
+{{/si}}
+    <a href="#preguntas"><span data-es>Preguntas</span><span data-en>FAQ</span></a>
+    <a href="#descargar"><span data-es>Descargar</span><span data-en>Download</span></a>
+  </nav>
+  <button class="idioma" id="idioma" type="button" aria-label="Cambiar idioma / Change language" data-sin-traducir>EN</button>
+</div></header>
+
+<main id="contenido">
+<section class="portada"><div class="ancho">
+  <div>
+    <p class="etiqueta"><span data-es>Gratis · Código abierto · En tu computador</span><span data-en>Free · Open source · On your computer</span></p>
+    <h1><span data-es>{{datos.pagina.frase.es|xml}}</span><span data-en>{{datos.pagina.frase.en|xml}}</span></h1>
+    <p class="intro"><span data-es>{{datos.pagina.intro.es|xml}}</span><span data-en>{{datos.pagina.intro.en|xml}}</span></p>
+    <div class="acciones">
+{{#si datos.pagina.descargas}}
+      <a class="boton principal" id="descarga-principal" href="#descargar"><span data-es>Descargar</span><span data-en>Download</span></a>
+{{/si}}
+{{#si datos.pagina.demo}}
+      <a class="boton" href="demo/"><span data-es>Probar la vista previa</span><span data-en>Try the live preview</span></a>
+{{/si}}
+      <a class="boton" href="https://github.com/{{repo}}"><span data-es>Ver el código</span><span data-en>See the code</span></a>
+    </div>
+{{#si datos.pagina.estado}}
+    <p class="aviso"><span data-es>{{datos.pagina.estado.es|xml}}</span><span data-en>{{datos.pagina.estado.en|xml}}</span></p>
+{{/si}}
+    <p class="nota" id="descarga-nota"><span data-es>Gratis, sin cuenta y sin publicidad.</span><span data-en>Free, no account, no ads.</span></p>
+  </div>
+{{#cada datos.pagina.capturas como c}}
+{{#si c_primero}}
+  <figure class="captura"><img src="{{c.archivo|ruta}}" alt="{{c.alt.es|xml}}" data-alt-es="{{c.alt.es|xml}}" data-alt-en="{{c.alt.en|xml}}" width="{{c.ancho}}" height="{{c.alto}}"></figure>
+{{/si}}
+{{/cada}}
+</div></section>
+
+<section id="funciones"><div class="ancho">
+  <h2><span data-es>Lo que hace</span><span data-en>What it does</span></h2>
+  <div class="rejilla">
+{{#cada datos.pagina.funciones como f}}
+    <div class="tarjeta"><h3><span data-es>{{f.titulo.es|xml}}</span><span data-en>{{f.titulo.en|xml}}</span></h3><p><span data-es>{{f.texto.es|xml}}</span><span data-en>{{f.texto.en|xml}}</span></p></div>
+{{/cada}}
+  </div>
+{{#cada datos.pagina.capturas como c}}
+{{#no c_primero}}
+  <figure class="captura-extra"><img src="{{c.archivo|ruta}}" alt="{{c.alt.es|xml}}" data-alt-es="{{c.alt.es|xml}}" data-alt-en="{{c.alt.en|xml}}" width="{{c.ancho}}" height="{{c.alto}}" loading="lazy"><figcaption><span data-es>{{c.alt.es|xml}}</span><span data-en>{{c.alt.en|xml}}</span></figcaption></figure>
+{{/no}}
+{{/cada}}
+</div></section>
+{{#si datos.pagina.pasos}}
+
+<section id="como-funciona"><div class="ancho">
+  <h2><span data-es>Cómo funciona</span><span data-en>How it works</span></h2>
+  <ol class="pasos">
+{{#cada datos.pagina.pasos como x}}
+    <li><h3><span data-es>{{x.titulo.es|xml}}</span><span data-en>{{x.titulo.en|xml}}</span></h3><p><span data-es>{{x.texto.es|xml}}</span><span data-en>{{x.texto.en|xml}}</span></p></li>
+{{/cada}}
+  </ol>
+</div></section>
+{{/si}}
+{{#si datos.pagina.comparacion}}
+
+<section id="comparar"><div class="ancho">
+  <h2><span data-es>Lo que gana y lo que no</span><span data-en>Where it wins and where it doesn’t</span></h2>
+  <div class="tabla-caja" tabindex="0" role="region" aria-label="Comparación · Comparison"><table class="comparar">
+    <thead><tr><th scope="col"><span class="oculto"><span data-es>Qué</span><span data-en>What</span></span></th><th scope="col" data-sin-traducir>{{nombre}}</th>{{#cada datos.pagina.comparacion.con como o}}<th scope="col" data-sin-traducir>{{o|xml}}</th>{{/cada}}</tr></thead>
+    <tbody>
+{{#cada datos.pagina.comparacion.filas como f}}
+      <tr><th scope="row"><span data-es>{{f.que.es|xml}}</span><span data-en>{{f.que.en|xml}}</span></th>{{#cada f.valores como v}}<td><span data-es>{{v.es|xml}}</span><span data-en>{{v.en|xml}}</span></td>{{/cada}}</tr>
+{{/cada}}
+    </tbody>
+  </table></div>
+</div></section>
+{{/si}}
+
+<section id="permisos"><div class="ancho">
+  <h2><span data-es>Permisos e internet: lo que pide y a qué se conecta</span><span data-en>Permissions and internet: what it asks for and what it connects to</span></h2>
+  <p class="intro"><span data-es>Esto sale de las piezas que usa {{nombre}}: si una pide algo o sale a algún lado, lo dice aquí. Sin cuentas ni telemetría.</span><span data-en>This comes from the building blocks {{nombre}} uses: if one asks for something or goes somewhere, it says so here. No accounts, no telemetry.</span></p>
+  <div class="rejilla dos">
+    <div class="tarjeta"><h3><span data-es>Permisos</span><span data-en>Permissions</span></h3>
+      <ul>
+{{#si piezas.host-mac}}
+{{#si datos.pagina.usa.notificaciones}}
+        <li><b><span data-es>{{datos.comunes.permisos.notificaciones.nombre.es|xml}}</span><span data-en>{{datos.comunes.permisos.notificaciones.nombre.en|xml}}</span></b> <span data-sin-traducir>({{datos.comunes.permisos.notificaciones.sistema.es|xml}})</span>: <span data-es>{{datos.comunes.permisos.notificaciones.es|xml}}</span><span data-en>{{datos.comunes.permisos.notificaciones.en|xml}}</span></li>
+{{/si}}
+{{#si datos.pagina.usa.llavero}}
+        <li><b><span data-es>{{datos.comunes.permisos.llavero.nombre.es|xml}}</span><span data-en>{{datos.comunes.permisos.llavero.nombre.en|xml}}</span></b> <span data-sin-traducir>({{datos.comunes.permisos.llavero.sistema.es|xml}})</span>: <span data-es>{{datos.comunes.permisos.llavero.es|xml}}</span><span data-en>{{datos.comunes.permisos.llavero.en|xml}}</span></li>
+{{/si}}
+{{/si}}
+{{#si piezas.transcribir}}
+{{#si datos.pagina.usa.microfono}}
+        <li><b><span data-es>{{datos.comunes.permisos.microfono.nombre.es|xml}}</span><span data-en>{{datos.comunes.permisos.microfono.nombre.en|xml}}</span></b> <span data-sin-traducir>({{datos.comunes.permisos.microfono.sistema.es|xml}})</span>: <span data-es>{{datos.comunes.permisos.microfono.es|xml}}</span><span data-en>{{datos.comunes.permisos.microfono.en|xml}}</span></li>
+{{/si}}
+{{/si}}
+{{#cada datos.pagina.permisos como x}}
+        <li><b><span data-es>{{x.nombre.es|xml}}</span><span data-en>{{x.nombre.en|xml}}</span></b> <span data-sin-traducir>({{x.sistema|xml}})</span>: <span data-es>{{x.por.es|xml}}</span><span data-en>{{x.por.en|xml}}</span></li>
+{{/cada}}
+      </ul>
+      <p class="si-vacio"><span data-es>{{datos.comunes.sin_permisos.es|xml}}</span><span data-en>{{datos.comunes.sin_permisos.en|xml}}</span></p>
+    </div>
+    <div class="tarjeta"><h3><span data-es>A qué se conecta</span><span data-en>What it connects to</span></h3>
+      <ul>
+{{#si piezas.actualizaciones}}
+        <li><b data-sin-traducir>{{datos.comunes.red.actualizaciones.dominios|xml}}</b>: <span data-es>{{datos.comunes.red.actualizaciones.es|xml}}</span><span data-en>{{datos.comunes.red.actualizaciones.en|xml}}</span></li>
+{{/si}}
+{{#si piezas.catalogo}}
+        <li><b data-sin-traducir>{{datos.comunes.red.catalogo.dominios|xml}}</b>: <span data-es>{{datos.comunes.red.catalogo.es|xml}}</span><span data-en>{{datos.comunes.red.catalogo.en|xml}}</span></li>
+{{/si}}
+{{#si piezas.transcribir}}
+        <li><b data-sin-traducir>{{datos.comunes.red.transcribir.dominios|xml}}</b>: <span data-es>{{datos.comunes.red.transcribir.es|xml}}</span><span data-en>{{datos.comunes.red.transcribir.en|xml}}</span></li>
+{{/si}}
+{{#cada datos.pagina.red como x}}
+        <li><b data-sin-traducir>{{x.dominio|xml}}</b>: <span data-es>{{x.por.es|xml}}</span><span data-en>{{x.por.en|xml}}</span></li>
+{{/cada}}
+{{#si piezas.ia}}
+        <li><b><span data-es>Tu IA</span><span data-en>Your AI</span></b>: <span data-es>{{datos.comunes.ia.es|xml}}</span><span data-en>{{datos.comunes.ia.en|xml}}</span></li>
+{{/si}}
+      </ul>
+      <p class="si-vacio"><span data-es>{{datos.comunes.sin_red.es|xml}}</span><span data-en>{{datos.comunes.sin_red.en|xml}}</span></p>
+    </div>
+  </div>
+</div></section>
+
+<section id="preguntas"><div class="ancho">
+  <h2><span data-es>Lo que la gente pregunta</span><span data-en>What people ask</span></h2>
+  <div class="faq">
+{{#cada datos.pagina.preguntas como q}}
+    <details class="p"><summary><span data-es>{{q.pregunta.es|xml}}</span><span data-en>{{q.pregunta.en|xml}}</span></summary><p><span data-es>{{q.respuesta.es|xml}}</span><span data-en>{{q.respuesta.en|xml}}</span></p></details>
+{{/cada}}
+{{#si piezas.actualizaciones}}
+    <details class="p"><summary><span data-es>{{datos.comunes.preguntas.actualizar.p.es|xml}}</span><span data-en>{{datos.comunes.preguntas.actualizar.p.en|xml}}</span></summary><p><span data-es>{{datos.comunes.preguntas.actualizar.r.es|xml}}</span><span data-en>{{datos.comunes.preguntas.actualizar.r.en|xml}}</span></p></details>
+{{#sino}}
+{{#si mac}}
+    <details class="p"><summary><span data-es>{{datos.comunes.preguntas.actualizar_a_mano.p.es|xml}}</span><span data-en>{{datos.comunes.preguntas.actualizar_a_mano.p.en|xml}}</span></summary><p><span data-es>{{datos.comunes.preguntas.actualizar_a_mano.r.es|xml}}</span><span data-en>{{datos.comunes.preguntas.actualizar_a_mano.r.en|xml}}</span></p></details>
+{{#sino}}
+{{#si escritorio}}
+    <details class="p"><summary><span data-es>{{datos.comunes.preguntas.actualizar_a_mano.p.es|xml}}</span><span data-en>{{datos.comunes.preguntas.actualizar_a_mano.p.en|xml}}</span></summary><p><span data-es>{{datos.comunes.preguntas.actualizar_a_mano.r.es|xml}}</span><span data-en>{{datos.comunes.preguntas.actualizar_a_mano.r.en|xml}}</span></p></details>
+{{/si}}
+{{/si}}
+{{/si}}
+{{#si mac}}
+{{#si windows}}
+    <details class="p"><summary><span data-es>{{datos.comunes.preguntas.verificar_mac_windows.p.es|xml}}</span><span data-en>{{datos.comunes.preguntas.verificar_mac_windows.p.en|xml}}</span></summary><p><span data-es>{{datos.comunes.preguntas.verificar_mac_windows.r.es|xml}}</span><span data-en>{{datos.comunes.preguntas.verificar_mac_windows.r.en|xml}}</span></p></details>
+{{#sino}}
+    <details class="p"><summary><span data-es>{{datos.comunes.preguntas.verificar_mac.p.es|xml}}</span><span data-en>{{datos.comunes.preguntas.verificar_mac.p.en|xml}}</span></summary><p><span data-es>{{datos.comunes.preguntas.verificar_mac.r.es|xml}}</span><span data-en>{{datos.comunes.preguntas.verificar_mac.r.en|xml}}</span></p></details>
+{{/si}}
+{{#sino}}
+{{#si windows}}
+    <details class="p"><summary><span data-es>{{datos.comunes.preguntas.verificar_windows.p.es|xml}}</span><span data-en>{{datos.comunes.preguntas.verificar_windows.p.en|xml}}</span></summary><p><span data-es>{{datos.comunes.preguntas.verificar_windows.r.es|xml}}</span><span data-en>{{datos.comunes.preguntas.verificar_windows.r.en|xml}}</span></p></details>
+{{/si}}
+{{/si}}
+    <details class="p"><summary><span data-es>{{datos.comunes.preguntas.datos.p.es|xml}}</span><span data-en>{{datos.comunes.preguntas.datos.p.en|xml}}</span></summary><p><span data-es>{{datos.pagina.datos.es|xml}}</span><span data-en>{{datos.pagina.datos.en|xml}}</span></p></details>
+{{#si piezas.ia}}
+    <details class="p"><summary><span data-es>{{datos.comunes.preguntas.ia.p.es|xml}}</span><span data-en>{{datos.comunes.preguntas.ia.p.en|xml}}</span></summary><p><span data-es>{{datos.comunes.preguntas.ia.r.es|xml}}</span><span data-en>{{datos.comunes.preguntas.ia.r.en|xml}}</span></p></details>
+{{/si}}
+    <details class="p"><summary><span data-es>{{datos.comunes.preguntas.permisos.p.es|xml}}</span><span data-en>{{datos.comunes.preguntas.permisos.p.en|xml}}</span></summary><p><span data-es>{{datos.comunes.preguntas.permisos.r.es|xml}}</span><span data-en>{{datos.comunes.preguntas.permisos.r.en|xml}}</span></p></details>
+    <details class="p"><summary><span data-es>{{datos.comunes.preguntas.costo.p.es|xml}}</span><span data-en>{{datos.comunes.preguntas.costo.p.en|xml}}</span></summary><p><span data-es>{{datos.comunes.preguntas.costo.r.es|xml}}</span><span data-en>{{datos.comunes.preguntas.costo.r.en|xml}}</span></p></details>
+  </div>
+</div></section>
+
+<section id="descargar"><div class="ancho">
+  <h2><span data-es>Descargar</span><span data-en>Download</span></h2>
+{{#si datos.pagina.descargas}}
+  <div class="sistemas">
+{{#si mac}}
+    <a class="so" data-so="mac" href="https://github.com/{{repo}}/releases/latest/download/{{nombre_ascii}}-macOS.zip"><b data-sin-traducir>Mac</b><span><span data-es>Apple Silicon, macOS 15 o posterior</span><span data-en>Apple Silicon, macOS 15 or later</span></span><span class="archivo" data-sin-traducir>{{nombre_ascii}}-macOS.zip</span></a>
+{{/si}}
+{{#si windows}}
+    <a class="so" data-so="windows" href="https://github.com/{{repo}}/releases/latest/download/{{nombre_ascii}}-Windows.exe"><b data-sin-traducir>Windows</b><span><span data-es>Windows 10 u 11, 64 bits</span><span data-en>Windows 10 or 11, 64-bit</span></span><span class="archivo" data-sin-traducir>{{nombre_ascii}}-Windows.exe</span></a>
+{{/si}}
+{{#si linux}}
+    <a class="so" data-so="linux" href="https://github.com/{{repo}}/releases/latest/download/{{nombre_ascii}}-Linux.AppImage"><b data-sin-traducir>Linux</b><span><span data-es>AppImage para x86_64</span><span data-en>AppImage for x86_64</span></span><span class="archivo" data-sin-traducir>{{nombre_ascii}}-Linux.AppImage</span></a>
+{{/si}}
+  </div>
+  <p><span data-es>Todas las versiones, con la huella SHA-256 de cada archivo, en los </span><span data-en>Every version, with the SHA-256 fingerprint of each file, in the </span><a href="https://github.com/{{repo}}/releases"><span data-es>Releases de GitHub</span><span data-en>GitHub Releases</span></a>.</p>
+{{#sino}}
+  <p><span data-es>Todavía no hay una versión para descargar. Mientras tanto, mira el </span><span data-en>There's no version to download yet. Meanwhile, see the </span><a href="https://github.com/{{repo}}"><span data-es>código en GitHub</span><span data-en>code on GitHub</span></a>.</p>
+{{/si}}
+{{#si datos.pagina.demo}}
+  <div class="final"><p><span data-es>La vista previa funciona en tu navegador con datos de ejemplo. Nada que instalar.</span><span data-en>The preview runs in your browser with sample data. Nothing to install.</span></p><a class="boton principal" href="demo/"><span data-es>Abrir la vista previa</span><span data-en>Open the preview</span></a></div>
+{{/si}}
+{{#si datos.pagina.comunidad}}
+  <div class="comunidad">
+{{#cada datos.pagina.comunidad como x}}
+    <a href="{{x.url|https}}"><b><span data-es>{{x.titulo.es|xml}}</span><span data-en>{{x.titulo.en|xml}}</span></b><span><span data-es>{{x.texto.es|xml}}</span><span data-en>{{x.texto.en|xml}}</span></span></a>
+{{/cada}}
+  </div>
+{{/si}}
+</div></section>
+</main>
+
+<footer><div class="ancho">
+  <span><span data-es>{{nombre}} es software libre ({{datos.pagina.licencia|nombre}}).</span><span data-en>{{nombre}} is free software ({{datos.pagina.licencia|nombre}}).</span></span>
+  <span><a href="https://github.com/{{repo}}" data-sin-traducir>GitHub</a> · <a href="https://github.com/{{repo}}/issues/new/choose"><span data-es>Enviar comentarios</span><span data-en>Send feedback</span></a></span>
+  <a class="hecho-con-pieza" href="https://pieza-app.github.io/pieza/"><span data-es><img src="sello.svg" alt="Hecho con Pieza" width="152" height="28"></span><span data-en><img src="sello-en.svg" alt="Made with Pieza" width="146" height="28"></span></a>
+</div></footer>
+</body>
+</html>
