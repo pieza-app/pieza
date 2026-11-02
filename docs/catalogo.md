@@ -11,21 +11,21 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 
 | Pieza | Versión | Qué es | Tomada de |
 |---|---|---|---|
-| `nucleo` | 0.7.0 | `app.json`, carpeta de datos, config validada, escritura atómica, `ruta_en`, contrato de scripts | Esquema `bin/comun.py` + Alcancía/Repasa |
+| `nucleo` | 0.7.1 | `app.json`, carpeta de datos, config validada, escritura atómica, `ruta_en`, contrato de scripts | Esquema `bin/comun.py` + Alcancía/Repasa |
 | `ia` | 0.6.3 | La IA de la persona con su cuenta, segura; en vivo (lo que lee y «Detener») | Esquema `bin/ia.py` + `ia_vivo.py` + Alcancía (pedido en archivo) + Repasa (material) |
 | `i18n` | 0.3.1 | `T`/`Tp`/`Thtml`/`tr`/`traducirDOM`, paquetes de idioma validados | Minuta (`tr`) + Esquema (`T` que escapa, `traducirDOM`) + Alcancía (`Thtml`) + Graba (prioridad) |
-| `bienvenida` | 0.3.0 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
+| `bienvenida` | 0.4.0 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
 | `actualizaciones` | 0.3.0 | Releases del propio repo, `.sha256` obligatorio, Mac (target propio) y Electron | Esquema + Repasa (URL sin puerto ni `..`, PATH fijo, textos que traduce la interfaz) |
 | `host-ui` | 0.2.0 | `crearHost({nombre, global, simular})`: `host.enviar` y `window.<App>.*` iguales en Mac, Electron, celular y navegador; `probarIA {ia}` en todas | Esquema + Repasa/Alcancía (puente del celular) + Minuta (mensaje plano mientras cambia) |
 | `tema` | 0.2.1 | Un solo juego de tokens CSS (`--texto-suave`, `--panel-2`…), pares claro/oscuro con `light-dark()`, selector «Apariencia» | Esquema (`data-tema`, ahora `data-pz-modo`) + los nombres comunes de Graba, Corta, Repasa y Alcancía; tabla de nombres viejos → nuevos en su README |
 | `componentes` | 0.3.0 | Diálogo con foco atrapado y Esc (`envolver` para uno de la app), confirmar, avisos en cola, filas de Tu IA, fila de actualización «Paso n de 3», Acerca de, comentarios a GitHub | Esquema + Alcancía («Cómo instalarla», error de la IA traducido) + Minuta (comentarios → issue prellenado) |
-| `catalogo` | 0.2.0 | Contenido de la comunidad: índice validado (objeto entero) por el validador de la app, SHA-256 obligatorio, sin redirecciones, última lista sin conexión, catálogo plano o con categorías; Py + Swift + Electron | Esquema `plantillas.py` + `Catalogo.swift` + `catalogo.js` + Corta (`origen`, categoría = carpeta, un tipo por cosa) |
+| `catalogo` | 0.2.1 | Contenido de la comunidad: índice validado (objeto entero) por el validador de la app, SHA-256 obligatorio, sin redirecciones, última lista sin conexión, catálogo plano o con categorías; Py + Swift + Electron | Esquema `plantillas.py` + `Catalogo.swift` + `catalogo.js` + Corta (`origen`, categoría = carpeta, un tipo por cosa) |
 | `red` | 0.2.0 | HTTPS desde los scripts: dominios permitidos, sin redirecciones, topes de tamaño y tiempo, subidas por partes | Alcancía `bin/red.py` |
 | `cifrado` | 0.2.0 | PBKDF2 600k + AES-256-GCM con AAD, HMAC para nombres, verificador, archivos con versión y con varios sobres | Repasa `motor/cifrado.js` + Alcancía `ui/copia.js` |
 | `transcribir` | 0.2.0 | whisper.cpp con modelos de huella fija, vocabulario por archivo privado, VAD, filtro de inventos (con la energía: nunca borra un «gracias» dicho) y bucles | Minuta + Corta (`comando_transcribir`) + Graba |
-| `trabajos` | 0.2.0 | Trabajos largos: estado en disco, latido (también para el host: `"limite": "trabajo"`), «Detener», preguntas; lectores de progreso Swift y Electron | Esquema `bin/trabajos.py` + `LectorProgreso` / `lectorProgreso` |
-| `host-mac` | 0.2.0 | App de Mac genérica (target `PiezaHost`): ventana, puente con guardas, acciones declaradas con límite de tiempo (o latido, o por orden), config/idioma de `app.json`, menús, apariencia de `tema`, actualizaciones, carpeta con marcador, vigilante (FSEvents), Finder, Llavero y avisos | Esquema `app/Sources/Esquema/` (+ `Carpeta.swift`) + Alcancía (secreto por stdin, Llavero, avisos, carpeta de la nube) + Repasa (`conEntrada` con varios args) + Corta (`Medios.swift`) + Graba y Minuta (Llavero) |
-| `host-escritorio` | 0.2.0 | Lo mismo en Electron, con `nativeTheme.themeSource` según `config.tema`; carpeta, vigilante (`fs.watch`), explorador, `safeStorage` y avisos | Esquema `escritorio/src/` (+ `vigilante.js`) + Graba (medios con rangos, permisos que abre la app, `Tokens`) + Alcancía (secreto por stdin) + Minuta (avisos) |
+| `trabajos` | 0.2.1 | Trabajos largos: estado en disco, latido (también para el host: `"limite": "trabajo"`), «Detener», preguntas; lectores de progreso Swift y Electron | Esquema `bin/trabajos.py` + `LectorProgreso` / `lectorProgreso` |
+| `host-mac` | 0.3.0 | App de Mac genérica (target `PiezaHost`): ventana, puente con guardas, acciones declaradas con límite de tiempo (o latido, o por orden), config/idioma de `app.json`, menús, apariencia de `tema`, actualizaciones, carpeta con marcador, vigilante (FSEvents), Finder, Llavero y avisos | Esquema `app/Sources/Esquema/` (+ `Carpeta.swift`) + Alcancía (secreto por stdin, Llavero, avisos, carpeta de la nube) + Repasa (`conEntrada` con varios args) + Corta (`Medios.swift`) + Graba y Minuta (Llavero) |
+| `host-escritorio` | 0.3.0 | Lo mismo en Electron, con `nativeTheme.themeSource` según `config.tema`; carpeta, vigilante (`fs.watch`), explorador, `safeStorage` y avisos | Esquema `escritorio/src/` (+ `vigilante.js`) + Graba (medios con rangos, permisos que abre la app, `Tokens`) + Alcancía (secreto por stdin) + Minuta (avisos) |
 | `contenido` | 0.1.0 | Leer md, txt, pdf, docx, odt, epub y html con topes (zip bombas, XML sin entidades); capítulos sin IA | Esquema `bin/contenido.py` + Alcancía (`ArchivoNoValido`) |
 
 ## Por extraer, en este orden
@@ -47,19 +47,64 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 
 Después: la página pública (`docs/`), `revisar_privacidad.sh`, `generar_demo.py`, `pruebas/contrato.py` genérico.
 
+### Lo que salió al pasar las seis apps al host (`host-mac`/`host-escritorio` 0.2.0)
+
+Cada app anotó lo que le faltó a las piezas al migrar (nov 2026). Agrupado por pieza y sin repetir; entre paréntesis, quién lo pidió.
+
+**Hecho en esta pasada** (`catalogo` 0.2.1, `nucleo` 0.7.1, `trabajos` 0.2.1, `host-mac` y `host-escritorio` 0.3.0, `bienvenida`
+0.4.0; ver `CHANGELOG.md` y «Si venías de…» en cada README):
+- `catalogo`: «archivo»/«bytes» del contenido ya no se quitan (Esquema, bloqueante); `migrar` en lista y `pieza.py revisar` lo exige
+  (Esquema); el comentario de `Catalogo.swift` y la nota de «sin conexión» en el README (Esquema).
+- `nucleo`: `ruta_en` con base vacía o relativa da `None` (Esquema). `trabajos`: SIGTERM → `SystemExit` en `mantener_vivo()` (Corta).
+- Los dos hosts: variables de la app para todos los scripts (Corta, bloqueante; Graba, Minuta); un enlace tocado pasa por el
+  `abrirEnlace` de la app (Repasa); `~/<Nombre>` visible 0700 (Repasa); «Guardar como» privado y que distingue cancelar (Repasa);
+  `mensaje` en los diálogos (Alcancía, Repasa); `limiteEstado` (Alcancía) y `estadoEnFila` (Repasa); «Ajustes…» con otro título y
+  ítems propios (Repasa); notas de «Pasar una app» (`menu`, `listo`, `config` sin estado, `desdeInterfaz`, `texto.max`, `"otro": 300`:
+  Alcancía, Corta, Graba, Esquema).
+- `host-mac`: barra de menú con `abrirAlArrancar` (Graba, Minuta), `alCrearVentana`, barra transparente y vidrio (Alcancía, Corta,
+  Graba), `nombreVentana` (Alcancía), soltar archivos (Corta), ⌘W sin menú Archivo y `Menus()` público (Repasa).
+- `host-escritorio`: `ventana.frame`, `abrirAlArrancar`/`--oculta`, `userData: "sistema"`, `before-quit` con la ventana que se
+  esconde y más de una ventana en el puente (Minuta, Graba).
+- `bienvenida`: «Ajustes» configurable (Repasa), «Lo hago después» y botón propio en el último paso (Repasa, Alcancía),
+  `data-autofoco` y `detalle` por idioma (Corta), `logo` (Alcancía, Graba).
+- La skill de crear: ya no dice que los flujos «se instalan solos» (Claude Code los **ofrece**: Esquema).
+
+**Pendiente, por pieza** (nada de esto bloquea: cada app lo resolvió en su código, con un comentario «pendiente para Pieza»):
+
+| Pieza | Qué | Quién | Notas |
+|---|---|---|---|
+| enchufe (`pieza.py`, `enchufe.js`, `Enchufe.swift`) | Tipos nuevos en `datos`: `numero{min, max}` (finito, no bool), `objeto{maxBytes}` y `carpetaDe{fuente}` (una carpeta de la interfaz que un validador de la app resuelve a ruta real) | Corta, Minuta, Repasa | Hoy van por `"*": "pasar"` o un inyector que hace de guarda. Cambia las reglas: los tres lados y `HostGenerico` |
+| enchufe | `$campo` de un inyector `enum`/`fecha` en `args`; decir en `enchufe.md` que un campo inyectado nunca va en `args` | Alcancía | |
+| enchufe | El error de datos pierde la `ruta` que no pasó (eco solo de lo válido): un `eco` recortado y escapado | Esquema | No bloqueante |
+| config (`nucleo`, los dos hosts) | Claves de config que son objetos (`{"tipo": "objeto", "campos": {…}}`) o un gancho `alGuardarConfig` | Alcancía | Alcancía registró `config` entera |
+| `host-mac` | `Secretos.cuentas()` (listar las cuentas de un servicio; diff en las notas de Alcancía) y `etiqueta` al guardar | Alcancía | |
+| `host-mac`, `host-escritorio` | Avisos con categoría (texto oculto en la pantalla bloqueada) y con botones (`registrarCategorias`, `alResponder`) | Alcancía, Minuta | |
+| `host-mac` | Ventana y WKWebView propios (`fabricaVentana`, `fabricaWeb`, regiones de arrastre) y más de un WKWebView en el puente (`Puente.adoptar(web:)` o `correrDeclarada(…, responder:)` público) | Minuta | Electron ya tiene `ventanas.agregar` |
+| `host-mac` | `PiezaHost` exporta `Idioma` y `Puente`, que chocan con nombres de la app (prefijo o documentarlo) | Minuta | |
+| `host-mac`, `host-escritorio` | `Idioma.t` que lea también `<datos>/idiomas/` (idiomas descargados del catálogo), con el mismo validador | Minuta | |
+| `host-mac` | `Configuracion(configArchivo:)` (una app cuyo `config.json` es otra cosa); `CarpetaElegida.elegir(guardar: false)` y un estado «falta» si la carpeta desapareció; `llamarCuandoEsteLista` (un aviso tocado con la app cerrada); un inyector común `archivoElegido`; `Actualizador(textoOcupada:)` | Minuta, Alcancía, Repasa | |
+| `host-escritorio` | `listoAlCargar`; scripts largos con registro y sin salida JSON (`correr(…, {registro, sinSalida, latido})`, igual en Swift); código de un checkout de desarrollo (`"desarrollo": "carpetaDatos"`); `menu.alSalir`; `ventana.json` con otro nombre; vidrio de Windows 11 (`<ID>_VIDRIO` en el preload y `setBackgroundMaterial`); soltar archivos (`webUtils.getPathForFile` en el preload) | Minuta, Graba | |
+| `host-escritorio` | `host.secretos` en Linux sin llavero: qué hacer con lo que una app guardaba antes en texto plano (¿leerlo y pedir llavero para guardar?) | Minuta | Decidir la regla |
+| `host-mac`, `host-escritorio` | Que el host ponga `<ID>_PROGRAMAS`/`<ID>_HERRAMIENTAS` solo (con `entorno` ya se puede a mano) | Corta, Graba | |
+| `trabajos` | Avance por archivo de estado (`emitir_avance(paso, texto, pct)` o un lector de `estado.json` en el host): `transcribir`/`exportar` de Corta y Graba siguen registrados | Corta, Graba | |
+| `trabajos` (`pieza.py`) | Archivos nativos opcionales (`--solo=python` o `opcional` por archivo): hoy `LectorProgreso.swift` y `progreso.js` llegan aunque solo se use el latido | Graba, Corta | |
+| `bienvenida` | Abrir mientras falte algo aunque ya se hizo (`abrir({pendiente})`) y un `Idioma.elegido` que la app pueda ampliar | Graba | |
+| `bienvenida` | Pasos con sub-pantallas y estado propio, pantalla completa con el arte del tema, primer uso decidido por la app (`abrir({esPrimeraVez, idioma})`), `terminar(datos)` | Minuta | |
+| `actualizaciones` | Instalación de desarrollo en Electron (`crear({desarrollo})`); reconocer un checkout sin `archivoDesarrollo`; decir en el README que «quien llama se asegura» de que no haya nada corriendo | Minuta | |
+| `transcribir` | `transcribir.py dictar <entrada {wav}> <salida>` (acción `soloHost`) para dictar sin script propio | Minuta | |
+| `pieza.py` | `actualizar` que avise «la versión nueva trae X y la app tiene uno propio distinto» en vez de saltarlo | Esquema | |
+| `pruebas/contrato.py` común | Contemplar `copiado` sin `copiar` y `menu` como respuesta obligatoria | Repasa, Corta, Alcancía | Ya planeado (ver «Después») |
+| `ia`/`componentes` (docs) | Con el host genérico, `elegirIA` tiene que mandar `config {ia}` (`probarIA` declarada no lo guarda) | Repasa | |
+
 ## Brechas encontradas al comparar (arreglar ya en esas apps)
+
+Las de la primera comparación (CLI viejo sin protecciones, puente sin guardas, actualizaciones y catálogo sin huella, la IA con las
+variables de la app, el vocabulario de `whisper-cli`, `T()` sin escapar, procesos sin límite, rojo y verde bajo AA, `probarIA {id}` y
+las ventanas de Minuta sin `aria-modal`) ya las resolvieron las migraciones a las piezas (revisado en el código de cada app, nov
+2026). Quedan:
 
 | App | Qué | Dónde | Arreglo |
 |---|---|---|---|
-| Graba, Minuta | Si el CLI de IA es viejo, **reintenta sin las protecciones** (`--strict-mcp-config`, sin herramientas): la IA corre con todo, con texto de afuera | `graba/bin/ia.py`, `minuta/bin/perfil.py` (`_opcion_desconocida`) | Reemplazar por la pieza `ia` |
-| Graba, Minuta | El puente no revisa que el mensaje venga del marco principal y del origen de la app | `graba/app/Sources/Graba/Ventana.swift`, `minuta/app/Sources/Minuta/VisorWeb.swift`, `graba/escritorio/src/main.js`, `minuta/escritorio/src/main.js` | Copiar la guarda de Esquema (`isMainFrame` + `securityOrigin`; `senderFrame === mainFrame` + origen) |
-| Graba | Las actualizaciones no validan que la descarga sea de su repo ni escapan la ruta en el script | `Actualizaciones.swift`, `escritorio/src/actualizaciones.js` | Pieza `actualizaciones` (lista) |
-| Corta | Instalar del catálogo acepta archivos sin SHA-256 | `corta/bin/plantillas.py` (`instalar`) | Pieza `catalogo` (lista: obligatorio) |
-| Corta, Graba, Repasa, Minuta | La IA hereda las variables de la app | `bin/ia.py` | Pieza `ia` |
-| Graba | Con `whisper-cli` (Windows y Linux) el vocabulario no se usa | `bin/procesar.py` | Pieza `transcribir` (lista: `whisper-cli @archivo`) |
-| Minuta | El catálogo de universos e idiomas no verifica SHA-256 ni tamaño | `Catalogo.swift` | Índice con `sha256`/`tamano` (`catalogo.py generar`) y pieza `catalogo` |
-| Alcancía, Corta, Repasa | `T()` mete valores sin escapar en HTML | `ui/app.js` | Pieza `i18n` (lista: `T` escapa, `Thtml` para HTML armado) |
-| Todas | Ningún `Procesador` tiene límite de tiempo | Swift/Electron | Piezas `host-mac` y `host-escritorio` (listas: `limite` obligatorio, corta también a los descendientes) |
-| Graba, Repasa | Rojo y verde bajo AA como texto en claro (Graba también el rojo en oscuro) | `ui/app.css` | Los pares del README de `tema` (mismo tono, un poco más oscuro) |
-| Graba, Corta, Repasa, Alcancía, Minuta | `probarIA` manda `{id}`; Esquema y la pieza `ia`, `{ia}` | `ui/app.js` + `Ventana.swift`/`VisorWeb.swift`, Electron y `movil/host/host.js` | Pieza `host-ui` (lista): `{ia}` en todas |
-| Minuta | Sus ventanas (`.galeria-caja`, `role="dialog"`) no tienen `aria-modal` ni atrapan el foco | `ui/app.js` | Pieza `componentes` (lista) |
+| Minuta | Los scripts largos (`procesar.py`, `semana.py`, `universo.py`) corren con su `ejecutar` propio: **sin límite** ni latido, no se cortan al salir y (en Electron) heredan todo el entorno, también `MINUTA_*` de afuera | `MinutaApp.swift` (`ejecutar`), `escritorio/src/main.js` (`ejecutar`, `entornoPython`) | `trabajos.mantener_vivo()` en esos scripts y correrlos con el procesador del host (`latido: true`, `entorno`), o lo de «scripts largos con registro» (arriba) |
+| Alcancía, Esquema, Graba, Minuta | `CONTRIBUTING.md` dice que los flujos de Pieza «se instalan solos al abrir el repo»: con `.claude/settings.json` solo con `extraKnownMarketplaces`, Claude Code los **ofrece** | `CONTRIBUTING.md` | La frase de la skill de crear (versión 11) |
+| Corta, Esquema | Copias de piezas cambiadas: Corta, `host-mac` (`entornoApp`); Esquema, `catalogo` (los alias). Las dos ya están en Pieza | `app/Sources/PiezaHost/Procesador.swift`, `bin/catalogo.py` | `pieza.py actualizar . host-mac --forzar` / `… catalogo --forzar` |

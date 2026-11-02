@@ -5,7 +5,7 @@ description: "Lanzar un proyecto open source completo desde una idea: entrevista
 
 # Lanzar un proyecto open source con Pieza
 
-Versión del flujo: 10
+Versión del flujo: 11
 
 Quien mantiene el proyecto dice "creemos una aplicación para…" y espera el paquete completo, no preguntas una por una. Este flujo
 sale de lanzar Minuta, Graba, Corta, Alcancía, Repasa y Esquema. Trabaja por fases, con lista de tareas visible, y entrega algo usable al final de cada fase.
@@ -152,8 +152,10 @@ En todo el diseño y la construcción aplica la skill **diseno-y-calidad-de-prod
   podido obtener" recién enviado es normal; sugiere "Inspeccionar URL → Solicitar indexación".
 - Nada inventado: sin testimonios, cifras de usuarios ni estrellas falsas.
 - **«Hecho con Pieza»** en el pie de la página (el sello `https://pieza-app.github.io/pieza/sello.svg`, o `sello-en.svg` en inglés,
-  enlazado a Pieza), en el README y, en el `CONTRIBUTING.md`, una línea: «Aportamos con los flujos de Pieza: en Claude Code se
-  instalan solos al abrir el repo; con otra IA, sigue `AGENTS.md`».
+  enlazado a Pieza), en el README y, en el `CONTRIBUTING.md`, una línea: «Aportamos con los flujos de Pieza: en Claude Code, al abrir
+  el repo te ofrece instalarlos (acéptalo o `/plugin install pieza@pieza`); con otra IA, sigue `AGENTS.md`». No digas que «se
+  instalan solos»: `pieza.py iniciar` deja en `.claude/settings.json` solo `extraKnownMarketplaces` (el marketplace se **ofrece**)
+  y a propósito no `enabledPlugins`, que activaría el plugin a quien abra el repo sin preguntarle.
 - Cuando la app esté operativa (prototipo o MVP OK), súmala donde la persona muestre sus proyectos (ver «Configuración local»).
 
 ## 10. Comunidad

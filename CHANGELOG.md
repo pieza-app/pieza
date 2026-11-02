@@ -1,6 +1,11 @@
 # Cambios
 
 ## Sin publicar
+- **Flujo de crear (versión 11, plugin 0.8.1):** la línea de `CONTRIBUTING.md` ya no dice que los flujos de Pieza «se instalan
+  solos al abrir el repo»: con `extraKnownMarketplaces` Claude Code los **ofrece**. A propósito no se suma `enabledPlugins` a lo que
+  deja `pieza.py iniciar` (activaría el plugin a quien abra el repo sin preguntarle; la prueba lo revisa). `docs/catalogo.md`: lo que
+  anotaron las seis apps al pasar al host, agrupado por pieza (lo hecho y lo pendiente), y las brechas que siguen (las de la primera
+  comparación ya las cerraron las migraciones; quedan los scripts largos de Minuta sin límite y la frase de `CONTRIBUTING.md`).
 - **Lo que salió al pasar las seis apps al host (capacidades):** `host-mac` 0.3.0 y `host-escritorio` 0.3.0 (seguridad): un
   enlace https tocado en la ventana pasa por el `abrirEnlace` que registró la app (Repasa, para niños, no podía limitar un
   `<a href>`); `~/<Nombre>` recién creada con `"datos": "visible"` queda 0700 como en `nucleo`; «Guardar como» con `privado`

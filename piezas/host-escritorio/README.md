@@ -155,6 +155,11 @@ Nada se rompe: lo de 0.1.0 sigue igual. Al actualizar (`pieza.py actualizar <app
 
 ## Pasar una app a esta pieza
 
+Lo aprendido al pasar las seis está en «Pasar una app a esta pieza» de [`host-mac`](../host-mac/README.md#pasar-una-app-a-esta-pieza)
+(`menu` y `listo` en la interfaz, `config` que no manda el estado, `config.guardar(x, {desdeInterfaz: false})`, límites por orden).
+Además: el protocolo `<id>://` no lleva `corsEnabled` (un `fetch` a `<id>://video/…` desde `<id>://ui/` falla por CORS, no con
+404); y una app que ya existía pasa `userData: "sistema"`.
+
 En todas: `pieza.py agregar host-escritorio <app>` (antes **borra `escritorio/src/preload.js`**: el de la pieza lo reemplaza;
 `pieza.py` no pisa un archivo que ya existe), suma `acciones.json` a `extraResources` de `escritorio/package.json`
 (`{"from": "../acciones.json", "to": "<id>/acciones.json"}`, junto a `app.json`) y escribe `main.js` como arriba. Prueba con

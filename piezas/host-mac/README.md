@@ -159,6 +159,19 @@ deja 0600 y cancelar da `.cancelado`.
 
 ## Pasar una app a esta pieza
 
+Lo que se aprendió al pasar las seis (vale igual para `host-escritorio`):
+- La interfaz necesita `window.<App>.menu` aunque no tenga menús propios: el host la llama con `{accion: "ajustes"}` («Ajustes…»)
+  y `{accion: "guardar"}` (al cerrar y al salir). Y manda `listo` al cargar: sin él, el host no le responde nada.
+- `config` guarda y llama `alCambiarConfig`; **no** manda el estado. Si tu interfaz lo esperaba, mándalo ahí (`p.enviarEstado()`).
+- `Config.guardar(x)` filtra por defecto las claves `"interfaz": false` (`desdeInterfaz: true`): lo que guarda la app va con
+  `desdeInterfaz: false`, o se pierde en silencio. Un texto de config de más de 2000 caracteres necesita `{"tipo": "texto", "max": N}`.
+- Con un idioma que nunca se eligió (válido en la app de antes), `Idioma.elegido` es false y nada corre solo: al migrar, guarda
+  `bienvenida: true` si la persona ya tenía todo listo.
+- Un `"limite"` por orden: `"otro": 300` (no 120) si las órdenes rápidas recorren repos grandes; algo largo que no es un `Trabajo`
+  (p. ej. una orden que llama a `ia.preguntar`) con `"trabajo"` necesita `trabajos.mantener_vivo()`.
+- El Llavero: `Secretos` busca sin filtrar por `kSecAttrAccessible`, así lee lo guardado antes; al volver a guardar queda
+  `WhenUnlockedThisDeviceOnly`.
+
 En todas: `pieza.py agregar host-mac <app>`, en `Package.swift` el target `PiezaHost` y la dependencia del ejecutable, el `@main`
 con `Host.arrancar`, copiar `acciones.json` junto a `app.json` en `herramientas/empaquetar.sh`
 (`cp acciones.json "$RES/<id>/"`), y borrar lo que la pieza ya hace. Las acciones que solo corren un script pasan a
