@@ -1,0 +1,3 @@
+# Sin scripts de instalación: ningún paquete corre código al instalarse (así roban tokens los paquetes comprometidos).
+# Electron baja su binario aparte (node node_modules/electron/install.js) y electron-builder baja el suyo al empaquetar.
+ignore-scripts=true

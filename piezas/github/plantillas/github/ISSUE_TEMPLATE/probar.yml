@@ -1,0 +1,33 @@
+name: 🧪 Lo probé en mi {{#si movil}}equipo{{#sino}}computador{{/si}} / I tested it on my device
+description: Cuéntanos cómo le fue a {{nombre}} en tu sistema. / Tell us how {{nombre}} did on your system.
+labels: [probar]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ¡Gracias! Probar en un equipo de verdad es de las ayudas que más sirven{{#si windows}}: Windows no lo podemos probar en GitHub{{/si}}.
+        Usa solo datos ficticios. / Thanks! Testing on a real device is one of the most useful things you can do. Fictional data only.
+  - type: dropdown
+    id: sistema
+    attributes:
+      label: Sistema / System
+      options: [{{#si windows}}Windows 11, Windows 10, {{/si}}{{#si linux}}"Linux (Ubuntu, Debian…)", "Linux (Fedora, Arch, otro / other)", {{/si}}{{#si mac}}Mac, {{/si}}{{#si ios}}iPhone, {{/si}}{{#si android}}Android, {{/si}}Otro / Other]
+    validations: { required: true }
+  - type: input
+    id: detalle
+    attributes:
+      label: Versión del sistema y cómo instalaste / OS version and how you installed
+      placeholder: {{#si windows}}Windows 11 · instalar.ps1 / {{/si}}{{#si linux}}Ubuntu 24.04 · AppImage / {{/si}}{{#si mac}}macOS 15 · instalar.sh{{/si}}
+    validations: { required: true }
+  - type: checkboxes
+    id: revisado
+    attributes:
+      label: Lo que funcionó / What worked
+      options:
+        - label: Se instaló y abrió (y el aviso de app sin firmar fue claro) / It installed and opened (and the unsigned-app warning was clear)
+        - label: Lo primero fue elegir el idioma / The first thing was choosing the language
+        # La app: suma aquí 3 a 5 cosas que se prueban en esta app (lo principal que hace), una por línea, en los dos idiomas.
+  - type: textarea
+    id: problemas
+    attributes:
+      label: Lo que falló o se vio raro (capturas bienvenidas) / What failed or looked odd (screenshots welcome)

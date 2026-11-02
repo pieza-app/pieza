@@ -27,14 +27,14 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | `host-mac` | 0.3.0 | App de Mac genérica (target `PiezaHost`): ventana, puente con guardas, acciones declaradas con límite de tiempo (o latido, o por orden), config/idioma de `app.json`, menús, apariencia de `tema`, actualizaciones, carpeta con marcador, vigilante (FSEvents), Finder, Llavero y avisos | Esquema `app/Sources/Esquema/` (+ `Carpeta.swift`) + Alcancía (secreto por stdin, Llavero, avisos, carpeta de la nube) + Repasa (`conEntrada` con varios args) + Corta (`Medios.swift`) + Graba y Minuta (Llavero) |
 | `host-escritorio` | 0.3.0 | Lo mismo en Electron, con `nativeTheme.themeSource` según `config.tema`; carpeta, vigilante (`fs.watch`), explorador, `safeStorage` y avisos | Esquema `escritorio/src/` (+ `vigilante.js`) + Graba (medios con rangos, permisos que abre la app, `Tokens`) + Alcancía (secreto por stdin) + Minuta (avisos) |
 | `contenido` | 0.1.0 | Leer md, txt, pdf, docx, odt, epub y html con topes (zip bombas, XML sin entidades); capítulos sin IA | Esquema `bin/contenido.py` + Alcancía (`ArchivoNoValido`) |
+| `empaquetado` | 0.1.0 | Arma, firma, publica e instala desde `app.json` (plantillas): `Info.plist`, `Package.swift` con las piezas nativas, `build.sh` que no instala con la app ocupada, `empaquetar.sh` con un solo `python.lock`, `package.json`/`.npmrc`/`preparar.sh` de Electron, NSIS, `instalar.sh`/`.ps1` y `publicar.yml`; binarios extra con huella y ganchos de la app | Esquema + Corta (binarios, licencias) + Graba (`binaryTarget`, frameworks, permisos, barra de menú) + las seis (no instalar ocupada) |
+| `github` | 0.1.0 | El repo para la comunidad desde `app.json`: issues, PR, dependabot, `revisar.yml`, Pieza al día, `AGENTS`/`CONTRIBUTING`/`SECURITY` con lo que llena la IA marcado, agentes, privacidad, `.gitignore`; `pieza.py repo configurar` | Esquema `.github/` y guías + Alcancía/Repasa (job `mac` con `app.json`) + las seis (secciones comunes de `AGENTS.md`) |
 
 ## Por extraer, en este orden
 
 | # | Pieza | Tipo | Tomar de | Sumar de | Notas |
 |---|---|---|---|---|---|
 | 8 | `mcp` (Py) | Py | Alcancía `mcp_servidor.py` + `mcp_conectar.py` | — | `mcp.servir(nombre, …, herramientas)`; conectar a claude/codex/gemini/Claude Desktop |
-| 13 | `empaquetado` | build | Esquema | — | Copiar `acciones.json` junto a `app.json` (hoy cada app lo agrega a mano: ver los README de los hosts). `build.sh`, `empaquetar.sh`, `preparar.sh`, instaladores, `Package.swift`, `Info.plist` generados desde `app.json`. El Python portátil (CPython 3.13.16) ya es idéntico en las seis: un solo `python.lock` |
-| 14 | `github` | repo | Esquema | — | Plantillas de issues/PR, `dependabot`, workflows reutilizables (`workflow_call`) para revisar y publicar |
 | 15 | `universos` | Py + UI | Minuta (`universo.py`, galería) | Catálogo (#6) | Lo que pediste como ejemplo: tras #6 queda casi listo |
 
 ### Pendientes que salieron al pasar las apps a las piezas de datos (anotados, sin hacer)
@@ -45,7 +45,7 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | 5 | Pieza `youtube` (Graba tiene `bin/youtube.py`) | Fase aparte: necesita OAuth de la persona, la subida por partes de `red` 0.2 (`subir`) y revisar los permisos de la API. Ya está planeada (`piezas/youtube`) |
 | 18 | El dictado del Gimnasio de Minuta en Electron llama a `whisper-cli` directo | Debería pasar por `transcribir` (vocabulario por archivo, VAD, filtro). Toca el dictado en vivo de Minuta (otra forma: trozos cortos), así que va con la migración de Minuta al host, no aquí |
 
-Después: la página pública (`docs/`), `revisar_privacidad.sh`, `generar_demo.py`, `pruebas/contrato.py` genérico.
+Después: la página pública (`docs/`), `generar_demo.py`, `pruebas/contrato.py` genérico. (`revisar_privacidad.sh` ya lo genera «github».)
 
 ### Lo que salió al pasar las seis apps al host (`host-mac`/`host-escritorio` 0.2.0)
 

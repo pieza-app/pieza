@@ -1,22 +1,96 @@
 {
  "formato": 1,
  "id": "empaquetado",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Empaquetado",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "repo",
- "descripcion": "build.sh, empaquetar, Python portátil fijado, instaladores de un comando y Info.plist/package.json generados desde app.json.",
+ "descripcion": "Arma, firma, publica e instala la app desde app.json: Info.plist, Package.swift, build.sh, empaquetar.sh con un solo Python portátil, package.json de Electron, preparar.sh, instalador de Windows, instalar.sh/ps1 y publicar.yml.",
+ "origen": "Esquema (build.sh, herramientas/empaquetar.sh con bajar() y huellas, escritorio/ con package.json, preparar.sh, instalador NSIS e instalar.sh/ps1, publicar.yml con nombres fijos) + Corta (binarios extra con huella, LICENCIAS-TERCEROS, ffmpeg) + Graba (Package.swift con whisper como binaryTarget y un ejecutable aparte, frameworks, permisos de cámara y micrófono, barra de menú) + Minuta/Graba/Corta/Alcancía/Repasa (no instalar con un trabajo en curso). El Python portátil (CPython 3.13.16, ya idéntico en las seis) queda en un solo herramientas/python.lock. La versión sale de app.json → version (antes, Info.plist y package.json a mano).",
  "recomendar": {
   "siempre": true,
-  "cuando": "Siempre."
+  "cuando": "Siempre: es lo que arma la app de Mac, Windows y Linux y la publica en los Releases del repo."
  },
- "tomar_de": "esquema (build.sh, herramientas/empaquetar.sh, escritorio/herramientas)",
  "requiere": [],
  "plataformas": [
   "mac",
   "windows",
   "linux"
+ ],
+ "archivos": {
+  "datos/python.lock": "herramientas/python.lock"
+ },
+ "generar": {
+  "plantillas/build.sh": {
+   "destino": "build.sh",
+   "si": "mac"
+  },
+  "plantillas/empaquetar.sh": {
+   "destino": "herramientas/empaquetar.sh",
+   "si": "mac"
+  },
+  "plantillas/Info.plist": {
+   "destino": "app/Info.plist",
+   "si": "mac"
+  },
+  "plantillas/Package.swift": {
+   "destino": "app/Package.swift",
+   "si": "mac"
+  },
+  "plantillas/package.json": {
+   "destino": "escritorio/package.json",
+   "si": "escritorio"
+  },
+  "plantillas/npmrc": {
+   "destino": "escritorio/.npmrc",
+   "si": "escritorio"
+  },
+  "plantillas/preparar.sh": {
+   "destino": "escritorio/herramientas/preparar.sh",
+   "si": "escritorio"
+  },
+  "plantillas/instalador-windows.sh": {
+   "destino": "escritorio/herramientas/instalador-windows.sh",
+   "si": "windows"
+  },
+  "plantillas/instalador.nsi": {
+   "destino": "escritorio/herramientas/instalador.nsi",
+   "si": "windows"
+  },
+  "plantillas/instalar.sh": {
+   "destino": "instalar.sh",
+   "si": "mac_o_linux"
+  },
+  "plantillas/instalar.ps1": {
+   "destino": "instalar.ps1",
+   "si": "windows"
+  },
+  "plantillas/github/workflows/publicar.yml": ".github/workflows/publicar.yml"
+ },
+ "app_json": {
+  "empaquetado": {
+   "esqueleto": {
+    "descripcion": "",
+    "categoria": "",
+    "linux_categoria": "Utility",
+    "carpetas": [],
+    "permisos": [],
+    "ocupada": []
+   },
+   "que": "una frase para package.json y el lanzador de Linux, la categoría del Mac (public.app-category.…), las carpetas extra que van dentro de la app y los permisos de Info.plist; ver el README de «empaquetado»"
+  }
+ },
+ "tareas_persona": [
+  "Un Mac con Apple Silicon y Xcode para compilar la app de Mac la primera vez (después la arma GitHub en cada versión)",
+  "Permitir que GitHub Actions cree Releases (Settings → Actions → Workflow permissions: lo pide publicar.yml con contents: write en un solo job)"
+ ],
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "resumen": "Primera versión: todo el empaquetado generado desde app.json (Info.plist, Package.swift, build.sh, empaquetar.sh, package.json, .npmrc, preparar.sh, instalador de Windows, instalar.sh/ps1 y publicar.yml) con un solo python.lock. Para publicar se sube app.json → version."
+  }
  ]
 }

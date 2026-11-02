@@ -26,7 +26,8 @@ done
 python3 - <<'PY'
 import glob, re, sys
 mal, fijadas = [], {}
-for f in sorted(glob.glob(".github/workflows/*.yml")) + ["plantillas/pieza-al-dia.yml"]:
+# También los workflows que generan las piezas (plantillas de «empaquetado» y «github»): llegan a cada app.
+for f in sorted(glob.glob(".github/workflows/*.yml")) + ["plantillas/pieza-al-dia.yml"] + sorted(glob.glob("piezas/*/plantillas/github/workflows/*.yml")):
     for n, l in enumerate(open(f, encoding="utf-8"), 1):
         m = re.search(r"uses:\s*(\S+)", l)
         if not m:
@@ -35,10 +36,11 @@ for f in sorted(glob.glob(".github/workflows/*.yml")) + ["plantillas/pieza-al-di
             mal.append(f"{f}:{n}: fíjala por SHA con su versión en un comentario")
         elif f.startswith(".github"):
             fijadas.setdefault(m.group(1).split("@")[0], set()).add(m.group(1))
-for n, l in enumerate(open("plantillas/pieza-al-dia.yml", encoding="utf-8"), 1):
-    m = re.search(r"uses:\s*(\S+)", l)
-    if m and m.group(1).split("@")[0] in fijadas and m.group(1) not in fijadas[m.group(1).split("@")[0]]:
-        mal.append(f"plantillas/pieza-al-dia.yml:{n}: usa otra versión que .github/workflows")
+for f in ["plantillas/pieza-al-dia.yml"] + sorted(glob.glob("piezas/*/plantillas/github/workflows/*.yml")):
+    for n, l in enumerate(open(f, encoding="utf-8"), 1):
+        m = re.search(r"uses:\s*(\S+)", l)
+        if m and m.group(1).split("@")[0] in fijadas and m.group(1) not in fijadas[m.group(1).split("@")[0]]:
+            mal.append(f"{f}:{n}: usa otra versión que .github/workflows")
 if mal:
     print("\n".join(mal)); sys.exit(1)
 PY

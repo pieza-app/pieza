@@ -1047,3 +1047,428 @@ class HostGenerico(unittest.TestCase):
                     self.assertIsNone(re.search(rf"(^|[^\w]){app}(?!\w)", t), f"{pid}/{f}: {app}")
                 for marca in ("ESQUEMA_", "GRABA_", "MINUTA_", "CORTA_", "REPASA_", "ALCANCIA_", "-app/"):
                     self.assertNotIn(marca, t, f"{pid}/{f}: {marca}")
+
+
+# ── Plantillas (pieza.json → «generar») y las piezas «empaquetado» y «github» ─────────────────────────────────────────────────
+
+sys.path.insert(0, os.path.join(BASE, "herramientas"))
+import plantillas  # noqa: E402
+
+
+def yaml_valido(ruta):
+    """None si el YAML se lee bien; el error si no. Con PyYAML o con Ruby (los dos vienen en los runners de GitHub)."""
+    try:
+        import yaml
+        try:
+            yaml.safe_load(open(ruta, encoding="utf-8"))
+            return None
+        except yaml.YAMLError as e:
+            return str(e)
+    except ImportError:
+        pass
+    import shutil
+    if shutil.which("ruby"):
+        r = subprocess.run(["ruby", "-ryaml", "-e", "YAML.load_file(ARGV[0])", ruta], capture_output=True, text=True)
+        return None if r.returncode == 0 else r.stderr
+    raise unittest.SkipTest("sin PyYAML ni Ruby para leer YAML")
+
+
+def errores_workflow(texto):
+    """Las reglas de los workflows de la familia: actions fijadas por SHA con su versión, permisos declarados, sin credenciales
+    guardadas, sin pull_request_target y sin expresiones de GitHub dentro de run:."""
+    import re
+    e = []
+    if "pull_request_target" in texto:
+        e.append("pull_request_target")
+    if not re.search(r"(?m)^permissions:", texto):
+        e.append("sin permissions arriba")
+    for n, linea in enumerate(texto.splitlines(), 1):
+        m = re.search(r"uses:\s*(\S+)", linea)
+        if m and not (re.fullmatch(r"[\w.-]+/[\w./-]+@[0-9a-f]{40}", m.group(1)) and re.search(r"#\s*v\d", linea)):
+            e.append(f"{n}: action sin fijar por SHA")
+    for bloque in re.findall(r"(?m)^( *)(?:- )?run: \|\n((?:\1  .*\n|\s*\n)*)", texto + "\n"):
+        if "${{" in bloque[1]:
+            e.append("expresión de GitHub dentro de run:")
+    for linea in texto.splitlines():
+        if re.match(r"\s*(- )?run: [^|]", linea) and "${{" in linea:
+            e.append("expresión de GitHub dentro de run:")
+    checkouts = texto.count("actions/checkout@")
+    if texto.count("persist-credentials: false") < checkouts:
+        e.append("un checkout sin persist-credentials: false")
+    return e
+
+
+class Plantillas(unittest.TestCase):
+    """El motor de plantillas (herramientas/plantillas.py): solo datos, valores seguros o escapados, errores con línea."""
+
+    def setUp(self):
+        self.ctx = plantillas.contexto({"id": "ana", "nombre": "Ána", "plataformas": ["mac", "linux"],
+                                        "x": {"lista": [{"n": "uno"}, {"n": "dos"}], "raro": "a\"b$c", "url": "https://a.b/c"}},
+                                       piezas=["host-mac"])
+
+    def test_valores_bloques_y_lineas_solas(self):
+        t = "{{nombre}} {{ID}} {{nombre_ascii}}\n{{#si mac}}\nmac\n{{#sino}}\nno\n{{/si}}\n{{#no windows}}sin windows{{/no}}\n" \
+            "{{#cada app.x.lista como i}}\n- {{i.n}}{{#no i_ultimo}},{{/no}}\n{{/cada}}\n{{#si piezas.host-mac}}host{{/si}}{{! nada }}\n"
+        self.assertEqual(plantillas.llenar(t, self.ctx), "Ána ANA Ana\nmac\nsin windows\n- uno,\n- dos\nhost\n")
+
+    def test_expresiones_de_github_quedan(self):
+        self.assertEqual(plantillas.llenar("a: ${{ github.ref }} {{id}}", self.ctx), "a: ${{ github.ref }} ana")
+
+    def test_lo_raro_necesita_un_filtro(self):
+        with self.assertRaisesRegex(plantillas.PlantillaMala, "filtro"):
+            plantillas.llenar("{{app.x.raro}}", self.ctx)
+        self.assertEqual(plantillas.llenar("{{app.x.raro|sh}}", self.ctx), "'a\"b$c'")
+        self.assertEqual(plantillas.llenar("{{app.x.raro|xml}}", self.ctx), "a&quot;b$c")
+        self.assertEqual(plantillas.llenar("{{app.x.raro|json}}", self.ctx), '"a\\"b$c"')
+        self.assertEqual(plantillas.llenar("{{app.x.lista|json}}", self.ctx), '[{"n": "uno"}, {"n": "dos"}]')
+        with self.assertRaisesRegex(plantillas.PlantillaMala, "lista u objeto"):
+            plantillas.llenar("{{app.x.lista}}", self.ctx)
+
+    def test_filtros_que_validan(self):
+        self.assertEqual(plantillas.llenar("{{app.x.url|https}}", self.ctx), "https://a.b/c")
+        for marca in ("{{app.x.raro|https}}", "{{nombre|sha256}}", "{{app.x.raro|nombre}}", "{{nombre|version}}"):
+            with self.assertRaises(plantillas.PlantillaMala, msg=marca):
+                plantillas.llenar(marca, self.ctx)
+        with self.assertRaises(plantillas.PlantillaMala):
+            plantillas.llenar("{{u|ruta}}", {**self.ctx, "u": "../fuera"})
+
+    def test_errores_con_linea(self):
+        for t, que in (("a\n{{falta}}", "línea 2: falta"), ("{{#si mac}}", "falta cerrar"), ("{{/si}}", "no cierra"),
+                       ("{{id|nada}}", "filtro desconocido"), ("{{#sino}}", "fuera de"), ("{{ id id }}", "marca rara")):
+            with self.assertRaisesRegex(plantillas.PlantillaMala, que):
+                plantillas.llenar(t, self.ctx)
+            self.assertTrue(plantillas.revisar(t) or que.startswith("línea 2"))
+
+    def test_un_valor_no_trae_marcas(self):
+        with self.assertRaises(plantillas.PlantillaMala):
+            plantillas.llenar("{{v}}", {**self.ctx, "v": "{{id}}"})
+
+    def test_contexto(self):
+        c = plantillas.contexto({"id": "ana", "nombre": "Ána", "datos": "visible", "repo": "ana-app/ana", "version": "1.2.3"})
+        self.assertEqual((c["bundle"], c["repo"], c["web"], c["datos_mac"], c["version"]),
+                         ("app.ana.mac", "ana-app/ana", "https://ana-app.github.io/ana/", "Ána/.ana", "1.2.3"))
+        c = plantillas.contexto({"id": "ana", "plataformas": ["windows"]})
+        self.assertEqual((c["repo"], c["escritorio"], c["mac_o_linux"], c["datos_mac"], c["version"]),
+                         ("ana-app/ana", True, False, "Library/Application Support/Ana", "0.1.0"))
+        for malo in ({"id": "Ana"}, {"id": "ana", "nombre": "a\"b"}, {"id": "ana", "datos": {"carpeta": "~/../x"}}):
+            with self.assertRaises(plantillas.PlantillaMala):
+                plantillas.contexto(malo)
+
+
+class Generar(unittest.TestCase):
+    """«empaquetado» y «github» en una app ficticia: lo que generan es válido, sigue las reglas y nunca pisa lo de la app."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def app(self, plataformas="mac,windows,linux", nombre="ana", piezas=("host-mac", "empaquetado", "github"), env=None):
+        app = os.path.join(self.tmp.name, nombre)
+        os.makedirs(os.path.join(app, "bin"))
+        r = correr(PIEZA, "iniciar", app, "ana", "Ána", f"--plataformas={plataformas}", "--datos=visible")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        for p in piezas:
+            r = correr(PIEZA, "agregar", p, app, env=env)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        return app
+
+    def leer(self, app, ruta):
+        return open(os.path.join(app, ruta), encoding="utf-8").read()
+
+    def revisar_todo(self, app):
+        import plistlib
+        import re
+        lock = json.load(open(os.path.join(app, "piezas.json")))
+        rutas = set()
+        for pid in ("empaquetado", "github"):
+            rutas |= set(lock["piezas"][pid].get("generados", {})) | set(lock["piezas"][pid].get("una_vez", []))
+        for ruta in sorted(rutas):
+            t = self.leer(app, ruta)
+            self.assertIsNone(re.search(r"(?<!\$)\{\{", t), f"{ruta}: quedó una marca")
+            if ruta.endswith(".sh"):
+                r = subprocess.run(["bash", "-n", os.path.join(app, ruta)], capture_output=True, text=True)
+                self.assertEqual(r.returncode, 0, f"{ruta}: {r.stderr}")
+                self.assertTrue(os.stat(os.path.join(app, ruta)).st_mode & stat.S_IXUSR, f"{ruta} no es ejecutable")
+            elif ruta.endswith(".json"):
+                json.loads(t)
+            elif ruta.endswith(".plist"):
+                plistlib.loads(t.encode())
+            elif ruta.endswith(".yml"):
+                self.assertIsNone(yaml_valido(os.path.join(app, ruta)), ruta)
+                if "/workflows/" in ruta:
+                    self.assertEqual(errores_workflow(t), [], ruta)
+        return rutas
+
+    def test_mac_windows_linux(self):
+        app = self.app()
+        rutas = self.revisar_todo(app)
+        for r in ("build.sh", "herramientas/empaquetar.sh", "app/Info.plist", "app/Package.swift", "escritorio/package.json",
+                  "escritorio/.npmrc", "escritorio/herramientas/preparar.sh", "escritorio/herramientas/instalador.nsi",
+                  "escritorio/herramientas/instalador-windows.sh", "instalar.sh", "instalar.ps1", ".github/workflows/publicar.yml",
+                  ".github/workflows/revisar.yml", ".github/workflows/pieza-al-dia.yml", ".github/dependabot.yml",
+                  ".github/ISSUE_TEMPLATE/probar.yml", ".claude/agents/ana-revisor.md", ".claude/agents/ana-privacidad.md",
+                  "AGENTS.md", "CONTRIBUTING.md", "SECURITY.md", "LICENSE", ".gitignore", "herramientas/revisar_privacidad.sh"):
+            self.assertIn(r, rutas)
+        self.assertTrue(os.path.isfile(os.path.join(app, "herramientas", "python.lock")))
+        pub = self.leer(app, ".github/workflows/publicar.yml")
+        for nombre in ("Ana-macOS.zip", "Ana-Windows.exe", "Ana-Linux.AppImage", "Ana-Linux.tar.gz"):
+            self.assertIn(nombre, pub)
+        self.assertNotIn("Ana-Linux.deb", pub)
+        self.assertIn('identifier "app.ana.mac"', self.leer(app, "herramientas/empaquetar.sh"))
+        self.assertIn('"PiezaHost", ', self.leer(app, "app/Package.swift"))
+        self.assertIn("Ána/.ana/desarrollo", self.leer(app, "build.sh").replace('"$DATOS/desarrollo"', "Ána/.ana/desarrollo"))
+        pkg = json.loads(self.leer(app, "escritorio/package.json"))
+        self.assertEqual((pkg["version"], pkg["build"]["appId"]), ("0.1.0", "app.ana.escritorio"))
+        self.assertIn({"from": "../acciones.json", "to": "ana/acciones.json"}, pkg["build"]["extraResources"])
+        dep = self.leer(app, ".github/dependabot.yml")
+        self.assertIn("directory: /escritorio", dep)
+        # Lo que la IA de la app completa queda marcado.
+        for doc in ("AGENTS.md", "CONTRIBUTING.md", "SECURITY.md", ".claude/agents/ana-revisor.md"):
+            self.assertIn("<!-- La app:", self.leer(app, doc), doc)
+        self.assertIn("| `host-mac` | 0.3", self.leer(app, "AGENTS.md"))
+        self.assertIn("ofrece su marketplace", self.leer(app, "CONTRIBUTING.md"))
+        self.assertEqual(json.loads(self.leer(app, ".claude/settings.json")),
+                         {"extraKnownMarketplaces": {"pieza": {"source": {"source": "github", "repo": "pieza-app/pieza"}}}})
+        self.assertNotIn("enabledPlugins", self.leer(app, ".claude/settings.json"))
+        rev = self.leer(app, ".github/workflows/revisar.yml")
+        self.assertIn("ubuntu-24.04", rev)
+        self.assertNotIn("ubuntu-latest", rev)
+        self.assertIn("playwright@1.56.1", rev)
+        self.assertIn("app\\.json|acciones\\.json", rev)
+
+    def test_solo_mac_y_solo_linux(self):
+        mac = self.app("mac", "mac")
+        self.revisar_todo(mac)
+        for r in ("escritorio/package.json", "instalar.ps1"):
+            self.assertFalse(os.path.exists(os.path.join(mac, r)), r)
+        self.assertNotIn("escritorio:", self.leer(mac, ".github/workflows/publicar.yml"))
+        self.assertNotIn("/escritorio", self.leer(mac, ".github/dependabot.yml"))
+        linux = self.app("linux", "linux", piezas=("empaquetado", "github"))
+        self.revisar_todo(linux)
+        for r in ("app/Info.plist", "build.sh", "instalar.ps1", "escritorio/herramientas/instalador.nsi"):
+            self.assertFalse(os.path.exists(os.path.join(linux, r)), r)
+        self.assertNotIn("mac:", self.leer(linux, ".github/workflows/revisar.yml"))
+        self.assertIn("Linux)", self.leer(linux, "instalar.sh"))
+        self.assertNotIn("Darwin)", self.leer(linux, "instalar.sh"))
+
+    def test_lo_propio_de_la_app(self):
+        """Binarios extra, permisos, barra de menú, carpetas, deb: lo de app.json → empaquetado llega a cada archivo."""
+        app = self.app(piezas=("host-mac",))
+        a = json.load(open(os.path.join(app, "app.json")))
+        a["empaquetado"] = {
+            "descripcion": "Notas rápidas de Ana (prueba)", "barra_de_menu": True, "deb": True, "carpetas": ["plantillas"],
+            "quitar": ["ui/demo"], "permisos": [{"clave": "NSCameraUsageDescription", "texto": "Para ver <tu> cara & más"}],
+            "ocupada": [{"proceso": "bin/procesar.py", "mensaje": "✗ Ána está procesando. Espera a que termine."}],
+            "licencias": ["Programa de prueba (https://example.org), licencia MIT."],
+            "mac": {"ejecutables": ["ana-cli"], "frameworks": ["algo.framework"],
+                    "binarios": [{"nombre": "herramienta", "gz": True, "url": "https://example.org/h.gz", "sha256": "a" * 64}],
+                    "swift": {"binarios": [{"nombre": "algo", "url": "https://example.org/a.zip", "checksum": "b" * 64}],
+                              "ejecutables": [{"nombre": "ana-cli", "ruta": "Sources/Cli", "dependencias": ["algo"], "rpath": True}]}},
+            "escritorio": {"binarios": [{"nombre": "herramienta", "gz": True,
+                                         "linux": {"url": "https://example.org/l.gz", "sha256": "c" * 64},
+                                         "windows": {"url": "https://example.org/w.gz", "sha256": "d" * 64}}]}}
+        json.dump(a, open(os.path.join(app, "app.json"), "w"), ensure_ascii=False)
+        for p in ("empaquetado", "github"):
+            r = correr(PIEZA, "agregar", p, app)
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.revisar_todo(app)
+        import plistlib
+        pl = plistlib.load(open(os.path.join(app, "app", "Info.plist"), "rb"))
+        self.assertEqual((pl["LSUIElement"], pl["NSCameraUsageDescription"]), (True, "Para ver <tu> cara & más"))
+        emp = self.leer(app, "herramientas/empaquetar.sh")
+        for x in ("a" * 64, "https://example.org/h.gz", 'cp "$REL/ana-cli"', "algo.framework", " plantillas; do", '"$R/ui/demo"',
+                  "Programa de prueba"):
+            self.assertIn(x, emp)
+        self.assertIn('pgrep -f bin/procesar.py', self.leer(app, "build.sh"))
+        sw = self.leer(app, "app/Package.swift")
+        self.assertIn('.binaryTarget(name: "algo", url: "https://example.org/a.zip", checksum: "' + "b" * 64, sw)
+        self.assertIn('dependencies: ["algo"]', sw)
+        prep = self.leer(app, "escritorio/herramientas/preparar.sh")
+        self.assertIn("c" * 64, prep)
+        self.assertIn("d" * 64, prep)
+        pkg = json.loads(self.leer(app, "escritorio/package.json"))
+        self.assertEqual(pkg["description"], "Notas rápidas de Ana (prueba)")
+        self.assertIn("deb", pkg["build"]["linux"]["target"])
+        self.assertIn({"from": "../plantillas", "to": "ana/plantillas"}, pkg["build"]["extraResources"])
+        self.assertIn("Ana-Linux.deb", self.leer(app, ".github/workflows/publicar.yml"))
+
+    def test_lo_de_afuera_se_valida(self):
+        app = self.app(piezas=("host-mac",))
+        a = json.load(open(os.path.join(app, "app.json")))
+        for malo in ({"mac": {"binarios": [{"nombre": "x", "url": "http://inseguro/x", "sha256": "a" * 64}]}},
+                     {"mac": {"binarios": [{"nombre": "x", "url": "https://a.b/x", "sha256": "corta"}]}},
+                     {"carpetas": ["../fuera"]},
+                     {"permisos": [{"clave": "NS'; rm", "texto": "x"}]},
+                     {"ocupada": [{"proceso": "x", "mensaje": ["no", "texto"]}]}):
+            a["empaquetado"] = malo
+            json.dump(a, open(os.path.join(app, "app.json"), "w"))
+            r = correr(PIEZA, "agregar", "empaquetado", app)
+            self.assertNotEqual(r.returncode, 0, malo)
+            self.assertIn("No pude generar", r.stderr)
+
+    def test_no_pisa_lo_de_la_app_y_se_pone_al_dia(self):
+        app = self.app()
+        # La app cambia build.sh y completa AGENTS.md: nada de eso se vuelve a tocar.
+        with open(os.path.join(app, "build.sh"), "a") as f:
+            f.write("# propio de la app\n")
+        with open(os.path.join(app, "AGENTS.md"), "w") as f:
+            f.write("# Guía de Ana\n")
+        os.remove(os.path.join(app, "CODE_OF_CONDUCT.md"))
+        a = json.load(open(os.path.join(app, "app.json")))
+        a["version"] = "0.2.0"
+        json.dump(a, open(os.path.join(app, "app.json"), "w"))
+        r = correr(PIEZA, "generar", app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("no regeneré build.sh", r.stdout)
+        self.assertIn("# propio de la app", self.leer(app, "build.sh"))
+        self.assertEqual(self.leer(app, "AGENTS.md"), "# Guía de Ana\n")
+        self.assertFalse(os.path.exists(os.path.join(app, "CODE_OF_CONDUCT.md")))
+        self.assertIn("<string>0.2.0</string>", self.leer(app, "app/Info.plist"))
+        self.assertIn('"version": "0.2.0"', self.leer(app, "escritorio/package.json"))
+        e = correr(PIEZA, "estado", app)
+        self.assertIn("build.sh es de la app", e.stdout)
+        d = correr(PIEZA, "diferencias", app, "empaquetado")
+        self.assertIn("+# propio de la app", d.stdout)
+        # Volver a correr no cambia nada.
+        antes = {r: self.leer(app, r) for r in ("app/Info.plist", "instalar.sh", ".github/workflows/publicar.yml")}
+        r = correr(PIEZA, "generar", app)
+        self.assertEqual({k: self.leer(app, k) for k in antes}, antes)
+        self.assertNotIn("+ ", r.stdout)
+        # --forzar sí lo reemplaza.
+        correr(PIEZA, "generar", app, "empaquetado", "--forzar")
+        self.assertNotIn("# propio de la app", self.leer(app, "build.sh"))
+
+    def test_una_pieza_nueva_pone_al_dia_lo_generado(self):
+        app = self.app("mac", piezas=("host-mac", "empaquetado"))
+        self.assertNotIn("PiezaActualizaciones", self.leer(app, "app/Package.swift"))
+        r = correr(PIEZA, "agregar", "actualizaciones", app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn('"PiezaActualizaciones", ', self.leer(app, "app/Package.swift"))
+        self.assertIn('.target(name: "PiezaActualizaciones"', self.leer(app, "app/Package.swift"))
+
+    def test_un_archivo_que_ya_existia_queda_de_la_app(self):
+        app = os.path.join(self.tmp.name, "vieja")
+        os.makedirs(os.path.join(app, "bin"))
+        correr(PIEZA, "iniciar", app, "ana", "Ána", "--plataformas=mac")
+        with open(os.path.join(app, "build.sh"), "w") as f:
+            f.write("#!/bin/bash\necho propio\n")
+        r = correr(PIEZA, "agregar", "empaquetado", app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("build.sh ya existe y es distinto", r.stdout)
+        self.assertEqual(self.leer(app, "build.sh"), "#!/bin/bash\necho propio\n")
+        self.assertEqual(json.load(open(os.path.join(app, "piezas.json")))["piezas"]["empaquetado"]["version"], "0.1.0")
+
+    def test_lo_de_github_nunca_va_solo(self):
+        """Una versión nueva que cambia un workflow no se actualiza sola (el token de Actions no puede escribirlo y lo tiene que
+        ver una persona): va al issue de «Pieza al día». Lo demás de la misma pieza sí."""
+        import shutil
+        app = self.app("mac", piezas=("host-mac", "empaquetado"))
+        cat = os.path.join(self.tmp.name, "catalogo")
+        shutil.copytree(os.path.join(BASE, "piezas"), cat)
+        pj = os.path.join(cat, "empaquetado", "pieza.json")
+        p = json.load(open(pj))
+        p["version"] = "0.1.1"
+        p["cambios"].insert(0, {"version": "0.1.1", "tipo": "arreglo", "resumen": "Prueba."})
+        json.dump(p, open(pj, "w"), ensure_ascii=False)
+        for f, extra in (("github/workflows/publicar.yml", "# cambio de prueba\n"), ("build.sh", "# arreglo de prueba\n")):
+            with open(os.path.join(cat, "empaquetado", "plantillas", f), "a") as g:
+                g.write(extra)
+        env = {**os.environ, "PIEZA_CATALOGO": cat}
+        e = json.loads(correr(PIEZA, "estado", app, "--json", env=env).stdout)
+        emp = next(x for x in e if x["pieza"] == "empaquetado")
+        self.assertEqual((emp["automatico"], emp["github"]), (False, [".github/workflows/publicar.yml"]))
+        self.assertIn("publicar.yml", correr(PIEZA, "aviso", app, env=env).stdout)
+        r = correr(PIEZA, "actualizar", app, "--automatico", env=env)
+        self.assertNotIn("cambio de prueba", self.leer(app, ".github/workflows/publicar.yml"))
+        # A mano sí (y build.sh, que no es de .github/, también llega).
+        r = correr(PIEZA, "actualizar", app, "empaquetado", env=env)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self.assertIn("cambio de prueba", self.leer(app, ".github/workflows/publicar.yml"))
+        self.assertIn("arreglo de prueba", self.leer(app, "build.sh"))
+
+    def test_destinos_y_comunidad(self):
+        sys.path.insert(0, os.path.join(BASE, "herramientas"))
+        import pieza as P
+        for d, ok in (("build.sh", True), (".github/workflows/a.yml", True), (".claude/agents/a.md", True),
+                      (".claude/settings.json", True), ("escritorio/.npmrc", True), (".gitignore", True),
+                      (".github/.oculto", False), (".git/hooks/pre-commit", False), (".claude/hooks.json", False),
+                      ("app.json", False), ("piezas.json", False), ("acciones.json", False), ("../fuera", False),
+                      ("otra/carpeta.txt", False), (".env", False), ("/abs", False)):
+            self.assertEqual(P.destino_generado_ok(d), ok, d)
+        # Una pieza que no es oficial nunca genera (ahí un archivo de .github/ ejecutaría código).
+        P._EXTRA["github"] = os.path.join(BASE, "piezas", "github")
+        try:
+            with self.assertRaises(SystemExit):
+                P.generados_de("github", self.tmp.name, {"piezas": {}})
+        finally:
+            P._EXTRA.pop("github")
+
+    def test_pieza_al_dia_es_la_misma(self):
+        self.assertEqual(open(os.path.join(BASE, "plantillas", "pieza-al-dia.yml"), encoding="utf-8").read(),
+                         open(os.path.join(BASE, "piezas", "github", "plantillas", "github", "workflows", "pieza-al-dia.yml"),
+                              encoding="utf-8").read())
+
+    def test_repo_configurar_solo_muestra(self):
+        app = self.app("mac", piezas=())
+        r = correr(PIEZA, "repo", "configurar", app, env={"PATH": "/nada", "HOME": self.tmp.name})
+        self.assertEqual(r.returncode, 0, r.stderr)
+        for x in ("--add-topic hecho-con-pieza", "--enable-discussions", "approval_policy=all_external_contributors",
+                  "repos/ana-app/ana/rulesets", '"non_fast_forward"', '"deletion"', "'good first issue'", "label create probar",
+                  "private-vulnerability-reporting"):
+            self.assertIn(x, r.stdout)
+
+    def test_reproduce_las_apps(self):
+        """Para el mismo app.json, la pieza arma lo que ya funciona en las seis apps. Diferencias justificadas: CFBundleVersion es
+        la versión (antes un número a mano), siempre hay ícono y copyright, y la versión sale de app.json."""
+        import plistlib
+        import re
+        datos = os.path.join(BASE, "pruebas", "datos", "empaquetado")
+        apps = json.load(open(os.path.join(datos, "apps.json"), encoding="utf-8"))
+        tpl = os.path.join(BASE, "piezas", "empaquetado", "plantillas")
+        lock = open(os.path.join(BASE, "piezas", "empaquetado", "datos", "python.lock"), encoding="utf-8").read()
+        justificadas = {"CFBundleVersion", "CFBundleIconFile", "NSHumanReadableCopyright"}
+        for aid, a in apps.items():
+            ctx = plantillas.contexto(a, piezas=["host-mac", "actualizaciones"])
+            real = plistlib.load(open(os.path.join(datos, aid, "Info.plist"), "rb"))
+            nuevo = plistlib.loads(plantillas.llenar(open(os.path.join(tpl, "Info.plist"), encoding="utf-8").read(), ctx).encode())
+            for k in set(real) | set(nuevo):
+                if k not in justificadas:
+                    self.assertEqual(nuevo.get(k), real.get(k), f"{aid}: {k}")
+            self.assertEqual(nuevo["CFBundleVersion"], a["version"])
+            for k in ("CFBundleIconFile", "NSHumanReadableCopyright"):
+                if k in real:
+                    self.assertEqual(nuevo[k], real[k], f"{aid}: {k}")
+            ruta = os.path.join(datos, aid, "empaquetar.sh")
+            if not os.path.isfile(ruta):
+                continue
+            real = open(ruta, encoding="utf-8").read()
+            nuevo = plantillas.llenar(open(os.path.join(tpl, "empaquetar.sh"), encoding="utf-8").read(), ctx) + lock
+            for h in set(re.findall(r"\b[0-9a-f]{64}\b", real)):
+                self.assertIn(h, nuevo, f"{aid}: falta la huella {h[:12]}…")
+            ident = re.search(r'identifier "([^"]+)"', real).group(1)
+            self.assertIn(f'identifier "{ident}"', nuevo)
+            carpetas = re.search(r"for d in (bin ui[^;]*); do ditto", real).group(1).split()
+            self.assertEqual(re.search(r"for d in (bin ui[^;]*); do ditto", nuevo).group(1).split(), carpetas, aid)
+            zip_ = re.search(r"ditto -c -k --keepParent (\S+) (\S+)", real).groups()
+            self.assertEqual(re.search(r"ditto -c -k --keepParent (\S+) (\S+)", nuevo).groups(), zip_, aid)
+            for ejecutable in re.findall(r'"\$REL/([\w-]+)"', real):
+                self.assertIn(f'"$REL/{ejecutable}"', nuevo, aid)
+            for fw in re.findall(r'"\$REL/([\w.]+\.framework)"', real):
+                self.assertIn(fw, nuevo, aid)
+        # El Package.swift de Graba: whisper como binaryTarget y su ejecutable aparte.
+        ctx = plantillas.contexto(apps["graba"], piezas=["host-mac", "actualizaciones", "trabajos"])
+        nuevo = plantillas.llenar(open(os.path.join(tpl, "Package.swift"), encoding="utf-8").read(), ctx)
+        real = open(os.path.join(datos, "graba", "Package.swift"), encoding="utf-8").read()
+        for x in re.findall(r'name: "([\w-]+)"', real) + re.findall(r'checksum: "(\w+)"', real) + re.findall(r'path: "([\w/]+)"', real):
+            self.assertIn(x, nuevo)
+
+    def test_plantillas_sin_nada_de_una_app(self):
+        import re
+        for pid in ("empaquetado", "github"):
+            for raiz, _, archivos in os.walk(os.path.join(BASE, "piezas", pid, "plantillas")):
+                for f in archivos:
+                    t = open(os.path.join(raiz, f), encoding="utf-8").read()
+                    for app in ("Esquema", "Graba", "Minuta", "Corta", "Repasa", "Alcancia", "Alcancía"):
+                        self.assertIsNone(re.search(rf"(^|[^\w]){app}(?!\w)", t), f"{pid}/{f}: {app}")

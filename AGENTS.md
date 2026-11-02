@@ -17,7 +17,8 @@ menos tokens: elegir piezas, no reescribirlas.
 
 ## Cómo se hace una pieza
 
-1. Carpeta `piezas/<id>/` con `pieza.json` (formato en `docs/enchufe.md`), su código (`python/`, `ui/`, `mac/`, `escritorio/`),
+1. Carpeta `piezas/<id>/` con `pieza.json` (formato en `docs/enchufe.md`), su código (`python/`, `ui/`, `mac/`, `escritorio/`; lo
+   que cambia por app y no es código —un `Info.plist`, un workflow— va en `plantillas/` y se **genera**: «Plantillas» en `docs/enchufe.md`),
    su `icono.svg` (obligatorio: 24×24, de línea, trazo 2, `currentColor`, solo formas; `herramientas/icono.py` lo valida),
    un `README.md` corto (qué resuelve, API, ejemplo) y lo que necesite en `pruebas/test_piezas.py` (o `test_piezas_datos.py` para las de datos).
 2. **Partir de la mejor versión** que ya exista en las apps y sumarle lo que otras resolvieron mejor. Decir de dónde salió en
@@ -72,7 +73,8 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 | Ruta | Qué es |
 |---|---|
 | `piezas/<id>/` | Cada pieza: `pieza.json` + código + README |
-| `herramientas/pieza.py` | `listar`, `catalogo`, `ficha`, `iniciar`, `agregar`, `estado`, `actualizar`, `aviso`, `diferencias`, `revisar`, `acciones` (arma `acciones.json` para el host), `skills estado/instalar` |
+| `herramientas/pieza.py` | `listar`, `catalogo`, `ficha`, `iniciar`, `agregar`, `estado`, `actualizar`, `aviso`, `diferencias`, `revisar`, `acciones` (arma `acciones.json` para el host), `generar` (vuelve a llenar lo que generan las piezas desde `app.json`), `repo configurar` (los `gh` que dejan el repo de una app listo), `skills estado/instalar` |
+| `herramientas/plantillas.py` | El motor de las plantillas (`pieza.json` → `generar`): solo datos, filtros que escapan o validan; ver `docs/enchufe.md`, «Plantillas». Lo usan `empaquetado` y `github` |
 | `docs/enchufe.md` | El contrato: `pieza.json`, `app.json`, `piezas.json`, reglas de seguridad, host genérico |
 | `docs/catalogo.md` | Qué piezas hay, cuáles faltan y en qué orden, y brechas encontradas en las apps |
 | `comunidad/catalogo.json`, `herramientas/comunidad.py`, `.github/workflows/comunidad.yml` | El catálogo de la comunidad: piezas en repos de otras personas (topic `pieza-comunidad`), validadas cada día (ícono incluido) y con su estado de revisión fijado a un commit y a la huella de cada archivo. Guía en `docs/comunidad.md` |

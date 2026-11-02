@@ -21,9 +21,17 @@
                                           --automatico: solo arreglos y mejoras compatibles sobre archivos que la app no tocó.
   pieza.py aviso <app>                    En Markdown, lo que hay que actualizar a mano (cambios que rompen o archivos de la
                                           app) con los pasos para migrar. Es el cuerpo del issue que abre «Pieza al día».
-  pieza.py diferencias <app> <pieza>      Lo que la app cambió de una pieza (para devolverlo a la base si es mejor).
+  pieza.py diferencias <app> <pieza>      Lo que la app cambió de una pieza (para devolverlo a la base si es mejor), también de lo
+                                          que la pieza genera.
+  pieza.py generar <app> [pieza…] [--forzar]
+                                          Vuelve a llenar lo que generan las piezas (pieza.json → «generar», desde app.json)
+                                          después de cambiar app.json. Nunca pisa lo que la app cambió, salvo --forzar.
   pieza.py acciones <app>                 Arma acciones.json (lo lee el host genérico): las acciones de las piezas instaladas más
                                           las de app.json → «acciones». agregar/actualizar lo hacen solos si la app tiene host.
+  pieza.py repo configurar <app> [--aplicar]
+                                          Los comandos de gh que dejan el repo de la app listo para la comunidad (topics con
+                                          hecho-con-pieza, Discussions, reporte privado de fallas, aprobar las pruebas de quien
+                                          aporta, ruleset de la rama principal, etiquetas). Sin --aplicar solo los muestra.
   pieza.py revisar                        Valida todos los pieza.json de la base (formato y reglas de seguridad).
   pieza.py skills estado [codex|claude]   Qué versión de cada flujo (skill) tienes instalada y cuál trae esta Pieza.
   pieza.py skills instalar codex|claude   Instala o pone al día las skills (Codex: ~/.agents/skills; Claude Code: ~/.claude/skills)
@@ -228,11 +236,12 @@ FORMA = {"version": str, "estado": str, "nombre": str, "icono": str, "categoria"
          "requiere": list, "compatible": dict, "plataformas": list, "pantallas": list, "permisos": dict, "red": list,
          "red_nota": str, "tareas_persona": list, "archivos": dict, "solo": dict, "config": dict, "config_opcional": dict,
          "acciones": dict, "textos": dict, "textos_si_usa": dict, "app_json": dict,
-         "cambios": list, "tomar_de": (str, list), "origen": str}
+         "cambios": list, "tomar_de": (str, list), "origen": str, "generar": dict, "datos_app": dict}
 
 
 #: Las claves de app.json que son de la app (o de nucleo): una pieza no puede sumarlas con «app_json».
-APP_JSON_PROPIAS = {"formato", "id", "nombre", "repo", "datos", "privado", "plataformas", "config", "acciones", "sin_acciones", "ia"}
+APP_JSON_PROPIAS = {"formato", "id", "nombre", "repo", "version", "datos", "privado", "plataformas", "config", "acciones", "sin_acciones",
+                    "ia", "icono"}
 
 
 def errores_forma(p):
@@ -402,6 +411,239 @@ def destino_seguro(app, relativa):
     return ruta
 
 
+# ── Generar (pieza.json → «generar»: archivos que se llenan desde app.json) ──────────────────────────────────────────────────
+# Una pieza puede, además de copiar archivos, GENERARLOS desde una plantilla (herramientas/plantillas.py, solo datos: nunca se
+# ejecuta código de la pieza). El resultado se anota con su huella en piezas.json → «generados»: si la app lo cambia, la pieza ya
+# no lo toca. Ver docs/enchufe.md, «Plantillas».
+
+#: Los únicos lugares con punto donde una pieza OFICIAL puede generar (workflows, plantillas de GitHub, agentes de la IA): ahí un
+#: archivo ejecuta código, así que una pieza de la comunidad nunca genera, y lo de .github/ nunca se actualiza solo.
+PUNTO_GENERADO = (".github/", ".claude/agents/", ".claude/settings.json", ".gitignore", "escritorio/.npmrc")
+#: Lo que escribe pieza.py o la app: una plantilla nunca lo pisa.
+NO_GENERAR = {"app.json", "piezas.json", "acciones.json"}
+
+
+def destino_generado_ok(d):
+    if not isinstance(d, str) or not 0 < len(d) < 200 or d.startswith("/") or "\\" in d or ":" in d or d in NO_GENERAR:
+        return False
+    partes = d.split("/")
+    if any(x in ("", ".", "..") for x in partes) or d.startswith(".git/"):
+        return False
+    if not any(x.startswith(".") for x in partes):
+        return len(partes) == 1 or d.startswith(PREFIJOS_DESTINO)
+    for x in PUNTO_GENERADO:  # con punto: solo lo de la lista, y nada más con punto adentro
+        if d == x:
+            return True
+        if x.endswith("/") and d.startswith(x):
+            return not any(y.startswith(".") for y in d[len(x):].split("/"))
+    return False
+
+
+def reglas_generar(p):
+    """{origen: {destino, una_vez, si}} con la forma larga."""
+    r = {}
+    for origen, v in (p.get("generar") or {}).items():
+        v = {"destino": v} if isinstance(v, str) else (v if isinstance(v, dict) else {})
+        r[origen] = {"destino": v.get("destino"), "una_vez": bool(v.get("una_vez")), "si": v.get("si")}
+    return r
+
+
+def errores_generar(pid, p, carpeta="local"):
+    import plantillas
+    e = []
+    for origen, v in (p.get("generar") or {}).items():
+        if not (isinstance(v, str) or (isinstance(v, dict) and set(v) <= {"destino", "una_vez", "si"})):
+            e.append(f"generar «{origen}»: es \"destino\" o {{destino, una_vez?, si?}}")
+            continue
+        r = reglas_generar({"generar": {origen: v}})[origen]
+        if not ruta_relativa_ok(origen) or not origen.startswith("plantillas/"):
+            e.append(f"generar: origen inválido {origen} (va en plantillas/ de la pieza, sin carpetas con punto)")
+        try:  # el destino puede llevar marcas ({{id}}): se revisa como quedaría en una app de ejemplo
+            destino = plantillas.llenar(str(r["destino"]), plantillas.contexto({"id": "ana", "nombre": "Ana"}))
+        except plantillas.PlantillaMala as x:
+            destino = None
+            e.append(f"generar «{origen}»: destino {r['destino']}: {x}")
+        if destino is not None and not destino_generado_ok(destino):
+            e.append(f"generar: destino inválido {r['destino']} (no app.json/piezas.json/acciones.json; con punto solo "
+                     f"{', '.join(PUNTO_GENERADO)})")
+        if r["si"] is not None and not (isinstance(r["si"], str) and re.fullmatch(r"!?[A-Za-z_][\w-]*(\.[\w-]+)*", r["si"])):
+            e.append(f"generar «{origen}»: «si» es una ruta del contexto (ej. \"mac\", \"escritorio\", \"!windows\")")
+        ruta = os.path.join(carpeta_de(pid), origen)
+        if carpeta is not None:
+            if not os.path.isfile(ruta) or os.path.islink(ruta):
+                e.append(f"falta la plantilla {origen}")
+            else:
+                e += [f"plantilla {origen}: {x}" for x in plantillas.revisar(open(ruta, encoding="utf-8").read())]
+    for nombre, ruta in (p.get("datos_app") or {}).items():
+        if not re.fullmatch(r"[a-z][a-z0-9_]{0,30}", str(nombre)) or not ruta_relativa_ok(ruta) or not str(ruta).endswith(".json"):
+            e.append(f"datos_app: «{nombre}» → «{ruta}» (un nombre y un .json de la app)")
+    return e
+
+
+def contexto_de(pid, app, lock):
+    """El contexto de las plantillas de una pieza en esta app: app.json, las piezas instaladas y los datos que pide."""
+    import plantillas
+    p = pieza(pid)
+    a = leer(os.path.join(app, "app.json"), {}) or {}
+    datos = {}
+    for nombre, ruta in (p.get("datos_app") or {}).items():
+        datos[nombre] = leer(destino_seguro(app, ruta)) if ruta_relativa_ok(ruta) else None
+    ctx = plantillas.contexto(a, piezas=sorted(set(lock["piezas"]) | {pid}), datos=datos)
+    ctx["pieza"] = {"id": pid, "version": p["version"]}
+    # Las piezas instaladas con su nombre, versión y archivos (para la tabla «Piezas» de AGENTS.md y lo que no se edita a mano).
+    ctx["piezas_lista"] = [{"id": x, "nombre": (todas().get(x) or {}).get("nombre", x), "version": i.get("version", ""),
+                            "archivos": sorted(i.get("archivos", {}))} for x, i in sorted(lock["piezas"].items())]
+    return ctx
+
+
+def generados_de(pid, app, lock):
+    """[(destino, texto o None si no corresponde, una_vez)] de lo que la pieza genera para esta app."""
+    import plantillas
+    p = pieza(pid)
+    if not p.get("generar"):
+        return []
+    if pid in _EXTRA:
+        sys.exit(f"«{pid}» es de la comunidad: una pieza de la comunidad no genera archivos.")
+    try:
+        ctx = contexto_de(pid, app, lock)
+        r = []
+        for origen, regla in reglas_generar(p).items():
+            destino = plantillas.llenar(str(regla["destino"]), ctx)  # puede llevar marcas: ".claude/agents/{{id}}-revisor.md"
+            if not destino_generado_ok(destino) or not ruta_relativa_ok(origen):
+                sys.exit(f"{pid}: no genero {origen} → {destino} (ruta no permitida)")
+            si = regla["si"]
+            cumple = True
+            if si:
+                cumple = plantillas.verdad(plantillas.buscar(ctx, si.lstrip("!")))
+                cumple = not cumple if si.startswith("!") else cumple
+            texto = None
+            if cumple:
+                fuente = os.path.join(carpeta_de(pid), origen)
+                if os.path.islink(fuente):
+                    sys.exit(f"{pid}: {origen} es un enlace")
+                try:
+                    texto = plantillas.llenar(open(fuente, encoding="utf-8").read(), ctx)
+                except plantillas.PlantillaMala as e:
+                    raise plantillas.PlantillaMala(f"{origen}: {e}") from None
+            r.append((destino, texto, regla["una_vez"]))
+        return r
+    except plantillas.PlantillaMala as e:
+        sys.exit(f"No pude generar los archivos de «{pid}»: {e}\n(revisa app.json: lo que pide la pieza está en su README)")
+
+
+def _huella_texto(texto):
+    return hashlib.sha256(texto.encode("utf-8")).hexdigest()
+
+
+def _escribir_texto(ruta, texto):
+    os.makedirs(os.path.dirname(ruta) or ".", exist_ok=True)
+    tmp = ruta + ".tmp"
+    with open(tmp, "w", encoding="utf-8", newline="\n") as f:
+        f.write(texto)
+    if ruta.endswith((".sh", ".command")):
+        os.chmod(tmp, 0o755)
+    os.replace(tmp, ruta)
+
+
+def generar_pieza(pid, app, lock, forzar=False, automatico=False):
+    """Escribe lo que genera la pieza, sin pisar lo que la app cambió (salvo --forzar). Anota en lock (no lo guarda)."""
+    info = lock["piezas"].get(pid)
+    if info is None:
+        return
+    generados, una_vez = dict(info.get("generados", {})), list(info.get("una_vez", []))
+    vistos = set()
+    for destino, texto, solo_una in generados_de(pid, app, lock):
+        vistos.add(destino)
+        ruta = destino_seguro(app, destino)
+        if texto is None:
+            if destino in generados:
+                print(f"    ! {pid}: ya no genera {destino} (app.json cambió); bórralo si la app no lo usa")
+                generados.pop(destino)
+            continue
+        if solo_una:
+            if destino not in una_vez:
+                if not os.path.exists(ruta):
+                    _escribir_texto(ruta, texto)
+                    print(f"    + {destino} (para completar: lo que dice <!-- La app: … -->)" if "<!-- La app:" in texto
+                          else f"    + {destino}")
+                else:
+                    print(f"    · {destino} ya existía: queda el de la app")
+                una_vez.append(destino)
+            continue
+        nueva = _huella_texto(texto)
+        anotada = generados.get(destino)
+        actual = huella(ruta) if os.path.isfile(ruta) else None
+        if actual == nueva:
+            generados[destino] = nueva
+            continue
+        if actual is not None and not forzar and (anotada is None or anotada == "" or actual != anotada):
+            if anotada is None:
+                print(f"    ! {destino} ya existe y es distinto de lo que genera «{pid}»: queda el de la app"
+                      f" (compara: pieza.py diferencias {app} {pid}; reemplázalo con pieza.py generar {app} {pid} --forzar)")
+            elif anotada != "":
+                print(f"    ! no regeneré {destino}: la app lo cambió (pieza.py diferencias {app} {pid})")
+            generados[destino] = anotada if anotada is not None else ""
+            continue
+        if automatico and destino.startswith(".github/"):
+            # El token de Actions no puede escribir workflows, y un workflow nuevo lo tiene que ver una persona.
+            print(f"    ! {destino} cambia: va a mano (pieza.py generar . {pid})")
+            continue
+        _escribir_texto(ruta, texto)
+        generados[destino] = nueva
+        print(f"    {'~' if actual is not None else '+'} {destino}")
+    for d in sorted(set(generados) - vistos):
+        print(f"    ! {pid}: ya no genera {d}; bórralo si la app no lo usa")
+        generados.pop(d)
+    info["generados"] = dict(sorted(generados.items()))
+    if una_vez:
+        info["una_vez"] = sorted(una_vez)
+    if not info["generados"]:
+        info.pop("generados")
+
+
+def generar_todo(app, solas=None, forzar=False, automatico=False):
+    """Vuelve a llenar lo generado de las piezas instaladas (después de agregar, actualizar o cambiar app.json). Solo las que
+    están en la misma versión que la base: una que quedó atrás se regenera cuando se actualice."""
+    lock = candado(app)
+    hubo = False
+    for pid in orden_dependencias(lock["piezas"]):
+        if solas and pid not in solas:
+            continue
+        info = lock["piezas"][pid]
+        p = {} if info.get("fuente") else (todas().get(pid) or {})
+        if not p.get("generar"):
+            continue
+        if p.get("version") != info.get("version"):
+            print(f"    · {pid}: no regeneré (la app tiene {info.get('version')}, la base {p.get('version')}: actualízala primero)")
+            continue
+        generar_pieza(pid, app, lock, forzar=forzar, automatico=automatico)
+        hubo = True
+    if hubo:
+        escribir(os.path.join(app, "piezas.json"), lock)
+
+
+def pendientes_github(pid, app, lock):
+    """Los archivos de .github/ que la versión de la base generaría distinto de lo que hay (y que la app no cambió)."""
+    info = lock["piezas"].get(pid) or {}
+    p = todas().get(pid) or {}
+    if info.get("fuente") or not any(r["destino"].startswith(".github/") for r in reglas_generar(p).values()):
+        return []
+    try:
+        salida = generados_de(pid, app, lock)
+    except SystemExit:
+        return []
+    r = []
+    for destino, texto, solo_una in salida:
+        if texto is None or solo_una or not destino.startswith(".github/"):
+            continue
+        ruta = os.path.join(app, destino)
+        actual = huella(ruta) if os.path.isfile(ruta) else None
+        anotada = info.get("generados", {}).get(destino)
+        if actual != _huella_texto(texto) and (actual is None or anotada == actual):
+            r.append(destino)
+    return r
+
+
 # ── Revisar ──────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 def errores_pieza(pid, p, ids, carpeta="local"):
@@ -501,6 +743,7 @@ def errores_pieza(pid, p, ids, carpeta="local"):
             e.append(f"{origen} es un enlace: copia el archivo")
         if not ruta_relativa_ok(destino) or not destino.startswith(PREFIJOS_DESTINO):
             e.append(f"destino inválido {destino}: va dentro de {', '.join(PREFIJOS_DESTINO)} (nunca carpetas que empiezan con punto)")
+    e += errores_generar(pid, p, carpeta)
     scripts = {os.path.basename(d) for d in p.get("archivos", {}).values()}
     for nombre, a in p.get("acciones", {}).items():
         e += errores_accion(nombre, a, scripts)
@@ -545,7 +788,7 @@ def iniciar(app, aid, nombre, plataformas=None, datos="sistema"):
         sys.exit("--datos=sistema (Application Support…) o --datos=visible (~/<Nombre>/.<id>).")
     if any(x not in PLATAFORMAS for x in plataformas):
         sys.exit(f"Plataformas: {', '.join(PLATAFORMAS)}.")
-    escribir(ruta, {"nombre": nombre, "id": aid, "datos": datos, "icono": "docs/favicon.svg", "plataformas": plataformas,
+    escribir(ruta, {"nombre": nombre, "id": aid, "version": "0.1.0", "repo": f"{aid}-app/{aid}", "datos": datos, "icono": "docs/favicon.svg", "plataformas": plataformas,
                     "config": {"idioma_ui": ["es", "en"], "bienvenida": "bool"}})
     print(f"+ {ruta}")
     # Muchas apps tienen un .gitignore de lista blanca («/*» y luego «!…»): ahí app.json y piezas.json quedarían fuera sin aviso.
@@ -669,7 +912,9 @@ def copiar(pid, app, forzar=False, lock=None):
     lock["piezas"][pid] = {"version": version, "archivos": copiados,
                            **({"sin_config": sin_config} if sin_config else {}),
                            # Lo que la app aceptó: si una versión nueva pide más (otra pieza, permisos, red), no se aplica sola.
-                           "ficha": {k: p.get(k, [] if k != "permisos" else {}) for k in ("requiere", "permisos", "red")}}
+                           "ficha": {k: p.get(k, [] if k != "permisos" else {}) for k in ("requiere", "permisos", "red")},
+                           # Lo generado (plantillas) se anota aparte: lo pone al día generar_todo, al final.
+                           **{k: antes[k] for k in ("generados", "una_vez") if k in antes}}
     # Las acciones de la versión que quedó copiada (si la app no aceptó la nueva, siguen las de antes): de aquí sale acciones.json.
     acciones = p.get("acciones") if not saltados else antes.get("acciones", p.get("acciones"))
     if acciones:
@@ -914,6 +1159,9 @@ def agregar(pid, app, sin_revisar=False, forzar=False):
     avisar_sin_config_desconocida(con_requisitos(pid))
     if armar_acciones(app):
         print("~ acciones.json (lo lee el host: va dentro de la app junto a app.json)")
+    # Lo que generan las piezas (plantillas) se llena con todas las piezas ya instaladas: una pieza nueva puede cambiar lo de
+    # otra (p. ej. Package.swift suma el target de «catalogo»).
+    generar_todo(app, forzar=forzar)
 
 
 def estado_app(app):
@@ -940,10 +1188,15 @@ def estado_app(app):
         choques = [x for x in incompatibles(con_esta) if pid in (x[0], x[1])]
         pide_mas = bool(p) and bool(pendientes) and info.get("ficha") != {k: p.get(k, [] if k != "permisos" else {})
                                                                      for k in ("requiere", "permisos", "red")}
-        salida.append({"pieza": pid, "actual": info["version"], "comunidad": bool(info.get("fuente")), "pide_mas": pide_mas, "nueva": nueva, "al_dia": semver(info["version"]) >= semver(nueva),
+        # Lo generado: lo que la app cambió (la pieza ya no lo toca) y lo de .github/ que cambiaría (nunca va solo).
+        gen_app = [d for d, h in info.get("generados", {}).items()
+                   if h == "" or (os.path.isfile(os.path.join(app, d)) and huella(os.path.join(app, d)) != h)]
+        github = pendientes_github(pid, app, lock) if p else []
+        salida.append({"pieza": pid, "actual": info["version"], "generados_por_la_app": gen_app, "github": github, "comunidad": bool(info.get("fuente")), "pide_mas": pide_mas, "nueva": nueva, "al_dia": semver(info["version"]) >= semver(nueva),
                        "tipo": tipo, "seguridad": any(c.get("seguridad") for c in pendientes), "cambios": pendientes,
                        "cambiados_por_la_app": cambiados, "faltan": faltan, "choques": choques, "juntas": [],
-                       "automatico": bool(pendientes) and tipo != "rompe" and not cambiados and not faltan and not pide_mas})
+                       "automatico": bool(pendientes) and tipo != "rompe" and not cambiados and not faltan and not pide_mas
+                                     and not github})
     # Un choque que se arregla actualizando las dos en la misma pasada (componentes 0.2 necesita tema 0.2) no frena nada: se
     # cuentan las versiones nuevas de todo lo que se va a actualizar. Lo automático, solo entre lo que también es automático.
     versiones = {k: v["version"] for k, v in lock["piezas"].items()}
@@ -975,6 +1228,10 @@ def estado(app, como_json=False):
             print(f"    ~ la app cambió {d}")
         for d in x["faltan"]:
             print(f"    ✗ falta {d}")
+        for d in x.get("generados_por_la_app", []):
+            print(f"    ~ {d} es de la app (la pieza lo generó y la app lo cambió: ya no lo toca)")
+        for d in x.get("github", []):
+            print(f"    ! {d} cambia con la versión de la base: va a mano (pieza.py generar {app} {x['pieza']})")
         for pid, req, rango, tiene in x["choques"]:
             print(f"    ! {pid} necesita {req} {rango} (hay {tiene})" +
                   (f": se actualizan juntas (pieza.py actualizar {app} {' '.join(sorted([x['pieza']] + x['juntas']))})"
@@ -1031,16 +1288,22 @@ def actualizar(app, solas=None, forzar=False, automatico=False):
             print(f"! {a} necesita {b} {rango} (quedó {tiene}): revisa pieza.py diferencias {app} {b}")
     if armar_acciones(app):
         print("~ acciones.json al día")
+    generar_todo(app, forzar=forzar, automatico=automatico)
 
 
 def aviso(app):
     """Markdown con lo que no se puede actualizar solo, para un issue."""
-    manual = [x for x in estado_app(app) if not x["al_dia"] and not x["automatico"]]
+    manual = [x for x in estado_app(app) if (not x["al_dia"] and not x["automatico"]) or x.get("github")]
     if not manual:
         return ""
     l = ["Hay versiones nuevas de piezas que **no se pueden actualizar solas**. Esto es lo que cambió y qué hacer.", ""]
     for x in manual:
-        l.append(f"### {x['pieza']} {x['actual']} → {x['nueva']}" + (" · seguridad" if x["seguridad"] else ""))
+        l.append(f"### {x['pieza']} {x['actual']} → {x['nueva']}" + (" · seguridad" if x["seguridad"] else "")
+                 if not x["al_dia"] else f"### {x['pieza']} {x['actual']}")
+        if x.get("github"):
+            l.append(f"- Cambia lo que genera en {', '.join(f'`{d}`' for d in x['github'])}: un workflow nuevo lo revisa una "
+                     f"persona (y el token de Actions no puede escribirlo). Míralo y aplícalo con "
+                     f"`pieza.py {'actualizar' if not x['al_dia'] else 'generar'} . {x['pieza']}`.")
         for c in x["cambios"]:
             l.append(f"- **{c['version']}** ({c['tipo']}{', seguridad' if c.get('seguridad') else ''}): {c['resumen']}")
             pasos = c.get("migrar", [])
@@ -1069,6 +1332,14 @@ def diferencias(app, pid):
     if fuente:  # de la comunidad: se compara con el commit que se instaló, verificado con sus huellas
         import comunidad
         _EXTRA[pid], _ = comunidad.descargar(pid, sin_revisar=fuente.get("revision") != "revisada")
+    lock = candado(app)
+    if pid in lock["piezas"]:
+        for destino, texto, una in generados_de(pid, app, lock):
+            ruta = os.path.join(app, destino)
+            if texto is None or una or not os.path.isfile(ruta):
+                continue
+            local = open(ruta, encoding="utf-8").read().splitlines(keepends=True)
+            sys.stdout.writelines(difflib.unified_diff(texto.splitlines(keepends=True), local, f"generado/{destino}", f"app/{destino}"))
     for origen, destino in pieza(pid).get("archivos", {}).items():
         base = open(os.path.join(carpeta_de(pid), origen), encoding="utf-8").read().splitlines(keepends=True)
         ruta = os.path.join(app, destino)
@@ -1136,6 +1407,73 @@ def ficha_texto(f):
     if f["tareas_persona"]:
         l += ["SOLO LA PERSONA"] + [f"  {t}" for t in f["tareas_persona"]]
     return "\n".join(l)
+
+
+
+# ── Configurar el repo de GitHub de una app (lo que antes se hacía a mano) ──────────────────────────────────────────────────────
+
+#: Las etiquetas que usan las plantillas de issues y CONTRIBUTING.md (nombre, color, descripción).
+ETIQUETAS = [("good first issue", "7057ff", "Para empezar a aportar / Good for newcomers"),
+             ("idea", "a2eeef", "Algo que te gustaría que la app hiciera / Feature idea"),
+             ("error", "d73a4a", "Algo falla / Something's broken"),
+             ("probar", "0e8a16", "Probarla en un equipo de verdad / Test it on a real device")]
+REGLAS_RAMA = {"name": "Rama principal", "target": "branch", "enforcement": "active",
+               "conditions": {"ref_name": {"include": ["~DEFAULT_BRANCH"], "exclude": []}},
+               "rules": [{"type": "deletion"}, {"type": "non_fast_forward"}]}
+
+
+def comandos_repo(app):
+    """[(qué hace, comando como lista, entrada o None)] para dejar el repo de la app listo para la comunidad."""
+    a = leer(os.path.join(app, "app.json"), {}) or {}
+    repo = a.get("repo")
+    if not (isinstance(repo, str) and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9._-]{1,100}", repo)):
+        sys.exit("app.json no tiene «repo» («dueño/repo», p. ej. \"ana-app/ana\"): agrégalo primero.")
+    temas = ["hecho-con-pieza"] + [t for t in (a.get("github") or {}).get("topics", [])
+                                    if isinstance(t, str) and re.fullmatch(r"[a-z0-9][a-z0-9-]{0,49}", t)]
+    c = [("Discussions y los topics (hecho-con-pieza: la app aparece en la página de Pieza)",
+          ["gh", "repo", "edit", repo, "--enable-discussions"] + [x for t in temas for x in ("--add-topic", t)], None),
+         ("Reporte privado de fallas de seguridad (lo usa SECURITY.md)",
+          ["gh", "api", "-X", "PUT", f"repos/{repo}/private-vulnerability-reporting"], None),
+         ("Las pruebas de quien aporta desde un fork esperan la aprobación de quien mantiene",
+          ["gh", "api", "-X", "PUT", f"repos/{repo}/actions/permissions/fork-pr-contributor-approval",
+           "-f", "approval_policy=all_external_contributors"], None),
+         ("Los workflows leen por defecto y pueden abrir PRs (lo necesita «Pieza al día»)",
+          ["gh", "api", "-X", "PUT", f"repos/{repo}/actions/permissions/workflow",
+           "-f", "default_workflow_permissions=read", "-F", "can_approve_pull_request_reviews=true"], None),
+         ("La rama principal no se borra ni se reescribe (ruleset «Rama principal»)",
+          ["gh", "api", "-X", "POST", f"repos/{repo}/rulesets", "--input", "-"], json.dumps(REGLAS_RAMA, ensure_ascii=False))]
+    for nombre, color, desc in ETIQUETAS:
+        c.append((f"Etiqueta «{nombre}»", ["gh", "label", "create", nombre, "--color", color, "--description", desc,
+                                         "--force", "-R", repo], None))
+    return repo, c
+
+
+def repo_configurar(app, aplicar=False):
+    import shlex
+    repo, c = comandos_repo(app)
+    if not aplicar:
+        print(f"# Configuración de {repo} (nada se cambió: con --aplicar los corre, con gh y permisos de admin del repo)")
+        for que, cmd, entrada in c:
+            print(f"\n# {que}")
+            linea = " ".join(shlex.quote(x) for x in cmd)
+            print(f"{linea} <<'JSON'\n{entrada}\nJSON" if entrada else linea)
+        return 0
+    entorno = {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+    malos = 0
+    for que, cmd, entrada in c:
+        if any(x.endswith("/rulesets") for x in cmd):
+            # Una sola vez: si ya hay un ruleset con ese nombre, no se crea otro.
+            r = subprocess.run(["gh", "api", f"repos/{repo}/rulesets"], capture_output=True, text=True, timeout=60, env=entorno)
+            try:
+                if any(x.get("name") == REGLAS_RAMA["name"] for x in json.loads(r.stdout or "[]")):
+                    print(f"· {que}: ya estaba")
+                    continue
+            except ValueError:
+                pass
+        r = subprocess.run(cmd, input=entrada, capture_output=True, text=True, timeout=60, env=entorno)
+        print(f"{'✓' if r.returncode == 0 else '✗'} {que}" + ("" if r.returncode == 0 else f"\n    {(r.stderr or r.stdout).strip()[:300]}"))
+        malos += r.returncode != 0
+    return 1 if malos else 0
 
 
 # ── Skills (los flujos) para otras IA ───────────────────────────────────────────────────────────────────────────────────────
@@ -1247,6 +1585,15 @@ def main(a):
         actualizar(os.path.abspath(libres[0]), libres[1:], forzar, automatico)
     elif orden == "acciones" and len(resto) == 1:
         print(armar_acciones(os.path.abspath(resto[0]), forzar=True))
+    elif orden == "generar" and len(resto) >= 1:
+        app = os.path.abspath(resto[0])
+        lock = candado(app)
+        for pid in resto[1:]:
+            if pid not in lock["piezas"]:
+                sys.exit(f"La app no tiene la pieza «{pid}».")
+        generar_todo(app, resto[1:] or None, forzar=forzar)
+    elif orden == "repo" and len([x for x in resto if x != "--aplicar"]) == 2 and resto[0] == "configurar":
+        return repo_configurar(os.path.abspath([x for x in resto if x != "--aplicar"][1]), "--aplicar" in resto)
     elif orden == "diferencias" and len(resto) == 2:
         diferencias(os.path.abspath(resto[0]), resto[1])
     else:
