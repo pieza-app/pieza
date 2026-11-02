@@ -4,6 +4,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 python3 herramientas/pieza.py revisar
 python3 -W ignore -m unittest -q pruebas/test_piezas.py pruebas/test_piezas_datos.py
+# Las piezas «pagina» y «contrato» con una app ficticia (sin navegador; la página en Chromium va abajo, con Playwright).
+python3 -W ignore -m unittest -q pruebas/test_pagina_contrato.py
+# «pieza.py crear»: dos apps nuevas (Mac + Windows + Linux con IA, y solo Mac) y sus propias pruebas en verde (con Playwright, también
+# su interfaz; con ELECTRON, la app de Linux abierta de verdad).
+python3 -W ignore -m unittest -q pruebas/test_crear.py
 # Las piezas de JavaScript (i18n, bienvenida, actualizaciones de Electron): Node, sin dependencias.
 node --test pruebas/piezas_js.mjs > /dev/null || node --test pruebas/piezas_js.mjs
 # El host de Windows y Linux en Node (Electron falso, Python de verdad) y, si ELECTRON apunta a uno, con Electron de verdad y Xvfb.
@@ -13,6 +18,7 @@ node pruebas/host_escritorio_electron.mjs
 # (PLAYWRIGHT=/ruta/a/node_modules/playwright). En GitHub corre en Linux; sin Playwright se avisa y se sigue.
 if PLAYWRIGHT="${PLAYWRIGHT:-playwright}" node -e 'require(process.env.PLAYWRIGHT)' 2>/dev/null; then
   node pruebas/interfaz.mjs > /dev/null || node pruebas/interfaz.mjs
+  node pruebas/pagina.mjs > /dev/null || node pruebas/pagina.mjs
   echo "Interfaz: todo bien"
 else
   echo "Interfaz: sin Playwright, no la pruebo aquí (PLAYWRIGHT=/ruta/a/playwright)"
@@ -26,7 +32,8 @@ done
 python3 - <<'PY'
 import glob, re, sys
 mal, fijadas = [], {}
-for f in sorted(glob.glob(".github/workflows/*.yml")) + ["plantillas/pieza-al-dia.yml"]:
+# También los workflows que generan las piezas (plantillas de «empaquetado» y «github»): llegan a cada app.
+for f in sorted(glob.glob(".github/workflows/*.yml")) + ["plantillas/pieza-al-dia.yml"] + sorted(glob.glob("piezas/*/plantillas/github/workflows/*.yml")):
     for n, l in enumerate(open(f, encoding="utf-8"), 1):
         m = re.search(r"uses:\s*(\S+)", l)
         if not m:
@@ -35,10 +42,11 @@ for f in sorted(glob.glob(".github/workflows/*.yml")) + ["plantillas/pieza-al-di
             mal.append(f"{f}:{n}: fíjala por SHA con su versión en un comentario")
         elif f.startswith(".github"):
             fijadas.setdefault(m.group(1).split("@")[0], set()).add(m.group(1))
-for n, l in enumerate(open("plantillas/pieza-al-dia.yml", encoding="utf-8"), 1):
-    m = re.search(r"uses:\s*(\S+)", l)
-    if m and m.group(1).split("@")[0] in fijadas and m.group(1) not in fijadas[m.group(1).split("@")[0]]:
-        mal.append(f"plantillas/pieza-al-dia.yml:{n}: usa otra versión que .github/workflows")
+for f in ["plantillas/pieza-al-dia.yml"] + sorted(glob.glob("piezas/*/plantillas/github/workflows/*.yml")):
+    for n, l in enumerate(open(f, encoding="utf-8"), 1):
+        m = re.search(r"uses:\s*(\S+)", l)
+        if m and m.group(1).split("@")[0] in fijadas and m.group(1) not in fijadas[m.group(1).split("@")[0]]:
+            mal.append(f"{f}:{n}: usa otra versión que .github/workflows")
 if mal:
     print("\n".join(mal)); sys.exit(1)
 PY

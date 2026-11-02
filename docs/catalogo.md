@@ -14,7 +14,7 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | `nucleo` | 0.7.1 | `app.json`, carpeta de datos, config validada, escritura atómica, `ruta_en`, contrato de scripts | Esquema `bin/comun.py` + Alcancía/Repasa |
 | `ia` | 0.6.3 | La IA de la persona con su cuenta, segura; en vivo (lo que lee y «Detener») | Esquema `bin/ia.py` + `ia_vivo.py` + Alcancía (pedido en archivo) + Repasa (material) |
 | `i18n` | 0.3.1 | `T`/`Tp`/`Thtml`/`tr`/`traducirDOM`, paquetes de idioma validados | Minuta (`tr`) + Esquema (`T` que escapa, `traducirDOM`) + Alcancía (`Thtml`) + Graba (prioridad) |
-| `bienvenida` | 0.4.0 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
+| `bienvenida` | 0.4.1 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
 | `actualizaciones` | 0.3.0 | Releases del propio repo, `.sha256` obligatorio, Mac (target propio) y Electron | Esquema + Repasa (URL sin puerto ni `..`, PATH fijo, textos que traduce la interfaz) |
 | `host-ui` | 0.2.0 | `crearHost({nombre, global, simular})`: `host.enviar` y `window.<App>.*` iguales en Mac, Electron, celular y navegador; `probarIA {ia}` en todas | Esquema + Repasa/Alcancía (puente del celular) + Minuta (mensaje plano mientras cambia) |
 | `tema` | 0.2.1 | Un solo juego de tokens CSS (`--texto-suave`, `--panel-2`…), pares claro/oscuro con `light-dark()`, selector «Apariencia» | Esquema (`data-tema`, ahora `data-pz-modo`) + los nombres comunes de Graba, Corta, Repasa y Alcancía; tabla de nombres viejos → nuevos en su README |
@@ -26,15 +26,22 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | `trabajos` | 0.2.1 | Trabajos largos: estado en disco, latido (también para el host: `"limite": "trabajo"`), «Detener», preguntas; lectores de progreso Swift y Electron | Esquema `bin/trabajos.py` + `LectorProgreso` / `lectorProgreso` |
 | `host-mac` | 0.3.0 | App de Mac genérica (target `PiezaHost`): ventana, puente con guardas, acciones declaradas con límite de tiempo (o latido, o por orden), config/idioma de `app.json`, menús, apariencia de `tema`, actualizaciones, carpeta con marcador, vigilante (FSEvents), Finder, Llavero y avisos | Esquema `app/Sources/Esquema/` (+ `Carpeta.swift`) + Alcancía (secreto por stdin, Llavero, avisos, carpeta de la nube) + Repasa (`conEntrada` con varios args) + Corta (`Medios.swift`) + Graba y Minuta (Llavero) |
 | `host-escritorio` | 0.3.0 | Lo mismo en Electron, con `nativeTheme.themeSource` según `config.tema`; carpeta, vigilante (`fs.watch`), explorador, `safeStorage` y avisos | Esquema `escritorio/src/` (+ `vigilante.js`) + Graba (medios con rangos, permisos que abre la app, `Tokens`) + Alcancía (secreto por stdin) + Minuta (avisos) |
+| `pagina` | 0.1.0 | La página pública bilingüe generada desde `docs/pagina.json`: permisos e internet y preguntas comunes que salen de las piezas, JSON-LD de lo que se ve, SEO, sello, workflow de Pages y capturas | Esquema `docs/` + `pagina_capturas.mjs` + Corta/Alcancía (permisos e internet) + Minuta (capturas) |
+| `contrato` | 0.1.1 | `pruebas/contrato.py` común del puente: cada acción atendida en cada plataforma y en la vista previa, `acciones.json`, funciones y seguridad común; lo propio en `contrato_app.py` | Lo común de los seis `pruebas/contrato.py` |
 | `contenido` | 0.1.0 | Leer md, txt, pdf, docx, odt, epub y html con topes (zip bombas, XML sin entidades); capítulos sin IA | Esquema `bin/contenido.py` + Alcancía (`ArchivoNoValido`) |
+| `empaquetado` | 0.1.0 | Arma, firma, publica e instala desde `app.json` (plantillas): `Info.plist`, `Package.swift` con las piezas nativas, `build.sh` que no instala con la app ocupada, `empaquetar.sh` con un solo `python.lock`, `package.json`/`.npmrc`/`preparar.sh` de Electron, NSIS, `instalar.sh`/`.ps1` y `publicar.yml`; binarios extra con huella y ganchos de la app | Esquema + Corta (binarios, licencias) + Graba (`binaryTarget`, frameworks, permisos, barra de menú) + las seis (no instalar ocupada) |
+| `github` | 0.1.0 | El repo para la comunidad desde `app.json`: issues, PR, dependabot, `revisar.yml`, Pieza al día, `AGENTS`/`CONTRIBUTING`/`SECURITY` con lo que llena la IA marcado, agentes, privacidad, `.gitignore`; `pieza.py repo configurar` | Esquema `.github/` y guías + Alcancía/Repasa (job `mac` con `app.json`) + las seis (secciones comunes de `AGENTS.md`) |
+
+| `esqueleto` | 0.1.0 | Lo propio mínimo de una app nueva, andando: `ui/` con bienvenida (idioma primero), pantalla y script de ejemplo (acción declarada), Mac y Windows/Linux sobre el host, demo, `correr.sh`, pruebas de Python, de interfaz y del contrato. Lo escribe una vez **`pieza.py crear`** | Graba (`app.js` con las piezas), Repasa (`RepasaApp.swift`), Esquema (`main.js`, CSP), Pieza (`interfaz.mjs`) |
+
+**Crear una app nueva** = `pieza.py crear <carpeta> --id … --nombre … --plataformas … [--piezas …]`: las de siempre + las pedidas +
+`esqueleto` + `github`, todo generado y con sus pruebas en verde (`pruebas/test_crear.py`). Ver el README de `esqueleto`.
 
 ## Por extraer, en este orden
 
 | # | Pieza | Tipo | Tomar de | Sumar de | Notas |
 |---|---|---|---|---|---|
 | 8 | `mcp` (Py) | Py | Alcancía `mcp_servidor.py` + `mcp_conectar.py` | — | `mcp.servir(nombre, …, herramientas)`; conectar a claude/codex/gemini/Claude Desktop |
-| 13 | `empaquetado` | build | Esquema | — | Copiar `acciones.json` junto a `app.json` (hoy cada app lo agrega a mano: ver los README de los hosts). `build.sh`, `empaquetar.sh`, `preparar.sh`, instaladores, `Package.swift`, `Info.plist` generados desde `app.json`. El Python portátil (CPython 3.13.16) ya es idéntico en las seis: un solo `python.lock` |
-| 14 | `github` | repo | Esquema | — | Plantillas de issues/PR, `dependabot`, workflows reutilizables (`workflow_call`) para revisar y publicar |
 | 15 | `universos` | Py + UI | Minuta (`universo.py`, galería) | Catálogo (#6) | Lo que pediste como ejemplo: tras #6 queda casi listo |
 
 ### Pendientes que salieron al pasar las apps a las piezas de datos (anotados, sin hacer)
@@ -45,7 +52,7 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | 5 | Pieza `youtube` (Graba tiene `bin/youtube.py`) | Fase aparte: necesita OAuth de la persona, la subida por partes de `red` 0.2 (`subir`) y revisar los permisos de la API. Ya está planeada (`piezas/youtube`) |
 | 18 | El dictado del Gimnasio de Minuta en Electron llama a `whisper-cli` directo | Debería pasar por `transcribir` (vocabulario por archivo, VAD, filtro). Toca el dictado en vivo de Minuta (otra forma: trozos cortos), así que va con la migración de Minuta al host, no aquí |
 
-Después: la página pública (`docs/`), `revisar_privacidad.sh`, `generar_demo.py`, `pruebas/contrato.py` genérico.
+Después: `generar_demo.py` (la página pública, el contrato genérico, el repo y el empaquetado ya son las piezas `pagina`, `contrato`, `github` y `empaquetado`; `revisar_privacidad.sh` lo genera «github»).
 
 ### Lo que salió al pasar las seis apps al host (`host-mac`/`host-escritorio` 0.2.0)
 
@@ -93,7 +100,7 @@ Cada app anotó lo que le faltó a las piezas al migrar (nov 2026). Agrupado por
 | `actualizaciones` | Instalación de desarrollo en Electron (`crear({desarrollo})`); reconocer un checkout sin `archivoDesarrollo`; decir en el README que «quien llama se asegura» de que no haya nada corriendo | Minuta | |
 | `transcribir` | `transcribir.py dictar <entrada {wav}> <salida>` (acción `soloHost`) para dictar sin script propio | Minuta | |
 | `pieza.py` | `actualizar` que avise «la versión nueva trae X y la app tiene uno propio distinto» en vez de saltarlo | Esquema | |
-| `pruebas/contrato.py` común | Contemplar `copiado` sin `copiar` y `menu` como respuesta obligatoria | Repasa, Corta, Alcancía | Ya planeado (ver «Después») |
+| `pruebas/contrato.py` común | Contemplar `copiado` sin `copiar` y `menu` como respuesta obligatoria | Repasa, Corta, Alcancía | Hecho en la pieza `contrato` 0.1.0 |
 | `ia`/`componentes` (docs) | Con el host genérico, `elegirIA` tiene que mandar `config {ia}` (`probarIA` declarada no lo guarda) | Repasa | |
 | `host-escritorio` | `host.ventanas.agregar(w)`: revisar que la ventana venga con `sandbox`/`contextIsolation` de `preferencias()` (`getLastWebPreferences()`) y ponerle `render-process-gone` | Revisión de 0.3.0 | Hoy lo dice el README |
 
@@ -108,4 +115,6 @@ las ventanas de Minuta sin `aria-modal`) ya las resolvieron las migraciones a la
 |---|---|---|---|
 | Minuta | Los scripts largos (`procesar.py`, `semana.py`, `universo.py`) corren con su `ejecutar` propio: **sin límite** ni latido, no se cortan al salir y (en Electron) heredan todo el entorno, también `MINUTA_*` de afuera | `MinutaApp.swift` (`ejecutar`), `escritorio/src/main.js` (`ejecutar`, `entornoPython`) | `trabajos.mantener_vivo()` en esos scripts y correrlos con el procesador del host (`latido: true`, `entorno`), o lo de «scripts largos con registro» (arriba) |
 | Alcancía, Esquema, Graba, Minuta | `CONTRIBUTING.md` dice que los flujos de Pieza «se instalan solos al abrir el repo»: con `.claude/settings.json` solo con `extraKnownMarketplaces`, Claude Code los **ofrece** | `CONTRIBUTING.md` | La frase de la skill de crear (versión 11) |
+| Esquema | `acciones.json` carga `catalogoInstalados`, `catalogoQuitar`, `catalogoUltima` y `listaIA`, que la interfaz nunca pide (lo vio la pieza `contrato`) | `app.json` | Sumarlas a `sin_acciones` y `pieza.py acciones .` |
+| Minuta | Con la pieza `contrato` y su extensión: 47 acciones sin vista previa en `simular()`, `abrirEnlace`/`config` (de «componentes») sin caso en Mac, `menu`/`copiado` que llama el host de Electron sin función, y las ventanas `alerta` y `grabadora` sin `sandbox: true` explícito | `ui/app.js`, `VisorWeb.swift`, `escritorio/src/main.js` | Al adoptar `contrato`: decidir cada una (arreglo o excepción con motivo) |
 | Corta, Esquema | Copias de piezas cambiadas: Corta, `host-mac` (`entornoApp`); Esquema, `catalogo` (los alias). Las dos ya están en Pieza | `app/Sources/PiezaHost/Procesador.swift`, `bin/catalogo.py` | `pieza.py actualizar . host-mac --forzar` / `… catalogo --forzar` |

@@ -1,0 +1,221 @@
+{
+ "esquema": {
+  "id": "esquema",
+  "nombre": "Esquema",
+  "version": "0.1.0",
+  "repo": "esquema-app/esquema",
+  "datos": "sistema",
+  "plataformas": [
+   "mac",
+   "windows",
+   "linux"
+  ],
+  "empaquetado": {
+   "descripcion": "Diagramas y documentación que GitHub ya entiende",
+   "categoria": "public.app-category.developer-tools",
+   "linux_categoria": "Development",
+   "deb": true,
+   "carpetas": [
+    "plantillas",
+    "tipos"
+   ],
+   "permisos": [],
+   "ocupada": [
+    {
+     "proceso": "bin/asistente.py",
+     "mensaje": "✗ Esquema está esperando una respuesta de tu IA. Espera a que termine."
+    }
+   ]
+  }
+ },
+ "corta": {
+  "id": "corta",
+  "nombre": "Corta",
+  "version": "0.1.0",
+  "repo": "corta-app/corta",
+  "datos": "visible",
+  "plataformas": [
+   "mac"
+  ],
+  "empaquetado": {
+   "categoria": "public.app-category.video",
+   "carpetas": [
+    "estilos",
+    "efectos",
+    "plantillas"
+   ],
+   "quitar": [
+    "ui/demo"
+   ],
+   "permisos": [],
+   "ocupada": [
+    {
+     "proceso": "bin/render.py|bin/importar.py",
+     "mensaje": "✗ Corta está trabajando en un video (exportando o transcribiendo). Espera a que termine."
+    }
+   ],
+   "mac": {
+    "ejecutables": [
+     "corta-transcribir"
+    ],
+    "frameworks": [
+     "whisper.framework"
+    ],
+    "binarios": [
+     {
+      "nombre": "ffmpeg",
+      "gz": true,
+      "url": "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffmpeg-darwin-arm64.gz",
+      "sha256": "8923876afa8db5585022d7860ec7e589af192f441c56793971276d450ed3bbfa"
+     },
+     {
+      "nombre": "ffprobe",
+      "gz": true,
+      "url": "https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/ffprobe-darwin-arm64.gz",
+      "sha256": "d986a8ec7b030899fe66a8a288ed809a3543338705a3ce178cfb85869c5d80be"
+     }
+    ]
+   },
+   "licencias": [
+    "ffmpeg y ffprobe (https://ffmpeg.org), compilación estática de ffmpeg-static b6.1.1 (https://github.com/eugeneware/ffmpeg-static). Licencia GPL; el código fuente está en https://ffmpeg.org/download.html.",
+    "whisper.cpp v1.8.3 (https://github.com/ggml-org/whisper.cpp), licencia MIT."
+   ]
+  }
+ },
+ "graba": {
+  "id": "graba",
+  "nombre": "Graba",
+  "version": "0.1.0",
+  "repo": "graba-app/graba",
+  "datos": "visible",
+  "plataformas": [
+   "mac",
+   "windows",
+   "linux"
+  ],
+  "empaquetado": {
+   "barra_de_menu": true,
+   "permisos": [
+    {
+     "clave": "NSCameraUsageDescription",
+     "texto": "Graba muestra tu cámara en una burbuja que queda grabada junto a tu pantalla."
+    },
+    {
+     "clave": "NSMicrophoneUsageDescription",
+     "texto": "Graba registra tu voz para el video y la transcribe en tu Mac."
+    }
+   ],
+   "ocupada": [
+    {
+     "proceso": "bin/procesar.py",
+     "mensaje": "✗ Graba está procesando una grabación. Espera a que termine."
+    }
+   ],
+   "mac": {
+    "ejecutables": [
+     "graba-transcribir"
+    ],
+    "frameworks": [
+     "whisper.framework"
+    ],
+    "swift": {
+     "binarios": [
+      {
+       "nombre": "whisper",
+       "url": "https://github.com/ggml-org/whisper.cpp/releases/download/v1.8.3/whisper-v1.8.3-xcframework.zip",
+       "checksum": "a970006f256c8e689bc79e73f7fa7ddb8c1ed2703ad43ee48eb545b5bb6de6af"
+      }
+     ],
+     "ejecutables": [
+      {
+       "nombre": "graba-transcribir",
+       "ruta": "Sources/Transcribir",
+       "dependencias": [
+        "whisper"
+       ],
+       "rpath": true
+      }
+     ]
+    }
+   }
+  }
+ },
+ "minuta": {
+  "id": "minuta",
+  "nombre": "Minuta",
+  "version": "0.3.1",
+  "repo": "minuta-app/minuta",
+  "datos": {
+   "carpeta": "~/minuta"
+  },
+  "plataformas": [
+   "mac",
+   "windows",
+   "linux"
+  ],
+  "empaquetado": {
+   "barra_de_menu": true,
+   "permisos": [
+    {
+     "clave": "NSMicrophoneUsageDescription",
+     "texto": "Minuta graba tu micrófono durante las reuniones para transcribirlas en tu Mac."
+    },
+    {
+     "clave": "NSCalendarsFullAccessUsageDescription",
+     "texto": "Minuta lee el evento en curso para poner el título de la reunión y reconocer a los participantes por su nombre."
+    },
+    {
+     "clave": "NSSpeechRecognitionUsageDescription",
+     "texto": "Minuta convierte tu voz en texto para que puedas conversar en el Gimnasio."
+    },
+    {
+     "clave": "NSRemindersFullAccessUsageDescription",
+     "texto": "Minuta crea recordatorios con los compromisos de tus reuniones, con su fecha."
+    },
+    {
+     "clave": "NSAudioCaptureUsageDescription",
+     "texto": "Minuta graba el audio de la reunión (lo que dicen los demás) para transcribirlo en tu Mac."
+    }
+   ]
+  }
+ },
+ "alcancia": {
+  "id": "alcancia",
+  "nombre": "Alcancía",
+  "version": "0.1.0",
+  "repo": "alcancia-app/alcancia",
+  "datos": {
+   "carpeta": "~/Alcancia/.alcancia"
+  },
+  "plataformas": [
+   "mac",
+   "ios",
+   "android"
+  ],
+  "empaquetado": {
+   "categoria": "public.app-category.finance",
+   "permisos": [
+    {
+     "clave": "NSDownloadsFolderUsageDescription",
+     "texto": "Para agregar solas las cartolas que descargues de tu banco (solo si activas «Cartolas que descargues»)."
+    }
+   ]
+  }
+ },
+ "repasa": {
+  "id": "repasa",
+  "nombre": "Repasa",
+  "version": "0.1.0",
+  "repo": "repasa-app/repasa",
+  "datos": "visible",
+  "plataformas": [
+   "mac",
+   "ios",
+   "android"
+  ],
+  "empaquetado": {
+   "categoria": "public.app-category.education",
+   "permisos": []
+  }
+ }
+}

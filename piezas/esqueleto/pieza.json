@@ -1,0 +1,125 @@
+{
+ "formato": 1,
+ "id": "esqueleto",
+ "version": "0.1.0",
+ "estado": "lista",
+ "nombre": "Esqueleto de una app nueva",
+ "icono": "icono.svg",
+ "licencia": "MPL-2.0",
+ "categoria": "base",
+ "descripcion": "Lo propio de una app nueva, mínimo y andando de punta a punta: interfaz con bienvenida (idioma primero), una pantalla de ejemplo, un script declarado, la app de Mac y la de Windows/Linux sobre el host, demo y pruebas. Se escribe una vez y desde ahí es de la app.",
+ "origen": "Lo que las seis apps escribieron a mano al empezar, reducido a lo mínimo que funciona con las piezas: ui/index.html con la CSP de Esquema, ui/app.js como el de Graba (crearHost, i18n, tema, componentes, bienvenida con el idioma primero, simular con las comunes), RepasaApp.swift (Host.arrancar con actualizaciones) y main.js de Esquema (crearHost), correr.sh y la prueba de interfaz de Pieza (CSP, sin textos sin traducir, 390 px).",
+ "recomendar": {
+  "cuando": "Al crear una app nueva: la agrega pieza.py crear (no hace falta pedirla). Es el punto de partida de lo propio, que la IA de la app reemplaza."
+ },
+ "requiere": [
+  "nucleo",
+  "host-ui",
+  "i18n",
+  "tema",
+  "componentes",
+  "bienvenida",
+  "contrato"
+ ],
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "generar": {
+  "plantillas/README.md": {
+   "destino": "README.md",
+   "una_vez": true
+  },
+  "plantillas/ui/index.html": {
+   "destino": "ui/index.html",
+   "una_vez": true
+  },
+  "plantillas/ui/app.js": {
+   "destino": "ui/app.js",
+   "una_vez": true
+  },
+  "plantillas/ui/app.css": {
+   "destino": "ui/app.css",
+   "una_vez": true
+  },
+  "plantillas/ui/demo.json": {
+   "destino": "ui/demo.json",
+   "una_vez": true
+  },
+  "plantillas/bin/ejemplo.py": {
+   "destino": "bin/ejemplo.py",
+   "una_vez": true
+  },
+  "plantillas/mac/App.swift": {
+   "destino": "app/Sources/{{nombre_ascii}}/{{nombre_ascii}}App.swift",
+   "una_vez": true,
+   "si": "mac"
+  },
+  "plantillas/escritorio/main.js": {
+   "destino": "escritorio/src/main.js",
+   "una_vez": true,
+   "si": "escritorio"
+  },
+  "plantillas/pruebas/correr.sh": {
+   "destino": "pruebas/correr.sh",
+   "una_vez": true
+  },
+  "plantillas/pruebas/contrato_app.py": {
+   "destino": "pruebas/contrato_app.py",
+   "una_vez": true
+  },
+  "plantillas/pruebas/test_app.py": {
+   "destino": "pruebas/test_app.py",
+   "una_vez": true
+  },
+  "plantillas/pruebas/interfaz.mjs": {
+   "destino": "pruebas/interfaz.mjs",
+   "una_vez": true
+  }
+ },
+ "config": {},
+ "acciones": {},
+ "permisos": {},
+ "red": [],
+ "pantallas": [
+  {
+   "donde": "App",
+   "nombre": "Principal",
+   "que": "la pantalla de ejemplo (cuenta palabras con un script de bin/): la reemplaza la app"
+  },
+  {
+   "donde": "Ajustes",
+   "nombre": "Ajustes",
+   "que": "idioma, apariencia y lo de las piezas (Tu IA, actualizaciones, Acerca de)"
+  }
+ ],
+ "tareas_persona": [],
+ "textos": {
+  "Te damos la bienvenida": "Welcome",
+  "La app: en una o dos frases, qué hace y para quién.": "The app: in one or two sentences, what it does and for whom.",
+  "Elige tu IA": "Choose your AI",
+  "Usa la IA que ya tienes, con tu cuenta. La probamos con una pregunta corta.": "It uses the AI you already have, with your account. We test it with a short question.",
+  "Ajustes": "Settings",
+  "Prueba el ejemplo": "Try the example",
+  "La app: aquí va la pantalla principal.": "The app: the main screen goes here.",
+  "Escribe algo": "Write something",
+  "Contar palabras": "Count words",
+  "Contando…": "Counting…",
+  "{n} palabras y {l} letras": "{n} words and {l} letters",
+  "No se pudo.": "It didn't work.",
+  "Idioma": "Language",
+  "Apariencia": "Appearance",
+  "Tu IA": "Your AI",
+  "Actualizaciones": "Updates",
+  "Acerca de": "About",
+  "Listo": "Done"
+ },
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "resumen": "Primera versión: lo propio mínimo de una app nueva (interfaz con bienvenida, pantalla y script de ejemplo, Mac y Windows/Linux sobre el host, demo, correr.sh, contrato_app.py, test_app.py e interfaz.mjs), escrito una vez por pieza.py crear."
+  }
+ ]
+}

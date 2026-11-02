@@ -1,6 +1,67 @@
 # Cambios
 
 ## Sin publicar
+- **Revisión de seguridad de las plantillas y de `pieza.py` (antes de publicar):** el filtro `json` también deja `<`, `>`, `&`,
+  U+2028 y U+2029 como `\u…` (un texto de `docs/pagina.json` ya no puede cerrar el `<script type="application/ld+json">` de la
+  página); filtro nuevo `color` (solo `#rgb`, `#rrggbb`, `#rrggbbaa`, `rgb()`/`hsl()` con números) para el acento de `colores.css`;
+  un valor insertado desde `app.json` o los datos nunca puede traer `${{`, `{{` ni `}}` (no se vuelve una expresión de Actions en
+  un workflow generado). `pieza.py` escribe lo generado, lo copiado de una pieza y sus JSON con un temporal nuevo (`mkstemp`, sin
+  seguir enlaces) que reemplaza al archivo: un `x.tmp` o un `x` que sean enlaces ya no hacen escribir fuera de la app. Lo generado
+  en `.claude/` (ajustes que pueden definir hooks) va al aviso de «Pieza al día» igual que `.github/`, nunca con `--automatico`.
+  `publicar.yml` generado corre `pruebas/correr.sh` antes de publicar (antes buscaba un `test_python.py` que una app nueva no
+  tiene). `empaquetado` ya no pide «permitir que Actions cree Releases» (se contradecía con `repo configurar`). El flujo 12 corre
+  `repo configurar` primero sin `--aplicar` y lo aplica con el sí de la persona, y vuelve a decir «si no sale a ninguna red,
+  decirlo», comentarios desde la app nunca obligatorios ni sugeridos y el texto sobre el acento por contraste WCAG.
+- **`pieza.py crear`: una app nueva andando de una vez** (`crear <carpeta> --id … --nombre … --plataformas mac,windows,linux
+  [--piezas ia,…] [--repo dueño/repo]`): `iniciar` + las piezas de siempre para esas plataformas + las pedidas + la pieza nueva
+  **`esqueleto` 0.1.0** (lo propio mínimo, escrito una vez y desde ahí de la app: `ui/` con bienvenida e idioma primero, una pantalla
+  y un script de ejemplo con su acción declarada, `<Nombre>App.swift` con `Host.arrancar`, `escritorio/src/main.js` con `crearHost`,
+  `ui/demo.json`, `pruebas/correr.sh`, `test_app.py`, `interfaz.mjs`, `contrato_app.py` vacío y `README.md`) + `github`, la acción de
+  ejemplo, `acciones.json` y todo lo generado (empaquetado, workflows, guías, página). Al final dice qué le toca a la IA (cada archivo
+  con sus `La app:`) y qué a la persona. La app creada pasa de una su `bash pruebas/correr.sh` (contrato, Python, la interfaz y la
+  página en Chromium, privacidad) con `pieza.py estado` limpio; `pruebas/test_crear.py` lo prueba con dos apps (Receta: Mac, Windows y
+  Linux con «ia»; Nota: solo Mac, sin IA) y, con `ELECTRON`, abre la de Linux de verdad (`crear_electron.mjs`). **Medido** (README de
+  `esqueleto`): Pieza pone 10.875 líneas en Receta y 8.154 en Nota; lo marcado para la IA son 49 y 46 líneas `La app:` más reemplazar
+  el esqueleto (475 y 441 líneas). En Esquema se escribieron a mano 264 líneas de `correr.sh` + `contrato.py`, 535 de `.github/`, 666 de
+  `docs/` (HTML, JS, CSS, XML), 258 de `app/` sin las piezas y 207 de `build.sh` + `empaquetar.sh` + `package.json`: aquí vienen hechas.
+- **Flujo de crear (versión 12, plugin 0.9.0):** entrevista → `catalogo`/`ficha` → **un** `pieza.py crear` → la IA llena solo lo
+  marcado y lo propio → `pieza.py repo configurar` → `docs/pagina.json` + `generar` → comunidad y anuncio. Sin los pasos que ya hacen
+  las piezas (escribir `revisar.yml`/`publicar.yml`, `CONTRIBUTING.md`, configurar el repo y la página a mano): 193 → 128 líneas
+  (18.019 → 11.651 bytes). `app-escritorio-multiplataforma` (versión 2): lo que ya es pieza es una tabla «usa la pieza» (120 → 93
+  líneas). `gemini/contexto.md`, `/pieza:crear`, `docs/otras-ias.md` y la página dicen el comando nuevo.
+- **`bienvenida` 0.4.1 (arreglo):** el texto de «Todo listo» lleva `data-sin-traducir` (ya sale traducido con `T`; `traducirDOM` lo
+  contaba como un texto sin traducir y la prueba de una app fallaba en inglés). **`contrato` 0.1.1 (arreglo):** `probarIA` (de las
+  filas de «Tu IA» de «componentes») no se exige a una app sin la pieza «ia» que no pinta esas filas.
+- **Plantillas: piezas que generan archivos desde `app.json`** (`pieza.json` → `generar`, `herramientas/plantillas.py`, sección
+  «Plantillas» de `docs/enchufe.md`). Solo datos (`{{x}}`, filtros que escapan o validan, `#si`/`#cada`; `${{ … }}` de Actions
+  queda tal cual): nada de una pieza se ejecuta. Lo generado queda con su huella en `piezas.json` → `generados` y nunca se pisa si
+  la app lo cambió; `una_vez` para lo que completa la IA de la app; `agregar`, `actualizar` y el nuevo `pieza.py generar <app>`
+  lo ponen al día con todas las piezas instaladas; lo de `.github/` nunca va en el PR automático de «Pieza al día» (va al issue);
+  una pieza de la comunidad no genera. `iniciar` suma `version` (0.1.0) y `repo` a `app.json`.
+- **`empaquetado` 0.1.0 y `github` 0.1.0 (nuevas):** todo el empaquetado (`Info.plist`, `Package.swift`, `build.sh`,
+  `empaquetar.sh` con un solo `herramientas/python.lock`, Electron, NSIS, `instalar.sh`/`.ps1`, `publicar.yml`; publicar = subir
+  `version` en `app.json`) y el repo para la comunidad (issues, PR, dependabot, `revisar.yml` en ubuntu-24.04 con job `mac`,
+  Pieza al día, `AGENTS.md`/`CONTRIBUTING.md`/`SECURITY.md` con lo que llena la IA marcado, agentes, privacidad, `.gitignore`,
+  `LICENSE`). `pieza.py repo configurar <app> [--aplicar]`: topics con `hecho-con-pieza`, Discussions, reporte privado de fallas,
+  aprobar las pruebas de quien aporta, ruleset de la rama principal y etiquetas. Prueba que la pieza reproduce el `Info.plist` de
+  las seis apps y el `empaquetar.sh` de Esquema, Corta y Graba. `correr.sh` revisa también los workflows de las plantillas.
+- **Pieza nueva «pagina» 0.1.0:** la página pública bilingüe de una app **generada desde `docs/pagina.json`** (lo propio: frase,
+  funciones, comparación, preguntas, capturas, color) con el mecanismo de plantillas (`generar`/`datos_app`): `docs/index.html` sin
+  nada en línea (CSP `script-src 'self'`), SEO (canonical, `hreflang`, Open Graph/Twitter, `sitemap.xml`; `robots.txt` y la redirección
+  para `<org>.github.io`), descarga según el sistema con los nombres fijos de los Releases, demo en `/demo/`, sello «Hecho con Pieza»
+  y `.github/workflows/pagina.yml` (actions por SHA, permisos mínimos). **«Permisos e internet» y las preguntas comunes** (cómo se
+  actualiza, «no puede verificar la app» con los pasos de macOS 15 y Windows, dónde están mis datos, qué IA uso, permisos, costo)
+  salen de lo que ya sabe Pieza (`docs/pagina-comunes.json`), según las piezas y plataformas de la app, y el **JSON-LD
+  `SoftwareApplication` + `FAQPage` se arma de los mismos textos que se ven**. `herramientas/pagina_capturas.mjs`: servir como en
+  Pages, capturas desde la vista previa (por datos, sin red), `compartir.png` y la revisión (es/en, 390 px, textos sin traducir,
+  contraste AA, JSON-LD = lo visible), que también corre en `pruebas/pagina.mjs`.
+- **Pieza nueva «contrato» 0.1.0:** `pruebas/contrato.py` común para todas las apps (antes, uno de 120–240 líneas en cada una): cada
+  acción de la interfaz atendida en cada plataforma (registrada, del host o declarada) y en la vista previa, nada que sobre,
+  `acciones.json` al día, las funciones de `window.<App>` y la seguridad común (CSP, IA solo por `bin/ia.py`, ATS, bundle id = firma,
+  `acciones.json` en el paquete, Electron con sandbox, celular sin red ni respaldo y sus métodos nativos). Lo propio en
+  `pruebas/contrato_app.py` (excepciones con motivo que avisan si sobran, patrones y `revisar`). Corrido contra las seis apps: ver su
+  README (Graba y Corta pasan; Alcancía, Repasa y Esquema con 1–4 cosas a decidir; Minuta necesita su extensión y tiene 47 acciones
+  sin vista previa).
 - **Flujo de crear (versión 11, plugin 0.8.1):** la línea de `CONTRIBUTING.md` ya no dice que los flujos de Pieza «se instalan
   solos al abrir el repo»: con `extraKnownMarketplaces` Claude Code los **ofrece**. A propósito no se suma `enabledPlugins` a lo que
   deja `pieza.py iniciar` (activaría el plugin a quien abra el repo sin preguntarle; la prueba lo revisa). `docs/catalogo.md`: lo que

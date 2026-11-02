@@ -109,6 +109,68 @@ completa antes de crearla. Agregar una pieza (o un campo nuevo a una) la hace ap
 5. **Todo tiene límite de tiempo** (o, si es un trabajo largo, un latido: si deja de latir, se corta). Al salir de la app se corta lo
    que siga corriendo: nada queda huérfano.
 
+
+## Plantillas (`generar`): archivos que se llenan desde `app.json`
+
+Algunas piezas no copian un archivo igual para todas las apps: lo **generan** para cada una (`Info.plist`, `build.sh`, los
+workflows, `AGENTS.md`…). En `pieza.json`:
+
+```json
+"generar": {
+ "plantillas/build.sh": "build.sh",
+ "plantillas/Info.plist": {"destino": "app/Info.plist", "si": "mac"},
+ "plantillas/AGENTS.md": {"destino": "AGENTS.md", "una_vez": true}
+},
+"datos_app": {"pagina": "docs/pagina.json"}
+```
+
+| Campo | Para qué |
+|---|---|
+| origen | La plantilla, dentro de `plantillas/` de la pieza (sin carpetas con punto: `plantillas/github/workflows/x.yml` → `.github/workflows/x.yml`). |
+| `destino` | Dónde queda en la app: un archivo de la raíz, algo dentro de `bin/`, `ui/`, `app/`… (como `archivos`) o, **solo en piezas oficiales**, uno de estos lugares con punto: `.github/`, `.claude/agents/`, `.claude/settings.json`, `.gitignore`, `escritorio/.npmrc`. Nunca `app.json`, `piezas.json`, `acciones.json` ni `.git/`. |
+| `si` | Solo si esa ruta del contexto es verdad (`"mac"`, `"escritorio"`, `"!windows"`, `"piezas.catalogo"`, `"app.empaquetado.deb"`). |
+| `una_vez` | Se escribe solo si no existe, la primera vez, y desde ahí es de la app (no se anota huella ni se vuelve a generar). Para lo que la IA de la app completa (`AGENTS.md`, `CONTRIBUTING.md`…). |
+| `datos_app` | `{nombre: "ruta/en/la/app.json"}`: un archivo de datos de la app que la plantilla lee como `datos.<nombre>` (`null` si no existe). |
+
+**Sintaxis** (`herramientas/plantillas.py`, sin dependencias, solo datos: nada de la pieza se ejecuta, así «Pieza al día» puede leer
+las piezas nuevas sin ejecutar su código):
+
+| Marca | Qué hace |
+|---|---|
+| `{{nombre}}`, `{{app.empaquetado.categoria}}` | El valor. Si no existe, **error** (un tipeo nunca pasa callado). Un texto solo entra si es «seguro» (sin comillas, acento grave, `$`, `\`, `<`, `>`, `&`, llaves, barra vertical, `;` ni saltos de línea); si no, la plantilla dice cómo escaparlo. |
+| `{{x\|filtro\|filtro}}` | Escapar: `xml`, `json` (también deja `<`, `>`, `&`, U+2028 y U+2029 como `\u…`: sirve dentro de un `<script>`), `yaml`, `sh`. Transformar: `ascii` (Alcancía → Alcancia), `minus`, `mayus`. Validar (fallan si no calza): `https`, `sha256`, `nombre`, `ruta`, `version`, `id`, `color` (`#rgb`, `#rrggbb`, `#rrggbbaa`, `rgb()`/`rgba()`/`hsl()`/`hsla()` con números: para CSS) y `linea` (texto libre de una línea, solo donde nada se interpreta: un heredoc entre comillas, Markdown). |
+| `{{#si x}}…{{#sino}}…{{/si}}`, `{{#no x}}…{{/no}}` | Condición (`false`, `0`, `""`, `[]`, `{}` y lo que falta cuentan como no). |
+| `{{#cada lista como b}}…{{b.url}}…{{/cada}}` | Recorrer; adentro también `b_primero` y `b_ultimo`. |
+| `{{! comentario }}` | No sale. |
+
+`${{ … }}` (GitHub Actions) no es una marca y queda tal cual en la plantilla; un **valor** que se inserta (de `app.json` o de
+los datos) nunca puede traer `${{`, `{{` ni `}}`: es un error (así un dato no se vuelve una expresión de Actions). Una línea que
+solo tiene una marca de bloque desaparece entera.
+
+**Contexto** (lo que ve toda plantilla; `python3 herramientas/plantillas.py contexto app.json` lo muestra):
+
+| Clave | Qué es |
+|---|---|
+| `app` | `app.json` entero (las secciones propias de una pieza, p. ej. `app.empaquetado`). |
+| `id`, `ID`, `nombre`, `nombre_ascii` | `ana`, `ANA`, `Ána`, `Ana` (para nombres de archivo y ejecutables). |
+| `version` | `app.json` → `version` (X.Y.Z; `0.1.0` si no está). |
+| `repo`, `dueno`, `repo_nombre`, `web` | De `app.json` → `repo` (`<id>-app/<id>` si no está) y su página `https://<dueño>.github.io/<repo>/`. |
+| `bundle`, `bundle_escritorio` | `app.<id>.mac` y `app.<id>.escritorio`. |
+| `datos_mac` | La carpeta de datos en el Mac, relativa a la casa (la regla de `nucleo`). |
+| `plataformas`, `mac`, `windows`, `linux`, `ios`, `android`, `escritorio`, `mac_o_linux`, `movil` | La lista y cada una como verdadero o falso (`escritorio` = Windows o Linux). |
+| `piezas` | `{id: true}` de las piezas instaladas: `{{#si piezas.catalogo}}`. |
+| `piezas_lista` | `[{id, nombre, version, archivos}]` de las piezas instaladas (para una tabla «Piezas»). |
+| `pieza` | `{id, version}` de la pieza que genera. |
+| `datos` | Lo de `datos_app`. |
+
+**Cómo se mantiene al día:** `agregar`, `actualizar` y `pieza.py generar <app> [pieza…]` (después de cambiar `app.json`) llenan
+otra vez lo generado de **todas** las piezas instaladas (una pieza nueva puede cambiar lo de otra). La huella de cada archivo queda
+en `piezas.json` → `generados`: si la app lo cambió, la pieza ya no lo toca (`estado` lo dice; `diferencias` muestra lo generado
+contra lo de la app; `--forzar` lo reemplaza). Un archivo que ya existía y es distinto queda como de la app (no detiene `agregar`).
+Lo de `.github/` y `.claude/` **nunca se actualiza solo**: el token de Actions no puede escribir workflows, y un workflow o unos
+ajustes de la IA (que pueden definir hooks) los tiene que ver una persona; «Pieza al día» lo pone en el issue. Lo generado se
+escribe con un temporal nuevo en la misma carpeta (sin seguir enlaces) que reemplaza al archivo. Una pieza de la comunidad no puede generar archivos.
+
 ## Licencia
 
 Toda pieza dice su `licencia` (MPL-2.0, MIT, Apache-2.0, BSD-2-Clause, BSD-3-Clause, LGPL-3.0, GPL-3.0 o AGPL-3.0). Las
@@ -137,6 +199,16 @@ red). Así el catálogo se recorre mirando, no leyendo.
   la pieza no entra.
 - **Mira los que hay** en `piezas/*/icono.svg` para mantener el mismo trazo. Un ícono no lleva texto ni logos de marcas.
 
+## Crear una app nueva (`pieza.py crear`)
+
+`pieza.py crear <carpeta> --id <id> --nombre <Nombre> [--plataformas mac,windows,linux] [--piezas ia,…] [--repo dueño/repo]
+[--datos sistema|visible]` = `iniciar` + las piezas con `recomendar.siempre` para esas plataformas (las que están por extraer se
+saltan y se dicen) + las pedidas + `esqueleto` + `github` (las dos al final: lo que escriben una vez mira qué piezas ya están) + la
+acción de ejemplo en `app.json` → `acciones` + `acciones.json` + `generar`. Lo propio de la app sale de las plantillas `una_vez` de
+la pieza [`esqueleto`](../piezas/esqueleto/) (desde ahí es de la app): `pieza.py` no tiene nada de ninguna app. Al final imprime cada
+archivo con sus `La app:` (lo que completa la IA; sin lo copiado ni lo que se regenera) y las `tareas_persona` de las piezas. No toca
+una carpeta que ya tiene algo; el nombre es una palabra (de él salen el target de Swift y los archivos de las versiones).
+
 ## `app.json` (en la raíz de cada app)
 
 ```json
@@ -154,8 +226,9 @@ el User-Agent; si no tiene esa forma, se ignora), `"privado": true` (todo archiv
 Es la única descripción de la app que leen las piezas: de aquí sale el prefijo de las variables (`ESQUEMA_DATOS`,
 `ESQUEMA_RECURSOS`), dónde se guardan los datos y qué claves de config se aceptan. `"icono": "docs/favicon.svg"` (opcional)
 dice cuál es el ícono de la app para la lista de proyectos de la página de Pieza; sin él se busca `docs/favicon.svg`,
-`favicon.svg` y `ui/favicon.svg`. Un ícono de app puede tener sus colores, pero pasa por las mismas reglas de seguridad. Más adelante también saldrán de aquí
-`Info.plist`, `package.json`, el instalador y los íconos (ver «Plan»).
+`favicon.svg` y `ui/favicon.svg`. Un ícono de app puede tener sus colores, pero pasa por las mismas reglas de seguridad. `"version": "X.Y.Z"` es la versión de
+la app (`iniciar` la pone en `0.1.0`): con la pieza «empaquetado», es lo único que se sube para publicar. `Info.plist`,
+`package.json`, el instalador y los workflows salen de aquí con las plantillas (abajo, «Plantillas»).
 
 ## `piezas.json` (en la raíz de cada app, lo escribe `pieza.py`)
 
@@ -199,8 +272,9 @@ Cada host, al arrancar y en cada mensaje, sin código por acción:
 Errores del host: `{ok: false, codigo: "datos" | "falta" | "limite" | "fallo", campo?, texto, valores, error}` (`texto` en español
 con marcadores para `T()`; `error` ya traducido para las interfaces de antes).
 
-`pruebas/contrato.py` puede pasar a ser uno solo para todas las apps: lee `acciones.json` y revisa que la UI, la simulación del
-navegador y los scripts digan lo mismo (pendiente: hoy cada app tiene el suyo).
+`pruebas/contrato.py` es uno solo para todas las apps: la pieza «contrato» (`pieza.py agregar contrato .`). Lee `acciones.json`,
+la interfaz, la vista previa y el código de cada host, y revisa que digan lo mismo; lo propio de la app va en
+`pruebas/contrato_app.py` (ver `piezas/contrato/README.md`).
 
 ## Capacidades comunes
 

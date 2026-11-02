@@ -30,8 +30,9 @@ Con otra IA, que siga [`AGENTS.md`](AGENTS.md). Equivalencias entre herramientas
 python3 herramientas/pieza.py catalogo                    # todas las piezas, listas y en camino
 python3 herramientas/pieza.py ficha ia transcribir --plataformas mac,windows,linux   # la app completa antes de crearla
 python3 herramientas/pieza.py listar                      # qué hay
-python3 herramientas/pieza.py iniciar ~/MiApp miapp MiApp  # una vez por app: crea app.json
-python3 herramientas/pieza.py agregar ia ~/MiApp           # copia la pieza (y lo que necesita)
+python3 herramientas/pieza.py crear ~/MiApp --id miapp --nombre MiApp --piezas ia   # una app nueva andando, de una vez
+python3 herramientas/pieza.py agregar transcribir ~/MiApp  # otra pieza después (y lo que necesita)
+python3 herramientas/pieza.py iniciar ~/OtraApp otraapp OtraApp  # en una app que ya existe: solo app.json, y después agregar
 python3 herramientas/pieza.py estado ~/MiApp               # qué tiene, qué hay nuevo, qué cambió la app
 python3 herramientas/pieza.py actualizar ~/MiApp           # trae lo nuevo sin pisar tus cambios
 ```
