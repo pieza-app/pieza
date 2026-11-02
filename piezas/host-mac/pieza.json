@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "host-mac",
- "version": "0.2.0",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "App de Mac",
  "icono": "icono.svg",
@@ -12,7 +12,7 @@
   "siempre": true,
   "cuando": "Siempre que haya app de Mac."
  },
- "origen": "esquema (Ventana.swift: marco principal + origen file, navegación solo dentro de ui/, https al navegador, <input type=file> solo del marco propio, recargar si se cae la página; Servicios.swift: Config, Idioma.elegido, Procesador sin variables <ID>_*, EnOrden; EsquemaApp.swift: menús en el idioma elegido y esperar los guardados al salir) + alcancia (secreto por la entrada estándar y su salida estándar) + repasa (conEntrada con varios args) + corta (Medios.swift: <id>:// con rangos). Nuevo: nada de la app adentro (todo de app.json y Host.Configuracion), acciones declaradas (acciones.json) validadas al cargar y en cada mensaje, límite de tiempo que corta también a los descendientes, carpeta temporal propia 0700 para entrada y salida, el puente también revisa que la página sea un archivo de ui/, config con las reglas de nucleo (incluido «interfaz»: false) y la ventana y los menús siguen config.tema (NSApp.appearance). Nuevo en 0.2: «limite» \"trabajo\" (sin tope mientras lata) o por orden, «maximo» y «vigilar» por acción, el inyector con su texto (`Puente.Falta`), el eco también en el error de datos, actualizaciones (`p.actualizaciones`), la carpeta con marcador (`CarpetaElegida`), el vigilante de la carpeta (`Vigilante`, FSEvents), `mostrarEnFinder`, secretos en el Llavero (`Secretos`) y avisos del sistema (`Notificaciones`), sacados de Esquema, Alcancía, Graba y Minuta.",
+ "origen": "esquema (Ventana.swift: marco principal + origen file, navegación solo dentro de ui/, https al navegador, <input type=file> solo del marco propio, recargar si se cae la página; Servicios.swift: Config, Idioma.elegido, Procesador sin variables <ID>_*, EnOrden; EsquemaApp.swift: menús en el idioma elegido y esperar los guardados al salir) + alcancia (secreto por la entrada estándar y su salida estándar) + repasa (conEntrada con varios args) + corta (Medios.swift: <id>:// con rangos). Nuevo: nada de la app adentro (todo de app.json y Host.Configuracion), acciones declaradas (acciones.json) validadas al cargar y en cada mensaje, límite de tiempo que corta también a los descendientes, carpeta temporal propia 0700 para entrada y salida, el puente también revisa que la página sea un archivo de ui/, config con las reglas de nucleo (incluido «interfaz»: false) y la ventana y los menús siguen config.tema (NSApp.appearance). Nuevo en 0.2: «limite» \"trabajo\" (sin tope mientras lata) o por orden, «maximo» y «vigilar» por acción, el inyector con su texto (`Puente.Falta`), el eco también en el error de datos, actualizaciones (`p.actualizaciones`), la carpeta con marcador (`CarpetaElegida`), el vigilante de la carpeta (`Vigilante`, FSEvents), `mostrarEnFinder`, secretos en el Llavero (`Secretos`) y avisos del sistema (`Notificaciones`), sacados de Esquema, Alcancía, Graba y Minuta. Nuevo en 0.3 (lo que salió al pasar las seis apps): `Procesador.entornoApp` (Corta), `barraDeMenu`/`abrirAlArrancar` y `vidrio` (Graba), `barraTransparente` y `nombreVentana` (Alcancía, Corta), soltar archivos (`alSoltar`, Corta), `tituloAjustes`, `menuApp`, ⌘W sin menú Archivo, `Menus()` público, `guardarArchivo` con `privado` y la carpeta visible 0700 (Repasa), `elegirArchivos(mensaje:)` (Alcancía, Repasa), `limiteEstado` (Alcancía) y `estadoEnFila` (Repasa).",
  "requiere": [
   "nucleo",
   "host-ui"
@@ -110,6 +110,17 @@
   "Opcional: Apple Developer (USD 99/año) para firmar y que macOS no advierta"
  ],
  "cambios": [
+  {
+   "version": "0.3.0",
+   "tipo": "mejora",
+   "seguridad": true,
+   "resumen": "Lo que salió al pasar las seis apps. Seguridad: un enlace https tocado en la ventana pasa por el `abrirEnlace` que registró la app (antes un `<a href>` se lo saltaba: una app para niños no podía limitarlo); con \"datos\": \"visible\", ~/<Nombre> recién creada queda 0700 como en nucleo (antes 0755); `guardarComo`/`guardarArchivo` con `privado` (0600; sin decirlo, lo de app.json → \"privado\"). Nuevo: `Procesador.entornoApp` (variables de la app para todos los scripts, también los declarados, sin pisar <ID>_RECURSOS/_DATOS/_PROGRESO/_LATIDO); app de barra de menú (`barraDeMenu`, `abrirAlArrancar`, también al reabrir); `alCrearVentana`; `barraTransparente` (con franja para mover la ventana), `vidrio` y `nombreVentana`; soltar archivos (`alSoltar`, `soltado(nombre)`); `tituloAjustes` y `menuApp`; ⌘W aunque no haya menú Archivo; `Menus()` con init público; `elegirArchivos(mensaje:desde:)`, `guardarComo(mensaje:privado:)` y `guardarArchivo` (distingue cancelar de un error o del tamaño); `limiteEstado` y `estadoEnFila`.",
+   "migrar": [
+    "Nada obligatorio: `pieza.py actualizar <app> host-mac` y compila de nuevo.",
+    "Si registraste `abrirEnlace`, ahora también recibe los `<a href>` https tocados en la ventana.",
+    "Corta: tu cambio en Procesador.swift (`entornoApp`) ya viene en la pieza: `pieza.py actualizar . host-mac --forzar`. Lo que cada app puede borrar está en «Si venías de la 0.2.0» del README."
+   ]
+  },
   {
    "version": "0.2.0",
    "tipo": "rompe",

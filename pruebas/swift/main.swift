@@ -68,6 +68,18 @@ MainActor.assumeIsolated {
     try? FileManager.default.removeItem(at: docs)
     revisar(!Secretos(servicio: "x").guardar("y", cuenta: "../malo"), "secretos: cuenta rara no")
 
+    // 0.3: las opciones nuevas compilan (sin ventana no se pueden ver: ver el README).
+    let o = Host.Configuracion(estadoScript: nil, limiteEstado: 5000, estadoEnFila: true, tituloAjustes: "Para adultos…", barraDeMenu: true,
+                               abrirAlArrancar: { false }, barraTransparente: false, altoFranja: 38, vidrio: true, nombreVentana: "Ana vieja")
+    revisar(o.limiteEstado == 3600 && o.barraTransparente && o.abrirAlArrancar?() == false, "configuración 0.3")
+    let m = Menus()
+    _ = m.item("Abrir la carpeta", "carpeta")
+    Puente.shared.menuApp = { m in [m.nativo("Abrir la carpeta") {}] }
+    Puente.shared.alCrearVentana = { ventana, web in _ = (ventana, web) }
+    Puente.shared.alSoltar = { urls in _ = urls }
+    revisar(Puente.shared.soltado("x.mp4") == nil, "nada soltado")
+    let _: (Puente.Guardado) -> Void = { r in if case .error(let c) = r { _ = c } }
+
     // Config con las reglas de app.json.
     revisar(Config.valida(["es", "en"], "en") && !Config.valida(["es", "en"], "fr"), "config: lista")
     revisar(Config.valida("bool", NSNumber(value: true)) && !Config.valida("bool", NSNumber(value: 1)), "config: bool")
@@ -76,13 +88,22 @@ MainActor.assumeIsolated {
 
 // El procesador: entrada por archivo, entorno sin ANA_*, secreto por stdin y límite de tiempo.
 let espera = DispatchSemaphore(value: 0)
-var pendientes = 6
+var pendientes = 7
 func listo() { pendientes -= 1; if pendientes == 0 { espera.signal() } }
 Task { @MainActor in
     Procesador.conEntrada("eco.py", "probar", ["texto": "--rm -rf ~"]) { r in
         revisar((r["argv"] as? [String] ?? []).allSatisfy { !$0.contains("rm -rf") }, "el texto nunca como argumento")
         revisar((r["entrada"] as? [String: Any])?["texto"] as? String == "--rm -rf ~", "el texto llega en la entrada")
         revisar(r["ajena"] is NSNull || r["ajena"] == nil, "sin variables ANA_* de afuera")
+        listo()
+    }
+    // Las variables de la app llegan a todos los scripts (también los declarados) y nunca pisan las del host.
+    Procesador.entornoApp = ["ANA_PROGRAMAS": "/app/MacOS", "ANA_DATOS": "/otra", "ANA_LATIDO": "/x", "mal nombre": "x"]
+    Procesador.correr("eco.py", ["abrir"], entorno: ["ANA_RECURSOS": "/no"]) { r in
+        let env = r.respuesta["env"] as? [String: String] ?? [:]
+        revisar(env["ANA_PROGRAMAS"] == "/app/MacOS", "entornoApp llega")
+        revisar(env["ANA_DATOS"] == Host.datos.path && env["ANA_RECURSOS"] == Host.recursos.path && env["ANA_LATIDO"] == nil, "sin pisar las del host")
+        Procesador.entornoApp = [:]
         listo()
     }
     Procesador.conSecreto("eco.py", ["secreto"], secreto: "llave-123") { r in

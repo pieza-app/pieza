@@ -255,6 +255,55 @@ test("bienvenida: pasos en orden, «puede» bloquea Siguiente, terminar guarda y
   assert.equal(bv.manejarClic(clic("data-bv-fin")), false);
 });
 
+test("bienvenida: «Ajustes» con otro nombre, detalle por idioma, logo y data-autofoco en el sugerido", () => {
+  const { bv } = bienvenida({ ajustes: { es: "Para adultos", en: "For grown-ups" }, logo: "<svg></svg>",
+    idiomas: [{ codigo: "es", nombre: "Español", sugerido: "Sugerido", detalle: "Continuar en español" }, { codigo: "en", nombre: "English", sugerido: "Suggested", detalle: "<i>" }] });
+  bv.sumarPaso({ id: "hola", titulo: "Hola", cuerpo: () => "" });
+  bv.abrir({ config: {} });
+  const h = bv.html();
+  assert.match(h, /cuando quieras en Para adultos\.<\/span> <span lang="en">You can change it anytime in For grown-ups\./);
+  assert.doesNotMatch(h, /en Ajustes/);
+  assert.match(h, /id="bv-idioma-en"[^>]*data-autofoco>/);
+  assert.doesNotMatch(h.replace(/id="bv-idioma-en"[^>]*data-autofoco>/, ""), /data-autofoco/, "solo el sugerido");
+  assert.match(h, /<span class="detalle-idioma">Continuar en español<\/span>/);
+  assert.match(h, /&lt;i&gt;/);
+  assert.match(h, /<div class="logo-bv" aria-hidden="true"><svg><\/svg><\/div>/);
+  bv.abrir({ config: { idioma_ui: "es" } });
+  bv.ir(2);
+  assert.match(bv.html(), /se cambia cuando quieras en Para adultos\./);
+  const sin = bienvenida({ ajustes: false }).bv;
+  sin.abrir({ config: {} });
+  assert.doesNotMatch(sin.html(), /nota-idioma/);
+});
+
+test("bienvenida: el último paso con «Lo hago después» y su propio botón para terminar", () => {
+  const terminadas = [];
+  const { bv } = bienvenida({ listo: false, terminar: (como, id) => terminadas.push([como, id]) });
+  let traer = 0;
+  bv.sumarPaso({ id: "hola", titulo: "Hola", cuerpo: () => "", orden: 10 });
+  bv.sumarPaso({ id: "cartola", titulo: "Tu primera cartola", cuerpo: () => "<button data-traer>Elegir</button>", orden: 20,
+    despues: "Lo hago después", fin: { texto: "Empezar sin cartola", principal: false, accion: () => traer++ } });
+  bv.abrir({ config: { idioma_ui: "es" } });
+  assert.match(bv.html(), /data-bv-fin="despues">Lo hago después<\/button><button type="button" class="pz-boton pz-principal" data-bv-ir="2"/);
+  bv.ir(2);
+  const h = bv.html();
+  assert.match(h, /data-bv-fin="despues">Lo hago después<\/button><button type="button" class="pz-boton" data-bv-fin>Empezar sin cartola<\/button>/);
+  const clic = (valor) => ({ preventDefault() {}, target: { closest: () => ({ hasAttribute: (a) => a === "data-bv-fin", getAttribute: () => valor }) } });
+  bv.manejarClic(clic("despues"));
+  assert.deepEqual(terminadas, [["despues", "cartola"]]);
+  assert.equal(traer, 0, "«Lo hago después» no corre la acción");
+  bv.abrir({ config: { idioma_ui: "es" } }); bv.ir(2);
+  bv.manejarClic(clic(""));
+  assert.deepEqual(terminadas.at(-1), ["fin", "cartola"]);
+  assert.equal(traer, 1);
+  // Sin «despues» ni saltable: true, el último paso sigue con solo «Empezar» (como antes).
+  const otro = bienvenida({ listo: false }).bv;
+  otro.sumarPaso({ id: "ia", titulo: "Tu IA", cuerpo: () => "" });
+  otro.abrir({ config: { idioma_ui: "es" } });
+  assert.doesNotMatch(otro.html(), /Lo hago después/);
+  assert.match(otro.html(), /class="pz-boton pz-principal" data-bv-fin>Empezar/);
+});
+
 test("bienvenida: «puede» en falso deja Siguiente desactivado y no avanza", () => {
   const { bv } = bienvenida();
   bv.sumarPaso({ id: "carpeta", titulo: "Elige tu carpeta", cuerpo: () => "", puede: () => false });

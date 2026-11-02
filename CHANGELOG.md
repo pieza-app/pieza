@@ -1,6 +1,23 @@
 # Cambios
 
 ## Sin publicar
+- **Lo que salió al pasar las seis apps al host (capacidades):** `host-mac` 0.3.0 y `host-escritorio` 0.3.0 (seguridad): un
+  enlace https tocado en la ventana pasa por el `abrirEnlace` que registró la app (Repasa, para niños, no podía limitar un
+  `<a href>`); `~/<Nombre>` recién creada con `"datos": "visible"` queda 0700 como en `nucleo`; «Guardar como» con `privado`
+  (0600) y `guardarArchivo`, que distingue cancelar de un error o del tamaño. Variables de la app para todos los scripts, también
+  los declarados (`Procesador.entornoApp` / `crearHost({entorno})`, lo de la copia de Corta; Graba y Minuta lo necesitaban), con el
+  mismo filtro de nombres y sin pisar `<ID>_RECURSOS/_DATOS/_PROGRESO/_LATIDO`. En Mac: app de barra de menú (`barraDeMenu`,
+  `abrirAlArrancar`, también al reabrir), `alCrearVentana`, `barraTransparente` con franja para mover la ventana, `vidrio`,
+  `nombreVentana` (apps con tilde), soltar archivos (`alSoltar`, `soltado(nombre)`), `tituloAjustes` y `menuApp`, ⌘W sin menú
+  Archivo, `Menus()` público, `elegirArchivos(mensaje:)`, `limiteEstado` y `estadoEnFila`. En Electron: `ventana.frame`,
+  `abrirAlArrancar` (y `--oculta`), `userData: "sistema"`, `before-quit` que guarda con la ventana que se esconde, más de una
+  ventana en el puente (`host.ventanas.agregar`, la respuesta va a la que pidió), `tituloAjustes`/`menuApp`,
+  `dialogos.archivos({mensaje})`, `limiteEstado` y `estadoEnFila`. `bienvenida` 0.4.0: «Ajustes» configurable (`ajustes: {es, en}`),
+  «Lo hago después» y botón propio en el último paso (`saltable: true`, `despues`, `fin: {texto, principal, accion}`),
+  `data-autofoco` en el idioma sugerido, `detalle` por idioma y `logo`. Cada README dice qué rodeo de qué app se borra («Si venías
+  de la 0.2.0» / «de 0.3.0»). **Revisar en el Mac** (Swift no compila aquí): `bash pruebas/swift/revisar_host_mac.sh` y la lista
+  «Revisar a mano en el Mac (0.3.0)» del README de `host-mac` (barra de menú y Dock, barra transparente y franja, vidrio, soltar
+  con `performDragOperation` en la subclase de WKWebView, enlace por `abrirEnlace`, ⌘W, `nombreVentana`, `guardarArchivo`).
 - **Lo que salió al pasar las seis apps al host (arreglos y seguridad):** `catalogo` 0.2.1: un campo `archivo` o `bytes` del
   contenido ya no se quita (eran los nombres viejos de `ruta`/`tamano` y se borraban de todo objeto: ninguna plantilla de Esquema
   pasaba el validador); ahora solo se quitan en una entrada del índice y si están en vez de `ruta`/`tamano` (el arreglo de la copia

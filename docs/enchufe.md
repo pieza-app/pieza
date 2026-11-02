@@ -73,7 +73,7 @@ enruten solos.
 | `red` | Dominios a los que sale. Vacío = funciona sin internet. |
 | `tareas_persona` | Lo que solo puede hacer una persona (crear una org, una cuenta de desarrollador, verificar un sitio). |
 | `compatible` | `{"nucleo": ">=0.1.0 <1.0.0"}`: con qué versiones de lo que requiere funciona. `pieza.py` no deja combinar versiones que no se llevan. |
-| `cambios` | De la más nueva a la más vieja: `{version, tipo, resumen, seguridad?, migrar?}`. Es lo que se le avisa a cada app. |
+| `cambios` | De la más nueva a la más vieja: `{version, tipo, resumen, seguridad?, migrar?}` (`migrar`: una **lista** de pasos, cada uno un texto; `pieza.py revisar` lo exige). Es lo que se le avisa a cada app. |
 | `red_nota` | Cuando la app no sale a internet pero algo de la persona sí (su IA, su proveedor): dicho en una frase. |
 
 Estos campos son los que lee el creador de proyectos: `pieza.py ficha <piezas> --plataformas …` los suma y muestra la app
@@ -221,8 +221,16 @@ Ya en los hosts (0.2.0), con la misma API en los dos:
 | actualizaciones | `p.actualizaciones = .init(…)` (pieza «actualizaciones») | `actualizaciones: crear(…)` |
 | secretos | `Secretos(servicio:)` (Llavero, solo este Mac) | `host.secretos(nombre)` (`safeStorage`; sin llavero en Linux, nada) |
 | avisos | `Notificaciones` (permiso cuando la app lo pide) | `host.notificaciones` |
+| variables de la app para todos los scripts (0.3) | `Procesador.entornoApp` | `crearHost({entorno})` |
+| app de bandeja / barra de menú (0.3) | `barraDeMenu`, `abrirAlArrancar` | `ventana.alCerrar: "esconder"`, `abrirAlArrancar` (y `--oculta`) |
+| la ventana de la app (0.3) | `alCrearVentana`, `barraTransparente`, `vidrio`, `nombreVentana` | `alCrearVentana`, `ventana.frame`, `userData: "sistema"`, `ventanas.agregar` (otra ventana en el puente) |
+| menú de la app (0.3) | `tituloAjustes`, `menuApp` | `tituloAjustes`, `menuApp` |
+| soltar archivos (0.3) | `alSoltar`, `soltado(nombre)` | pendiente (con `webUtils.getPathForFile` en el preload) |
 
-Pendientes: `soltar` (solo Corta guarda rutas al soltar un archivo; Repasa manda el contenido desde la interfaz), `catalogo` (ya es
+Un enlace https tocado en la ventana pasa por `abrirEnlace` como si lo pidiera la interfaz (0.3): si la app registró el suyo,
+decide ella. Las variables de `entorno` nunca pisan `<ID>_RECURSOS`, `<ID>_DATOS`, `<ID>_PROGRESO` ni `<ID>_LATIDO`.
+
+Pendientes: `soltar` en Electron, `catalogo` (ya es
 la pieza «catálogo», dos líneas por tipo en cada app: el host no la envuelve) y `descarga.verificada`. Los avisos **programados**
 (que llegan con la app cerrada) siguen en la pieza «notificaciones», planeada.
 

@@ -42,7 +42,12 @@ host.iniciar();
 | Parámetro | |
 |---|---|
 | `electron` | El módulo (en las pruebas, uno falso). |
-| `ventana` | `{ancho, alto, minAncho, minAlto, icono, fondo: {claro, oscuro}, alCerrar: "salir" \| "esconder" \| "cerrar"}`. `"esconder"`: sigue viva (bandeja). |
+| `ventana` | `{ancho, alto, minAncho, minAlto, icono, fondo: {claro, oscuro}, alCerrar: "salir" \| "esconder" \| "cerrar", frame}`. `"esconder"`: sigue viva (bandeja); desde 0.3.0, un `app.quit()` (apagar el equipo, cerrar sesión) igual guarda y sale. `frame: false`: sin marco (la interfaz dibuja su barra con `-webkit-app-region`). |
+| `abrirAlArrancar` | `(host) => boolean` o `boolean`: ¿mostrar la ventana al arrancar? Sin decirlo, sí, salvo que la app se abrió con `--oculta` (al iniciar sesión): queda en la bandeja hasta `host.mostrar()`. |
+| `userData` | `"sistema"`: lo que Chromium guarda (y la llave de `safeStorage` en Windows, en `Local State`) se queda donde estaba (`~/.config/<App>`, `%APPDATA%\\<App>`). Sin decirlo, va a `<datos>/electron`. **Una app que ya existía pasa `"sistema"`**: si no, pierde sus secretos cifrados (Windows), la caché y los permisos. |
+| `entorno` | `{ANA_PROGRAMAS: …}` o `() => ({…})`: variables de la app para **todos** sus scripts, también los declarados (las de cada llamada ganan; nunca pisan `<ID>_RECURSOS`, `_DATOS`, `_PROGRESO` ni `_LATIDO`). |
+| `tituloAjustes`, `menuApp({t, f, item, abrirEnlace, host})` | «Ajustes…» con otro nombre (`false`: sin él) e ítems propios debajo, en el menú de `base()`. |
+| `limiteEstado`, `estadoEnFila` | Segundos del script del estado (60) y leerlo dentro de la fila (nunca a medio guardar). |
 | `global` | El objeto `window.<App>` (por defecto el id con mayúscula). |
 | `sitio`, `codigo` | Enlaces del menú Ayuda (solo https). `ayuda: false`: sin menú Ayuda. |
 | `carpeta` | `{clave: "carpeta", titulo, boton, falta}`: la carpeta que elige la persona (`host.carpeta`). Su ruta real queda en `config.<clave>` (en `app.json` con `"interfaz": false`) y trae el inyector `carpetaActual` (sin carpeta: `codigo: "falta"` con «Elige una carpeta primero.» o tu `falta`). En Windows y Linux no hay marcador del sistema: si la carpeta se movió, `actual()` es `null`. |
@@ -66,14 +71,15 @@ host.iniciar();
 
 | | |
 |---|---|
-| `acciones.registrar(nombre, fn(datos, host))` | Una acción propia. Gana sobre las del host y las declaradas: así se migra de a poco. |
-| `llamar(funcion, json)` | `window.<App>.<funcion>(json)`. Solo nombres simples; nada antes de `listo`. |
-| `despachar(accion, datos)` | Correr una acción como si la pidiera la interfaz. |
+| `acciones.registrar(nombre, fn(datos, host, {responderA, ventana}))` | Una acción propia. Gana sobre las del host y las declaradas: así se migra de a poco. `responderA`: el `webContents` de otra ventana agregada que la pidió (`null` si fue la principal). |
+| `llamar(funcion, json, destino?)` | `window.<App>.<funcion>(json)`. Solo nombres simples; nada antes de `listo`. `destino`: el `webContents` de una ventana agregada. |
+| `despachar(accion, datos, {responderA}?)` | Correr una acción como si la pidiera la interfaz (con `responderA`, como si la pidiera esa ventana). |
+| `ventanas.agregar(w)`, `.quitar(w)`, `.preferencias()`, `.todas()` | Otra ventana con la misma interfaz (el panel de la bandeja, una barra): créala con `webPreferences: host.ventanas.preferencias()` y cárgala con `<id>://ui/…`. Habla con el puente con las mismas guardas, no navega fuera de `ui/` y recibe la respuesta a lo que pidió (también las declaradas y `listo` → su `estado`). |
 | `procesador.correrJSON(script, args, {limite, latido, progreso})`, `.conEntrada(script, args, datos, …)`, `.correr(script, args, {secreto, entrada, limite})`, `.cortarTodo()` | Scripts de `bin/`. `correr` devuelve `{respuesta, salidaEstandar, porLimite}`. `latido: true`: sin tope mientras el script lata (pieza «trabajos»). |
 | `fila.agregar(async () => …)` | De a una y en orden (guardados). |
 | `config.leer()`, `config.guardar(cambios, {desdeInterfaz})`, `idioma.t/f/codigo/elegido`, `t` | Con las reglas de `app.json` (las de `nucleo`). |
 | `dentro(base, relativa, {extensiones})` | La guarda de `nucleo.ruta_en`. |
-| `dialogos.carpeta()`, `.archivos({extensiones, varios})`, `.guardarComo({nombre, extension, contenido})` | Diálogos del sistema (rutas reales). |
+| `dialogos.carpeta()`, `.archivos({extensiones, varios, mensaje, desde})`, `.guardarComo({nombre, extension, contenido, mensaje, privado})`, `.guardarArchivo(…)` | Diálogos del sistema (rutas reales). `privado`: 0600 (sin decirlo, `app.json` → `"privado"`). `guardarArchivo` dice cómo terminó: `{ok: true, ruta}` o `{ok: false, codigo: "cancelado" \| "vacio" \| "tamano" \| "extension" \| "escribir"}`. |
 | `medios.registrar(nombre, resolver(ruta) → absoluta \| null)` | `<id>://<nombre>/<ruta>` con rangos (videos). |
 | `copiar`, `abrirEnlace` (solo https, sin usuario ni clave), `papelera(absoluta)`, `mostrarEnCarpeta(absoluta)`, `mostrar`, `salir`, `ocupar`/`soltar`/`ocupada`, `await esperarLibre(ms)` (true si quedó libre: fila, scripts y lo marcado), `enviarEstado` | |
 | `carpeta.actual()`, `.elegir({titulo, boton})`, `.usar(ruta)`, `.olvidar()` | Con `carpeta`. `usar` solo con rutas que eligió la persona o que la app leyó de lo suyo, nunca de la interfaz. Mueve el vigilante. |
@@ -110,8 +116,9 @@ Errores del host (la interfaz los traduce con `T(texto, valores)`; `error` va ya
 ## Seguridad
 
 - Ventana con `sandbox`, `contextIsolation`, sin `nodeIntegration` ni `webview`; solo navega dentro de `<id>://ui/` (`will-navigate`,
-  `will-redirect`, `setWindowOpenHandler`); un enlace https va al navegador.
-- El puente (`ipcMain.on(<id>)`) solo atiende la ventana propia, su **marco principal** y el **origen** `<id>://ui/`. El preload
+  `will-redirect`, `setWindowOpenHandler`); un enlace https va al navegador **por `abrirEnlace`** (si la app registró el suyo, decide ella).
+- Con `"datos": "visible"`, `~/<Nombre>` recién creada queda 0700, como en `nucleo` (antes, la de siempre del sistema).
+- El puente (`ipcMain.on(<id>)`) solo atiende las ventanas propias (la principal y las agregadas), su **marco principal** y el **origen** `<id>://ui/`. El preload
   recibe el id del host (`--pieza-host=<id>`), nunca de la página, y manda una copia JSON.
 - El protocolo sirve solo archivos de `ui/` (sin `..`, sin enlaces hacia afuera, sin `?`) y lo que aprueba un resolvedor de medios.
 - Todo permiso del navegador se niega salvo lo que la app acepte con `permisos`, y solo para sus páginas.
@@ -119,6 +126,20 @@ Errores del host (la interfaz los traduce con `T(texto, valores)`; `error` va ya
   corta también lo que lanzó el script (grupo de procesos en Linux, `taskkill /T` en Windows); un trabajo sin tope se corta si deja
   de latir, y al salir se corta lo que siga corriendo (nada queda huérfano: un trabajo queda «interrumpido» y se sigue después).
 - Secretos solo cifrados por el sistema (`safeStorage`), nunca en texto plano: sin llavero en Linux, no se guardan.
+
+## Si venías de la 0.2.0
+
+Nada obligatorio. Lo que cambia solo: un enlace tocado pasa por tu `abrirEnlace` registrado; `~/<Nombre>` recién creada queda 0700;
+las acciones registradas reciben un tercer argumento (`{responderA, ventana}`). Lo que cada app puede borrar:
+
+| App | Se borra | Con |
+|---|---|---|
+| Minuta | La clase `VentanaSinMarco` y el `new Proxy(electron, …)`; `USERDATA_DE_SIEMPRE` y el `app.setPath("userData", …)` después de `iniciar()`; el `w.removeAllListeners("ready-to-show")` de `prepararVisor` (y `mostrarAlAbrir`); `app.on("before-quit", …)`; el segundo `ipcMain.on(host.id, …)` del panel y su `webPrefs()`; el `entorno: entornoScripts()` de cada llamada | `ventana: {frame: false}`; `userData: "sistema"`; `abrirAlArrancar: () => Perfil.falta \|\| !process.argv.includes("--oculta")`; nada (lo hace `alCerrar: "esconder"`); `host.ventanas.agregar(panel)` con `host.ventanas.preferencias()` (sus `ACCIONES(d, panel)` registradas usan `ctx.ventana`); `entorno: entornoScripts` en `crearHost` |
+| Graba | `datosDeElectron` y el `app.setPath("userData", …)` después de `iniciar()`; el `v.removeAllListeners("ready-to-show")` de `alCrearVentana` | `userData: "sistema"`; `abrirAlArrancar: () => !OCULTA \|\| faltaAlgo()`. Para declarar `procesar.py`: `entorno: () => ({GRABA_HERRAMIENTAS: …})` |
+| Esquema | Nada | — |
+
+Sigue en las apps (anotado en `docs/catalogo.md`): `listo` que la interfaz no manda (Minuta lo despacha en `did-finish-load`),
+scripts largos con registro y sin salida JSON, `idiomas/` descargados en `Idioma`, y el vidrio de Windows 11 (`setBackgroundMaterial`).
 
 ## Si venías de la 0.1.0
 

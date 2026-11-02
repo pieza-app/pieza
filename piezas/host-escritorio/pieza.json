@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "host-escritorio",
- "version": "0.2.0",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "App de Windows y Linux",
  "icono": "icono.svg",
@@ -12,7 +12,7 @@
   "siempre": true,
   "cuando": "Siempre que haya app de Windows o Linux."
  },
- "origen": "esquema (escritorio/src/main.js: sandbox, contextIsolation, <id>://ui/ solo con archivos de ui/, ipcMain solo del marco principal con el origen propio, will-navigate/will-redirect/setWindowOpenHandler, permisos negados, una sola instancia, guardar al salir; servicios.js: Config, Idioma, Procesador sin variables <ID>_*, EnOrden; rutas.js: absoluta) + graba (<id>://video con rangos, permisos que la app puede abrir) + alcancia (secreto por la entrada estándar). Nuevo: nada de la app adentro (id, nombre y carpeta de datos de app.json; el preload recibe el id del host), acciones declaradas (acciones.json) validadas al cargar y en cada mensaje, límite de tiempo que corta también lo que lanzó el script (su grupo de procesos), carpeta temporal propia 0700 para entrada y salida, nativeTheme.themeSource según config.tema, y todo probado en Node y con Electron de verdad. Nuevo en 0.2: «limite» \"trabajo\" (sin tope mientras lata) o por orden, «maximo» y «vigilar» por acción, el inyector con su texto (`host.falta`), el eco también en el error de datos, la carpeta elegida (`carpeta`), el vigilante (`vigilar`, fs.watch), `mostrarEnCarpeta`, secretos con safeStorage (`host.secretos`) y avisos (`host.notificaciones`), sacados de Esquema, Graba y Minuta.",
+ "origen": "esquema (escritorio/src/main.js: sandbox, contextIsolation, <id>://ui/ solo con archivos de ui/, ipcMain solo del marco principal con el origen propio, will-navigate/will-redirect/setWindowOpenHandler, permisos negados, una sola instancia, guardar al salir; servicios.js: Config, Idioma, Procesador sin variables <ID>_*, EnOrden; rutas.js: absoluta) + graba (<id>://video con rangos, permisos que la app puede abrir) + alcancia (secreto por la entrada estándar). Nuevo: nada de la app adentro (id, nombre y carpeta de datos de app.json; el preload recibe el id del host), acciones declaradas (acciones.json) validadas al cargar y en cada mensaje, límite de tiempo que corta también lo que lanzó el script (su grupo de procesos), carpeta temporal propia 0700 para entrada y salida, nativeTheme.themeSource según config.tema, y todo probado en Node y con Electron de verdad. Nuevo en 0.2: «limite» \"trabajo\" (sin tope mientras lata) o por orden, «maximo» y «vigilar» por acción, el inyector con su texto (`host.falta`), el eco también en el error de datos, la carpeta elegida (`carpeta`), el vigilante (`vigilar`, fs.watch), `mostrarEnCarpeta`, secretos con safeStorage (`host.secretos`) y avisos (`host.notificaciones`), sacados de Esquema, Graba y Minuta. Nuevo en 0.3 (lo que salió al pasar las seis apps): `entorno` para todos los scripts (Corta, Graba, Minuta), `ventana.frame`, `abrirAlArrancar` y `--oculta`, `userData: \"sistema\"` y `before-quit` con la ventana que se esconde (Minuta, Graba), más de una ventana en el puente (Minuta), `tituloAjustes`/`menuApp` (Repasa), `guardarArchivo` con `privado` y la carpeta visible 0700.",
  "requiere": [
   "nucleo",
   "host-ui"
@@ -93,6 +93,17 @@
   "Opcional: certificado de firma para Windows"
  ],
  "cambios": [
+  {
+   "version": "0.3.0",
+   "tipo": "mejora",
+   "seguridad": true,
+   "resumen": "Lo que salió al pasar las seis apps. Seguridad: un enlace tocado (navegar o abrir ventana) pasa por el `abrirEnlace` que registró la app; con \"datos\": \"visible\", ~/<Nombre> recién creada queda 0700; `dialogos.guardarComo`/`guardarArchivo` con `privado` (0600; sin decirlo, app.json → \"privado\"). Nuevo: `entorno` (variables de la app para todos los scripts, también los declarados, sin pisar las del host); `ventana.frame: false`; `abrirAlArrancar` (y sin él, abrir con `--oculta` deja la ventana escondida); `userData: \"sistema\"` (no mover lo de Chromium ni la llave de safeStorage de una app que ya existía); con `alCerrar: \"esconder\"`, `app.quit()` guarda y sale; `host.ventanas.agregar(w)`: otras ventanas hablan con el puente con las mismas guardas y reciben su respuesta (`llamar(f, d, destino)`, `despachar(a, d, {responderA})`, las registradas reciben `{responderA, ventana}`); `tituloAjustes`/`menuApp`; `dialogos.archivos({mensaje, desde})` y `guardarArchivo` (distingue cancelar de un error); `limiteEstado` y `estadoEnFila`.",
+   "migrar": [
+    "Nada obligatorio: `pieza.py actualizar <app> host-escritorio`.",
+    "Si tu app se abre con `--oculta` y quería mostrar la ventana igual (p. ej. la primera vez), pasa `abrirAlArrancar: () => …`.",
+    "Una app que ya existía antes de pasar al host: `userData: \"sistema\"` (y borra el `app.setPath(\"userData\", …)` que lo arreglaba). Lo que cada app puede borrar está en «Si venías de la 0.2.0» del README."
+   ]
+  },
   {
    "version": "0.2.0",
    "tipo": "mejora",
