@@ -196,6 +196,16 @@ red). Así el catálogo se recorre mirando, no leyendo.
   la pieza no entra.
 - **Mira los que hay** en `piezas/*/icono.svg` para mantener el mismo trazo. Un ícono no lleva texto ni logos de marcas.
 
+## Crear una app nueva (`pieza.py crear`)
+
+`pieza.py crear <carpeta> --id <id> --nombre <Nombre> [--plataformas mac,windows,linux] [--piezas ia,…] [--repo dueño/repo]
+[--datos sistema|visible]` = `iniciar` + las piezas con `recomendar.siempre` para esas plataformas (las que están por extraer se
+saltan y se dicen) + las pedidas + `esqueleto` + `github` (las dos al final: lo que escriben una vez mira qué piezas ya están) + la
+acción de ejemplo en `app.json` → `acciones` + `acciones.json` + `generar`. Lo propio de la app sale de las plantillas `una_vez` de
+la pieza [`esqueleto`](../piezas/esqueleto/) (desde ahí es de la app): `pieza.py` no tiene nada de ninguna app. Al final imprime cada
+archivo con sus `La app:` (lo que completa la IA; sin lo copiado ni lo que se regenera) y las `tareas_persona` de las piezas. No toca
+una carpeta que ya tiene algo; el nombre es una palabra (de él salen el target de Swift y los archivos de las versiones).
+
 ## `app.json` (en la raíz de cada app)
 
 ```json

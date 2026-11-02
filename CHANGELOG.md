@@ -1,6 +1,26 @@
 # Cambios
 
 ## Sin publicar
+- **`pieza.py crear`: una app nueva andando de una vez** (`crear <carpeta> --id … --nombre … --plataformas mac,windows,linux
+  [--piezas ia,…] [--repo dueño/repo]`): `iniciar` + las piezas de siempre para esas plataformas + las pedidas + la pieza nueva
+  **`esqueleto` 0.1.0** (lo propio mínimo, escrito una vez y desde ahí de la app: `ui/` con bienvenida e idioma primero, una pantalla
+  y un script de ejemplo con su acción declarada, `<Nombre>App.swift` con `Host.arrancar`, `escritorio/src/main.js` con `crearHost`,
+  `ui/demo.json`, `pruebas/correr.sh`, `test_app.py`, `interfaz.mjs`, `contrato_app.py` vacío y `README.md`) + `github`, la acción de
+  ejemplo, `acciones.json` y todo lo generado (empaquetado, workflows, guías, página). Al final dice qué le toca a la IA (cada archivo
+  con sus `La app:`) y qué a la persona. La app creada pasa de una su `bash pruebas/correr.sh` (contrato, Python, la interfaz y la
+  página en Chromium, privacidad) con `pieza.py estado` limpio; `pruebas/test_crear.py` lo prueba con dos apps (Receta: Mac, Windows y
+  Linux con «ia»; Nota: solo Mac, sin IA) y, con `ELECTRON`, abre la de Linux de verdad (`crear_electron.mjs`). **Medido** (README de
+  `esqueleto`): Pieza pone 10.875 líneas en Receta y 8.154 en Nota; lo marcado para la IA son 49 y 46 líneas `La app:` más reemplazar
+  el esqueleto (475 y 441 líneas). En Esquema se escribieron a mano 264 líneas de `correr.sh` + `contrato.py`, 535 de `.github/`, 666 de
+  `docs/` (HTML, JS, CSS, XML), 258 de `app/` sin las piezas y 207 de `build.sh` + `empaquetar.sh` + `package.json`: aquí vienen hechas.
+- **Flujo de crear (versión 12, plugin 0.9.0):** entrevista → `catalogo`/`ficha` → **un** `pieza.py crear` → la IA llena solo lo
+  marcado y lo propio → `pieza.py repo configurar` → `docs/pagina.json` + `generar` → comunidad y anuncio. Sin los pasos que ya hacen
+  las piezas (escribir `revisar.yml`/`publicar.yml`, `CONTRIBUTING.md`, configurar el repo y la página a mano): 193 → 128 líneas
+  (18.019 → 11.651 bytes). `app-escritorio-multiplataforma` (versión 2): lo que ya es pieza es una tabla «usa la pieza» (120 → 93
+  líneas). `gemini/contexto.md`, `/pieza:crear`, `docs/otras-ias.md` y la página dicen el comando nuevo.
+- **`bienvenida` 0.4.1 (arreglo):** el texto de «Todo listo» lleva `data-sin-traducir` (ya sale traducido con `T`; `traducirDOM` lo
+  contaba como un texto sin traducir y la prueba de una app fallaba en inglés). **`contrato` 0.1.1 (arreglo):** `probarIA` (de las
+  filas de «Tu IA» de «componentes») no se exige a una app sin la pieza «ia» que no pinta esas filas.
 - **Plantillas: piezas que generan archivos desde `app.json`** (`pieza.json` → `generar`, `herramientas/plantillas.py`, sección
   «Plantillas» de `docs/enchufe.md`). Solo datos (`{{x}}`, filtros que escapan o validan, `#si`/`#cada`; `${{ … }}` de Actions
   queda tal cual): nada de una pieza se ejecuta. Lo generado queda con su huella en `piezas.json` → `generados` y nunca se pisa si

@@ -1,6 +1,6 @@
 {
   "name": "pieza",
-  "version": "0.8.1",
+  "version": "0.9.0",
   "description": "Crear apps abiertas que viven en tu computador con piezas probadas, y revisar aportes de la comunidad con el mismo flujo.",
   "contextFileName": "gemini/contexto.md"
 }

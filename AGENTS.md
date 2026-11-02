@@ -9,6 +9,8 @@ menos tokens: elegir piezas, no reescribirlas.
 
 ## Antes de escribir algo en una app
 
+0. **¿Es una app nueva?** `python3 herramientas/pieza.py crear <carpeta> --id … --nombre … --plataformas … [--piezas …]` la deja
+   andando de una vez (con sus pruebas en verde); la IA escribe solo lo que el comando dice al final.
 1. **Mira `docs/catalogo.md`.** Si la pieza existe, `python3 herramientas/pieza.py agregar <pieza> <app>`. No la reescribas.
 2. **Si está «por extraer»**, extráela aquí primero (abajo) y después agrégala a la app. Una vez, para todas.
 3. **Si es nueva y la van a necesitar dos apps o más**, nace aquí como pieza. Si es solo de una app, va en la app.
@@ -73,8 +75,8 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 | Ruta | Qué es |
 |---|---|
 | `piezas/<id>/` | Cada pieza: `pieza.json` + código + README |
-| `herramientas/pieza.py` | `listar`, `catalogo`, `ficha`, `iniciar`, `agregar`, `estado`, `actualizar`, `aviso`, `diferencias`, `revisar`, `acciones` (arma `acciones.json` para el host), `generar` (vuelve a llenar lo que generan las piezas desde `app.json`), `repo configurar` (los `gh` que dejan el repo de una app listo), `skills estado/instalar` |
-| `herramientas/plantillas.py` | El motor de las plantillas (`pieza.json` → `generar`): solo datos, filtros que escapan o validan; ver `docs/enchufe.md`, «Plantillas». Lo usan `empaquetado` y `github` |
+| `herramientas/pieza.py` | `crear` (una app nueva andando de una vez: las piezas + el esqueleto de la pieza `esqueleto` + todo lo generado; dice qué le toca a la IA y a la persona), `listar`, `catalogo`, `ficha`, `iniciar`, `agregar`, `estado`, `actualizar`, `aviso`, `diferencias`, `revisar`, `acciones` (arma `acciones.json` para el host), `generar` (vuelve a llenar lo que generan las piezas desde `app.json`), `repo configurar` (los `gh` que dejan el repo de una app listo), `skills estado/instalar` |
+| `herramientas/plantillas.py` | El motor de las plantillas (`pieza.json` → `generar`): solo datos, filtros que escapan o validan; ver `docs/enchufe.md`, «Plantillas». Lo usan `empaquetado`, `github`, `pagina` y `esqueleto` |
 | `docs/enchufe.md` | El contrato: `pieza.json`, `app.json`, `piezas.json`, reglas de seguridad, host genérico |
 | `docs/catalogo.md` | Qué piezas hay, cuáles faltan y en qué orden, y brechas encontradas en las apps |
 | `comunidad/catalogo.json`, `herramientas/comunidad.py`, `.github/workflows/comunidad.yml` | El catálogo de la comunidad: piezas en repos de otras personas (topic `pieza-comunidad`), validadas cada día (ícono incluido) y con su estado de revisión fijado a un commit y a la huella de cada archivo. Guía en `docs/comunidad.md` |
@@ -92,6 +94,6 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 | `.github/` | `workflows/` (`revisar.yml`, `pagina.yml`: actions fijadas por SHA, permisos mínimos, `persist-credentials: false`), `ISSUE_TEMPLATE/` (error, idea, pieza, probar; seguridad y Discussions en `config.yml`), `pull_request_template.md` (checklist) y `dependabot.yml` (solo actions, con `cooldown`) |
 | `herramientas/revisar_privacidad.sh` | Busca datos personales antes de cada commit (`.terminos-privados`, local y nunca versionado); `--generico` corre en `pruebas/correr.sh` |
 | `.claude/agents/` | `pieza-revisor` (revisar PRs: regla de oro, ficha honesta, versión y cambios, brechas conocidas; nunca junta sin aprobación) y `pieza-privacidad` (antes de cada commit) |
-| `pruebas/` | `correr.sh` (valida los `pieza.json`, la versión de cada flujo, que toda action esté fijada por SHA y que la plantilla «Pieza al día» use las mismas versiones, la privacidad, `test_piezas.py`: una app ficticia con CLIs de IA falsos, y `test_piezas_datos.py`: red, catálogo, transcribir, trabajos, contenido e IA en vivo con servidores, whisper y CLIs falsos), `piezas_js.mjs` (las piezas de JavaScript en Node), `host_escritorio.mjs` (el host de Electron en Node, con un Electron falso) y `host_escritorio_electron.mjs` (con Electron de verdad y Xvfb, si `ELECTRON` apunta a uno), `test_pagina_contrato.py` (las piezas `pagina` y `contrato` con una app ficticia) y `pagina.mjs` (la página generada en Chromium), `swift/revisar_host_mac.sh` (solo en un Mac: compila y prueba `host-mac`) e `interfaz.mjs` (las piezas de interfaz en Chromium con Playwright, con la CSP de las apps: foco, tema, contraste AA, 390 px; sin Playwright se salta) |
+| `pruebas/` | `correr.sh` (valida los `pieza.json`, la versión de cada flujo, que toda action esté fijada por SHA y que la plantilla «Pieza al día» use las mismas versiones, la privacidad, `test_piezas.py`: una app ficticia con CLIs de IA falsos, y `test_piezas_datos.py`: red, catálogo, transcribir, trabajos, contenido e IA en vivo con servidores, whisper y CLIs falsos), `piezas_js.mjs` (las piezas de JavaScript en Node), `host_escritorio.mjs` (el host de Electron en Node, con un Electron falso) y `host_escritorio_electron.mjs` (con Electron de verdad y Xvfb, si `ELECTRON` apunta a uno), `test_pagina_contrato.py` (las piezas `pagina` y `contrato` con una app ficticia), `test_crear.py` (`pieza.py crear` de dos apps, Receta y Nota, y sus propias pruebas en verde; con `ELECTRON`, `crear_electron.mjs` abre la de Linux) y `pagina.mjs` (la página generada en Chromium), `swift/revisar_host_mac.sh` (solo en un Mac: compila y prueba `host-mac`) e `interfaz.mjs` (las piezas de interfaz en Chromium con Playwright, con la CSP de las apps: foco, tema, contraste AA, 390 px; sin Playwright se salta) |
 
 Licencia AGPL-3.0, como las apps.

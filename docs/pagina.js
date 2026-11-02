@@ -23,7 +23,7 @@
     por_dentro: "Under the hood, for developers",
     p1: "Describe your idea", p1p: "One round of questions. Your AI recommends the pieces that fit, and the ones every app needs come along.",
     p2: "Review the spec", p2p: "Before anything is created you see it all: screens, settings, permissions per platform, what it connects to and what only you can do.",
-    p3: "Plug in and grow", p3p: "Pieces are copied into your app and they're yours. When one improves you get it without losing your changes; when you improve it, it goes back to every app.",
+    p3: "Plug in and grow", p3p: "One command (pieza.py crear) builds the whole app: the pieces, packaging, the repo, the website and a starter of its own that already works; your AI writes only what's unique to it. Pieces are copied into your app and they're yours. When one improves you get it without losing your changes; when you improve it, it goes back to every app.",
     h_emp: "Get started", q_ia: "Which AI do you use?", otra: "Other", otra_ia: "Another AI: ",
     paso_copia: "Copy and paste this in your terminal", paso_bajar: "Download them and upload them to your account",
     paso_clonar: "Clone it and ask it to follow AGENTS.md", copiar: "Copy", ver_det: "See details",

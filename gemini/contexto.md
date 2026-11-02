@@ -4,7 +4,8 @@ Pieza es un framework modular y abierto: piezas probadas para apps que viven en 
 actualizaciones seguras, catálogo de la comunidad…). Esta extensión trae cuatro skills (en `skills/`):
 
 - **lanzar-proyecto-open-source**: crear una app nueva desde una idea, eligiendo piezas y mostrando antes la ficha completa
-  (pantallas, configuración, permisos y red). Comando: `/pieza:crear <idea>`.
+  (pantallas, configuración, permisos y red); la app sale de **un** comando (`pieza.py crear`) y la IA escribe solo lo propio.
+  Comando: `/pieza:crear <idea>`.
 - **revisar-aportes-open-source**: revisar pull requests de la comunidad con veredicto, sin juntar nunca sin aprobación.
   Comando: `/pieza:revisar <repo o PR>`.
 - **app-escritorio-multiplataforma**: una sola interfaz web con app nativa en Mac y Electron en Windows y Linux.

@@ -29,6 +29,9 @@ Cada skill trae esta tabla: el flujo es el mismo y solo cambia la herramienta pa
 | Leer páginas web | `WebFetch` | `web_fetch` | su navegación o `curl` |
 | Las reglas del repo | `CLAUDE.md` → `AGENTS.md` | `GEMINI.md` → `AGENTS.md` | `AGENTS.md` |
 
+Las herramientas de Pieza son Python con la biblioteca estándar y sirven igual en todas: una app nueva sale de
+`python3 herramientas/pieza.py crear <carpeta> --id … --nombre … --plataformas …` y la IA escribe solo lo propio.
+
 **Lo que no cambia en ninguna:** preguntar antes de publicar, nunca juntar un PR sin aprobación, la regla de oro (lo que escribe
 la persona nunca va como argumento de un proceso), la IA de la persona con su cuenta y sin herramientas dentro de las apps, y nada
 inventado.
