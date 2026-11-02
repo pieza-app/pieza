@@ -37,6 +37,17 @@ Con `"datos": "visible"` la carpeta es `~/<Nombre>/.<id>/` (como Graba: `~/Graba
 la crea `nucleo`). En las pruebas, `<ID>_CARPETA` mueve `~/<Nombre>` entero (o `<ID>_DATOS` solo la interna) a una carpeta
 temporal: nunca se tocan los datos reales. `"privado": true` en `app.json` deja todo archivo que escribe `nucleo` en 0600.
 
+### `ruta_en(base, relativa)`
+
+La ruta absoluta de `relativa` dentro de `base`, o `None` si se sale (`..`, absoluta, un enlace hacia afuera). Desde 0.7.1 también
+`None` si `base` está vacía, es relativa o no es una carpeta que existe: el `""` que manda el inyector `carpetaActual` sin carpeta
+nunca vuelve a ser la carpeta de trabajo del script.
+
+### Si venías de la 0.7.0
+
+Nada que cambiar. Esquema: `bin/carpeta.py` puede dejar de revisar `_sin_carpeta` antes de `ruta_en` (ya da `None`); si lo dejas, no
+estorba. Si llamabas a `ruta_en` con una carpeta que todavía no existe, créala antes.
+
 ### Una carpeta propia (`"datos": {"carpeta": "~/minuta"}`)
 
 Para una app cuyos datos ya viven en una carpeta suya (en Minuta, `~/minuta` es a la vez el checkout y los datos): `nucleo` la usa

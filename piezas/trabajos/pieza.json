@@ -3,7 +3,7 @@
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "id": "trabajos",
- "version": "0.2.0",
+ "version": "0.2.1",
  "estado": "lista",
  "nombre": "Trabajos largos",
  "categoria": "datos",
@@ -58,6 +58,15 @@
   "nucleo": ">=0.7.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.2.1",
+   "tipo": "arreglo",
+   "resumen": "`mantener_vivo()` también deja que el script limpie al cerrar la app: el host manda SIGTERM a lo que siga corriendo y el script sale con `SystemExit` (corren los `finally` y los `with`, así se borran los temporales). Si la app ya tenía su propio manejador de SIGTERM, gana el suyo; `mantener_vivo(limpiar_al_cortar=False)` no toca la señal. Pedido por Corta.",
+   "migrar": [
+    "Nada obligatorio.",
+    "Corta: borra `signal.signal(signal.SIGTERM, lambda *_: sys.exit(143))` después de `trabajos.mantener_vivo()` en bin/render.py y bin/importar.py: ahora lo hace la pieza."
+   ]
+  },
   {
    "version": "0.2.0",
    "tipo": "mejora",

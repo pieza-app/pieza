@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "nucleo",
- "version": "0.7.0",
+ "version": "0.7.1",
  "estado": "lista",
  "nombre": "Núcleo",
  "icono": "icono.svg",
@@ -26,6 +26,15 @@
  "acciones": {},
  "textos": {},
  "cambios": [
+  {
+   "version": "0.7.1",
+   "tipo": "arreglo",
+   "seguridad": true,
+   "resumen": "Seguridad: `ruta_en(base, relativa)` devuelve None si `base` está vacía, es relativa o no es una carpeta que existe. Antes `ruta_en(\"\", \"a.md\")` daba `<carpeta de trabajo>/a.md`: con el inyector `carpetaActual` que manda \"\" sin carpeta, una acción declarada de leer o escribir caía en la carpeta temporal del script.",
+   "migrar": [
+    "Nada obligatorio. Si llamabas a ruta_en con una carpeta que todavía no existe (para crearla después), créala antes: ahora devuelve None."
+   ]
+  },
   {
    "version": "0.7.0",
    "tipo": "mejora",

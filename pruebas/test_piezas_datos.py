@@ -342,6 +342,25 @@ class Catalogo(App):
         r = self.indice([{**alias, "archivo": buena["ruta"], "bytes": buena["tamano"]}])
         self.assertEqual(r["plantillas"][0]["ruta"], buena["ruta"])
 
+    def test_un_campo_archivo_del_contenido_no_se_quita(self):
+        # Una plantilla de Esquema tiene su propio «archivo» (el nombre sugerido): es contenido, no el alias viejo de «ruta».
+        with open(os.path.join(self.bin, "formato_archivo.py"), "w") as f:
+            f.write("CAMPOS = ('id', 'categoria', 'nombre', 'archivo')\n"
+                    "def validar(p):\n    return [k for k in p if k not in CAMPOS] + ([] if isinstance(p.get('archivo'), str) else ['archivo'])\n")
+        self.app_json(catalogo={"repo": "ana-app/ana-catalogo", "tipos": {"plantillas": {"validador": "formato_archivo"}}})
+        obj = {"id": "acta", "categoria": "basicas", "nombre": "Acta", "archivo": "acta-{fecha}.md"}
+        buena, crudo = self.entrada(obj)
+        r = self.indice([buena])
+        self.assertEqual([(x["id"], x["archivo"], x["ruta"]) for x in r["plantillas"]],
+                         [("acta", "acta-{fecha}.md", "plantillas/basicas/acta.json")], "«archivo» con «ruta» es contenido")
+        archivo = os.path.join(self.tmp.name, "acta.json")
+        open(archivo, "wb").write(crudo)
+        i = self.script("catalogo.py", "instalar", {"tipo": "plantillas", "archivo": archivo, "id": "acta", "sha256": buena["sha256"]})
+        self.assertTrue(i["ok"], i)
+        self.assertEqual(i["item"]["archivo"], "acta-{fecha}.md")
+        lista = self.script("catalogo.py", "listar", {"tipo": "plantillas"})["plantillas"]
+        self.assertEqual([x.get("archivo") for x in lista if x["id"] == "acta"], ["acta-{fecha}.md"])
+
     def test_instalar_exige_huella_e_indice_validado(self):
         buena, crudo = self.entrada(self.p("buena", "Buena"))
         archivo = os.path.join(self.tmp.name, "bajado.json")

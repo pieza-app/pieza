@@ -470,6 +470,10 @@ def errores_pieza(pid, p, ids, carpeta="local"):
                 continue
             if c["tipo"] == "rompe" and not c.get("migrar"):
                 e.append(f"cambio {c['version']}: lo que rompe necesita «migrar» (los pasos)")
+            if "migrar" in c and (not isinstance(c["migrar"], list)
+                                  or not all(isinstance(x, str) and x.strip() for x in c["migrar"])):
+                # «Pieza al día» recorre la lista: un texto saldría con una viñeta por letra.
+                e.append(f"cambio {c['version']}: «migrar» es una lista de pasos (textos), no un texto")
             if previa and semver(c["version"]) >= semver(previa["version"]):
                 e.append("«cambios» va de la versión más nueva a la más vieja, sin repetir")
             if previa:
@@ -1039,7 +1043,8 @@ def aviso(app):
         l.append(f"### {x['pieza']} {x['actual']} → {x['nueva']}" + (" · seguridad" if x["seguridad"] else ""))
         for c in x["cambios"]:
             l.append(f"- **{c['version']}** ({c['tipo']}{', seguridad' if c.get('seguridad') else ''}): {c['resumen']}")
-            for paso in c.get("migrar", []):
+            pasos = c.get("migrar", [])
+            for paso in [pasos] if isinstance(pasos, str) else pasos:  # una pieza de antes con un texto: un solo paso
                 l.append(f"  - {paso}")
         if x["cambiados_por_la_app"]:
             l.append(f"- Esta app cambió {', '.join(f'`{d}`' for d in x['cambiados_por_la_app'])}: compara con "

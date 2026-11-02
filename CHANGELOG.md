@@ -1,6 +1,15 @@
 # Cambios
 
 ## Sin publicar
+- **Lo que salió al pasar las seis apps al host (arreglos y seguridad):** `catalogo` 0.2.1: un campo `archivo` o `bytes` del
+  contenido ya no se quita (eran los nombres viejos de `ruta`/`tamano` y se borraban de todo objeto: ninguna plantilla de Esquema
+  pasaba el validador); ahora solo se quitan en una entrada del índice y si están en vez de `ruta`/`tamano` (el arreglo de la copia
+  de Esquema, con su prueba). `nucleo` 0.7.1 (seguridad): `ruta_en` con una base vacía, relativa o que no existe da `None` (antes
+  `ruta_en("", "a.md")` caía en la carpeta de trabajo del script). `trabajos` 0.2.1: `mantener_vivo()` también hace que SIGTERM
+  (el host al cerrar) salga con `SystemExit`, así corren los `finally` y se borran los temporales; un manejador propio de la app
+  gana. `pieza.py revisar` exige que `migrar` sea una lista de pasos (el `migrar` de `catalogo` 0.2.0 era un texto y el aviso de
+  «Pieza al día» salía con una viñeta por letra; también los de `cifrado`, `red` y `transcribir`), y `aviso` aguanta un texto de
+  antes como un solo paso.
 - **Lo que salió al pasar Esquema a `host-mac`/`host-escritorio` (0.2.0, antes de que migren las otras cinco):** `"limite":
   "trabajo"` (sin tope mientras lata: la pieza `trabajos` 0.2.0 toca `<ID>_LATIDO`; si deja de latir por 45 s, se corta) y
   límites por orden (`{"segun": "orden", "valores": {…}, "otro": …}`); `maximo` por acción (la entrada hasta 50 MB) y `vigilar`

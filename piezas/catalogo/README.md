@@ -24,7 +24,11 @@ y cada archivo contra el **último índice validado** (id, tamaño y SHA-256 obl
 - Lo incluido en la app: `<recursos>/<incluidos>/[<categoria>/]<id>.json`. Lo descargado: `<carpeta de datos>/<local>/<id>.json`
   (0600), gana sobre lo incluido. `origen: false` si la interfaz no quiere el campo `origen`.
 - Sin conexión, `listar` del host devuelve la última lista validada (`catalogo.py ultima`, acción `catalogoUltima`) con
-  `sin_conexion: true`, `fecha` y la frase: la galería se ve; descargar pide abrirla de nuevo con conexión.
+  `sin_conexion: true`, `fecha` y la frase: la galería se ve; descargar pide abrirla de nuevo con conexión. Una redirección o un
+  índice que no llega también cuentan como «sin conexión» (no `ok: false`): una prueba de la app que esperaba `ok: false` ahí
+  tiene que esperar `sin_conexion: true`.
+- `archivo` y `bytes` (los nombres viejos de `ruta` y `tamano` en algunos índices) solo se leen en una entrada del índice y solo si
+  falta `ruta`/`tamano`: un campo `archivo` del contenido (el nombre sugerido de una plantilla) es contenido y se queda.
 - `pieza.py agregar catalogo` suma a `app.json` un esqueleto de `catalogo` para completar (`repo` y `tipos`).
 
 ## API
@@ -45,7 +49,7 @@ objeto descargado.
 
 ```swift
 // Package.swift: .target(name: "PiezaCatalogo") y "PiezaCatalogo" en las dependencias del ejecutable.
-Catalogo.configurar(appJSON: Rutas.recursos.appendingPathComponent("app.json"), agente: "Ana/\(version)") { s, a, d, fin in
+Catalogo.configurar(appJSON: Host.recursos.appendingPathComponent("app.json"), agente: "Ana/\(version)") { s, a, d, fin in
     Procesador.conEntrada(s, a, d, fin: fin)
 }
 // case "catalogo": Catalogo.listar(tipo) { self.llamar("catalogoListo", $0) }
@@ -54,6 +58,11 @@ Catalogo.configurar(appJSON: Rutas.recursos.appendingPathComponent("app.json"), 
 const cat = require("./catalogo").crear({ fetch: net.fetch, procesador: Procesador, appJson, agente: `Ana/${version}` });
 ACCIONES.catalogo = async ({ tipo }) => llamar("catalogoListo", await cat.listar(tipo));
 ```
+
+## Si venías de la 0.2.0
+- **Todas:** nada que cambiar. Un contenido con su propio campo `archivo` o `bytes` ya pasa el validador.
+- **Esquema:** tu copia de `bin/catalogo.py` tenía este mismo arreglo (`ALIAS`): con `pieza.py actualizar . catalogo --forzar`
+  vuelve a ser la de Pieza y `pieza.py estado` deja de mostrarla como cambiada.
 
 ## Si venías de la 0.1
 - **Todas:** `Tp(r.frase)` en vez de `Tp(r.plantilla)` para los errores. Revisa que tu validador acepte el objeto entero del
