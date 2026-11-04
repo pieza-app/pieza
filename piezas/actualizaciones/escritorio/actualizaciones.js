@@ -11,8 +11,14 @@
 // Nada de la app adentro: repo, nombre y archivos llegan como parámetros. Electron también (app, net), así la lógica se
 // prueba en Node sin Electron.
 //
+// Firma (opcional, desde 0.4): con llaves públicas Ed25519 (`crear({llaves})` o app.json → actualizaciones.llaves con
+// `usarApp(host.app)`), cada archivo vale solo si el Release trae su `.sig`: la firma de `<id>-actualizacion|<versión>|<sha256>`
+// con la llave privada que vive en el Mac de quien mantiene la app (nunca en GitHub). Así alguien que tome la cuenta de GitHub no
+// puede publicar una versión falsa ni volver a una vieja. Sin llaves, todo igual que antes.
+//
 //   const { crear } = require("./actualizaciones");
 //   const act = crear({ app, net, repo: "ana-app/ana", nombre: "Ana" });
+//   act.usarApp(host.app);                  // las llaves de app.json → actualizaciones.llaves (si las hay)
 //   const r = await act.revisar();          // {hay, version, notas, sinConexion, texto, valores, desarrollo}
 //   await act.instalar((avance) => ventana.llamar("actualizacionProgreso", avance));
 "use strict";
@@ -31,11 +37,16 @@ const TEXTOS = {
   errorBajar: "No pude descargar la versión nueva. Revisa tu conexión e intenta de nuevo.",
   errorArmar: "No pude preparar la versión nueva. {app} sigue igual que antes; intenta de nuevo más tarde.",
   sinDescarga: "No encontré la descarga de la versión nueva.",
+  firma: "No pude comprobar que la versión nueva sea de {app}: le falta la firma o no es válida. {app} sigue igual que antes.",
 };
 const REPO = /^[A-Za-z0-9-]{1,39}\/[A-Za-z0-9._-]{1,100}$/;
 const BASE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,60}$/;
 const VERSION = /^\d{1,6}(\.\d{1,6}){0,3}$/;
 const MAX_HUELLA = 4096;
+const ID = /^[a-z0-9][a-z0-9._-]{0,60}$/;
+const MAX_LLAVES = 2;
+/** Lo que va antes de los 32 bytes de una llave pública Ed25519 en formato SPKI (DER). */
+const SPKI_ED25519 = Buffer.from("302a300506032b6570032100", "hex");
 
 /** Texto entre comillas simples para bash: nada de lo que va adentro (rutas, URL) se interpreta como código. */
 const comillas = (x) => "'" + String(x).replace(/'/g, "'\\''") + "'";
@@ -70,6 +81,39 @@ function leerHuella(texto) {
   const h = String(texto || "").trim().split(/\s+/)[0].toLowerCase();
   return /^[0-9a-f]{64}$/.test(h) ? h : null;
 }
+/** Una llave pública Ed25519 (32 bytes en base64) como KeyObject; null si no es una. */
+function llavePublica(b64) {
+  const s = String(b64 || "").trim();
+  if (!/^[A-Za-z0-9+/]{43}=$/.test(s)) return null;
+  const raw = Buffer.from(s, "base64");
+  if (raw.length !== 32) return null;
+  try { return crypto.createPublicKey({ key: Buffer.concat([SPKI_ED25519, raw]), format: "der", type: "spki" }); } catch { return null; }
+}
+/** Lo que se firma: `<id>-actualizacion|<versión sin v>|<sha256 en minúsculas>` (lo mismo que herramientas/firmar de Pieza). */
+const mensajeFirmado = (id, version, sha256) => `${id}-actualizacion|${version}|${String(sha256).toLowerCase()}`;
+/** ¿La firma (base64, 64 bytes) es de alguna de las llaves? */
+function firmaValida(firma, mensaje, llaves) {
+  const s = String(firma || "").trim();
+  if (!/^[A-Za-z0-9+/]{86}==$/.test(s)) return false;
+  const f = Buffer.from(s, "base64");
+  return (llaves || []).some((k) => {
+    const pub = llavePublica(k);
+    try { return !!pub && crypto.verify(null, Buffer.from(mensaje, "utf8"), pub, f); } catch { return false; }
+  });
+}
+/** Revisa una descarga con firma. null si todo calza; si no, el código del error (una clave de TEXTOS): la huella publicada
+ *  tiene que ser la del archivo, la versión firmada la del Release y más nueva que la instalada, y la firma de una de las llaves. */
+function revisarDescarga({ huellaArchivo, textoHuella, firma, version, instalada, id, llaves }) {
+  const esperada = leerHuella(textoHuella);
+  if (!esperada || esperada !== String(huellaArchivo).toLowerCase()) return "errorBajar";
+  if (!llaves || !llaves.length || !esMayor(version, instalada) || !firmaValida(firma, mensajeFirmado(id, limpiarVersion(version), esperada), llaves)) return "firma";
+  return null;
+}
+/** Las llaves de una lista (hasta 2, todas válidas) o null si alguna no sirve. */
+function llavesValidas(l) {
+  return Array.isArray(l) && l.length <= MAX_LLAVES && l.every((k) => typeof k === "string" && llavePublica(k)) ? l.slice() : null;
+}
+
 /** Nombres fijos de los archivos de cada Release (los mismos que usan publicar.yml, instalar.sh e instalar.ps1). */
 function archivosDe(base) {
   return { windows: `${base}-Windows.exe`, appimage: `${base}-Linux.AppImage`, tar: `${base}-Linux.tar.gz`, mac: `${base}-macOS.zip` };
@@ -123,7 +167,7 @@ async function descargar(net, url, destino, progreso = () => {}) {
 }
 
 /**
- * opciones: {app, net, repo, nombre, base?, ejecutable?} y, para probar, {home, plataforma, entorno, execPath, pid, spawn,
+ * opciones: {app, net, repo, nombre, base?, ejecutable?, llaves?, id?} y, para probar, {home, plataforma, entorno, execPath, pid, spawn,
  * tmpdir, espera}. `base` = nombre de los archivos (sin tildes); `ejecutable` = el binario de Linux (por defecto base en minúsculas).
  */
 function crear(opciones) {
@@ -134,6 +178,12 @@ function crear(opciones) {
   }
   const ejecutable = o.ejecutable || base.toLowerCase();
   if (!BASE.test(ejecutable)) throw new Error("actualizaciones: «ejecutable» no es un nombre de archivo simple.");
+  // La firma: llaves públicas (hasta 2) y el id del mensaje firmado (el de app.json, o la base en minúsculas).
+  let llaves = o.llaves === undefined ? [] : llavesValidas(o.llaves);
+  if (!llaves) throw new Error("actualizaciones: «llaves» es una lista de hasta 2 llaves públicas Ed25519 (32 bytes en base64).");
+  let id = o.id || base.toLowerCase();
+  if (!ID.test(id)) throw new Error("actualizaciones: «id» no es un id simple.");
+  let mala = false; // app.json traía llaves que no sirven: sin actualizaciones (mejor que sin revisar la firma)
   const home = o.home || os.homedir(), plataforma = o.plataforma || process.platform, entorno = o.entorno || process.env;
   const spawn = o.spawn || child.spawn, espera = o.espera ?? 1500, pid = o.pid ?? process.pid;
   const valores = { app: o.nombre };
@@ -144,12 +194,27 @@ function crear(opciones) {
     disponible: { hay: false },
     _urls: null,
     get version() { return o.app.getVersion(); },
+    get firmadas() { return llaves.length > 0; },
     instalacion: inst,
+
+    /** Toma `id` y `actualizaciones.llaves` de app.json (el objeto, p. ej. `host.app`), salvo lo que se dio en `crear`. Si
+     *  `actualizaciones` está mal escrita, ya no hay actualizaciones (y lo dice en la consola). */
+    usarApp(a) {
+      if (!a || typeof a !== "object") return act;
+      if (!o.id && typeof a.id === "string" && ID.test(a.id)) id = a.id;
+      if (o.llaves === undefined && a.actualizaciones !== undefined) {
+        const sec = a.actualizaciones;
+        const l = sec && typeof sec === "object" && !Array.isArray(sec) ? (sec.llaves === undefined ? [] : llavesValidas(sec.llaves)) : null;
+        if (l) llaves = l;
+        else { mala = true; console.error("actualizaciones: app.json → actualizaciones.llaves no son llaves Ed25519 válidas; no busco versiones nuevas."); }
+      }
+      return act;
+    },
 
     /** {hay, version, notas, sinConexion, texto, valores}. Sin empaquetar (desarrollo) o puesta a mano, nunca hay. */
     async revisar() {
       const i = inst();
-      if (!i) return act._fin(false);
+      if (!i || mala) return act._fin(false);
       let r;
       try {
         r = await o.net.fetch(`https://api.github.com/repos/${o.repo}/releases/latest`, {
@@ -161,9 +226,9 @@ function crear(opciones) {
       const tag = limpiarVersion(d && d.tag_name);
       const assets = Array.isArray(d && d.assets) ? d.assets : [];
       const url = (n) => assets.find((a) => a && a.name === n)?.browser_download_url;
-      const archivo = url(i.archivo), huella = url(i.archivo + ".sha256");
+      const archivo = url(i.archivo), huella = url(i.archivo + ".sha256"), firma = url(i.archivo + ".sig");
       if (!tag || !esMayor(tag, act.version) || !esDescargaNuestra(archivo, o.repo) || !esDescargaNuestra(huella, o.repo)) return act._fin(false);
-      act._urls = { archivo, huella };
+      act._urls = { archivo, huella, firma: esDescargaNuestra(firma, o.repo) ? firma : null, version: tag };
       const notas = String(d.body || "").split("\n").slice(0, 4).join("\n").slice(0, 1000);
       return act._fin(true, false, tag, notas);
     },
@@ -179,24 +244,35 @@ function crear(opciones) {
      *  app se cierra y se vuelve a abrir. Quien llama se asegura antes de que no haya nada guardándose. */
     async instalar(avisar) {
       const i = inst();
-      if (!i || !act._urls || !esDescargaNuestra(act._urls.archivo, o.repo) || !esDescargaNuestra(act._urls.huella, o.repo)) {
+      if (!i || mala || !act._urls || !esDescargaNuestra(act._urls.archivo, o.repo) || !esDescargaNuestra(act._urls.huella, o.repo)) {
         return avisar(aviso("error", "sinDescarga"));
       }
+      // Con firma: sin .sig en el Release, ni se baja.
+      if (llaves.length && !act._urls.firma) return avisar(aviso("error", "firma"));
       const tmp = fs.mkdtempSync(path.join(o.tmpdir || os.tmpdir(), `${ejecutable}-actualizacion-`));
       const archivo = path.join(tmp, i.archivo);
       const borrar = () => fs.rmSync(tmp, { recursive: true, force: true });
       avisar(aviso("1", "bajando"));
-      let huella, esperada;
+      let huella, textoHuella, firma = null;
+      const bajarTexto = async (u) => {
+        const r = await o.net.fetch(u);
+        if (!r.ok || (r.url && !String(r.url).startsWith("https://"))) throw new Error("texto");
+        return (await r.text()).slice(0, MAX_HUELLA);
+      };
       try {
         let ultimo = 0;
         huella = await descargar(o.net, act._urls.archivo, archivo, (p) => {
           if (Date.now() - ultimo > 500) { ultimo = Date.now(); avisar(aviso("1", "bajando", { pct: Math.round(p * 100) })); }
         });
-        const r = await o.net.fetch(act._urls.huella);
-        if (!r.ok || (r.url && !String(r.url).startsWith("https://"))) throw new Error("huella");
-        esperada = leerHuella((await r.text()).slice(0, MAX_HUELLA));
+        textoHuella = await bajarTexto(act._urls.huella);
+        if (llaves.length) firma = await bajarTexto(act._urls.firma);
       } catch { borrar(); return avisar(aviso("error", "errorBajar")); }
+      const esperada = leerHuella(textoHuella);
       if (!esperada || huella !== esperada) { borrar(); return avisar(aviso("error", "errorBajar")); }
+      if (llaves.length) {
+        const codigo = revisarDescarga({ huellaArchivo: huella, textoHuella, firma, version: act._urls.version, instalada: act.version, id, llaves });
+        if (codigo) { borrar(); return avisar(aviso("error", codigo)); }
+      }
       avisar(aviso("2", "preparando"));
       const listo = () => avisar(aviso("3", "instalando"));
       try {
@@ -243,4 +319,5 @@ function crear(opciones) {
   return act;
 }
 
-module.exports = { crear, TEXTOS, comillas, esDescargaNuestra, esMayor, limpiarVersion, leerHuella, archivosDe, baseDe, instalacion, guionTar };
+module.exports = { crear, TEXTOS, comillas, esDescargaNuestra, esMayor, limpiarVersion, leerHuella, archivosDe, baseDe, instalacion, guionTar,
+  llavePublica, mensajeFirmado, firmaValida, revisarDescarga };

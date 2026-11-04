@@ -367,8 +367,9 @@ test("actualizaciones: sin datos de la app no se crea, y ninguna app aparece esc
   assert.doesNotMatch(t, /esquema|minuta|graba|corta|repasa|alcanc/i);
 });
 
-/** Un Release falso servido por un `net.fetch` de mentira, y una app de Electron de mentira. */
-function escenario({ contenido = Buffer.from("version nueva"), huella, tag = "v0.2.0", plataforma = "linux", tipo = "appimage", redirige = "https://release-assets.githubusercontent.com/x" } = {}) {
+/** Un Release falso servido por un `net.fetch` de mentira, y una app de Electron de mentira. `firma`: el texto del .sig
+ *  (sin él, el Release no trae .sig). */
+function escenario({ contenido = Buffer.from("version nueva"), huella, tag = "v0.2.0", plataforma = "linux", tipo = "appimage", redirige = "https://release-assets.githubusercontent.com/x", firma } = {}) {
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "pieza-act-"));
   const home = path.join(tmp, "home");
   fs.mkdirSync(home);
@@ -382,9 +383,11 @@ function escenario({ contenido = Buffer.from("version nueva"), huella, tag = "v0
       pedidos.push(u);
       if (u.startsWith("https://api.github.com/")) {
         return new Response(JSON.stringify({ tag_name: tag, body: "• Ahora puedes algo\n• Arreglo", assets: [
-          { name: nombre, browser_download_url: url(nombre) }, { name: nombre + ".sha256", browser_download_url: url(nombre + ".sha256") }] }), { status: 200 });
+          { name: nombre, browser_download_url: url(nombre) }, { name: nombre + ".sha256", browser_download_url: url(nombre + ".sha256") },
+          ...(firma === undefined ? [] : [{ name: nombre + ".sig", browser_download_url: url(nombre + ".sig") }])] }), { status: 200 });
       }
-      const r = u.endsWith(".sha256") ? new Response(`${sha}  ${nombre}\n`) : new Response(contenido, { headers: { "content-length": String(contenido.length) } });
+      const r = u.endsWith(".sha256") ? new Response(`${sha}  ${nombre}\n`) : u.endsWith(".sig") ? new Response(`${firma}\n`)
+        : new Response(contenido, { headers: { "content-length": String(contenido.length) } });
       Object.defineProperty(r, "url", { value: redirige });
       return r;
     },
@@ -512,6 +515,120 @@ test("actualizaciones: sin revisar antes, instalar no descarga nada", async () =
   await act.instalar((a) => avisos.push(a));
   assert.deepEqual(avisos.map((a) => a.codigo), ["sinDescarga"]);
   assert.equal(s.pedidos.length, 0);
+  fs.rmSync(s.tmp, { recursive: true, force: true });
+});
+
+// ── Firma de las actualizaciones (Ed25519) ──
+/** Una llave Ed25519 de prueba desde una semilla fija: {privada, publica (base64 de 32 bytes)}. */
+function llaveDePrueba(n) {
+  const privada = crypto.createPrivateKey({ key: Buffer.concat([Buffer.from("302e020100300506032b657004220420", "hex"), Buffer.alloc(32, n)]), format: "der", type: "pkcs8" });
+  return { privada, publica: crypto.createPublicKey(privada).export({ format: "der", type: "spki" }).subarray(12).toString("base64") };
+}
+const firmar = (llave, id, version, contenido) =>
+  crypto.sign(null, Buffer.from(Act.mensajeFirmado(id, version, crypto.createHash("sha256").update(contenido).digest("hex"))), llave.privada).toString("base64");
+
+test("actualizaciones: firma Ed25519 (el mismo vector que prueba el Swift)", () => {
+  const k = llaveDePrueba(7);
+  assert.equal(k.publica, "6kpsY+KcUgq+9VB7Ey7F+ZVHdq6+vnuSQh7qaRRG0iw=");
+  const msg = Act.mensajeFirmado("ana", "0.2.0", "AB".repeat(32));
+  assert.equal(msg, `ana-actualizacion|0.2.0|${"ab".repeat(32)}`);
+  const vector = "t3yMF0kMlDExph/CnhIKW5Eqqxw/8SqF/WEDb50UKpI6aittVCziTk+qlUI+fd/E7ReUMlAE2JiOcMJkno3uCQ==";
+  assert.equal(Act.firmaValida(vector, msg, [k.publica]), true);
+  assert.equal(Act.firmaValida(vector + "\n", msg, [llaveDePrueba(8).publica, k.publica]), true, "cualquiera de las dos llaves");
+  assert.equal(Act.firmaValida(vector, msg.replace("0.2.0", "0.2.1"), [k.publica]), false, "otra versión");
+  assert.equal(Act.firmaValida(vector, msg, [llaveDePrueba(8).publica]), false, "otra llave");
+  assert.equal(Act.firmaValida("no", msg, [k.publica]), false);
+  assert.equal(Act.llavePublica("corta"), null);
+  assert.equal(Act.llavePublica(Buffer.alloc(31).toString("base64")), null);
+  const ok = { huellaArchivo: "ab".repeat(32), textoHuella: `${"AB".repeat(32)}  Ana.zip`, firma: vector, version: "0.2.0", instalada: "0.1.0", id: "ana", llaves: [k.publica] };
+  assert.equal(Act.revisarDescarga(ok), null);
+  assert.equal(Act.revisarDescarga({ ...ok, instalada: "0.2.0" }), "firma", "la misma versión no es más nueva: no se reinstala ni se vuelve atrás");
+  assert.equal(Act.revisarDescarga({ ...ok, version: "0.3.0" }), "firma", "la versión firmada tiene que ser la del Release");
+  assert.equal(Act.revisarDescarga({ ...ok, id: "otra" }), "firma", "la firma de otra app no sirve");
+  assert.equal(Act.revisarDescarga({ ...ok, firma: null }), "firma");
+  assert.equal(Act.revisarDescarga({ ...ok, llaves: [] }), "firma");
+  assert.equal(Act.revisarDescarga({ ...ok, huellaArchivo: "cd".repeat(32) }), "errorBajar");
+  assert.throws(() => Act.crear({ app: {}, net: {}, repo: REPO, nombre: "Ana", llaves: ["mala"] }));
+  assert.throws(() => Act.crear({ app: {}, net: {}, repo: REPO, nombre: "Ana", llaves: [k.publica, k.publica, k.publica] }), "hasta 2");
+});
+
+test("actualizaciones: con llaves, solo se instala lo firmado para esa versión", async () => {
+  const k = llaveDePrueba(3), otra = llaveDePrueba(4), contenido = Buffer.from("version nueva");
+  for (const [nombre, firma, debe, codigo] of [
+    ["firmada", firmar(k, "ana", "0.2.0", contenido), "version nueva", null],
+    ["sin .sig en el Release", undefined, "vieja", "firma"],
+    ["firma de otra llave", firmar(otra, "ana", "0.2.0", contenido), "vieja", "firma"],
+    ["firma de otra versión (una vieja reetiquetada)", firmar(k, "ana", "0.1.5", contenido), "vieja", "firma"],
+    ["firma de otra app", firmar(k, "pepe", "0.2.0", contenido), "vieja", "firma"],
+    ["firma de otro archivo", firmar(k, "ana", "0.2.0", Buffer.from("otro")), "vieja", "firma"],
+    ["firma que no es base64", "esto no es una firma", "vieja", "firma"],
+  ]) {
+    const s = escenario({ contenido, firma });
+    const appimage = path.join(s.tmp, "Ana.AppImage");
+    fs.writeFileSync(appimage, "vieja");
+    const act = Act.crear({ app: s.app, net: s.net, repo: REPO, nombre: "Ana", home: s.home, plataforma: "linux", entorno: { APPIMAGE: appimage }, tmpdir: s.tmp, espera: 0 });
+    act.usarApp({ id: "ana", actualizaciones: { llaves: [llaveDePrueba(6).publica, k.publica] } });
+    assert.equal(act.firmadas, true);
+    assert.equal((await act.revisar()).hay, true, nombre);
+    const avisos = [];
+    await act.instalar((a) => avisos.push(a));
+    await esperar(10);
+    assert.equal(fs.readFileSync(appimage, "utf8"), debe, nombre);
+    if (codigo) {
+      assert.equal(avisos.at(-1).codigo, codigo, nombre);
+      assert.equal(avisos.at(-1).texto, Act.TEXTOS.firma);
+      assert.deepEqual(avisos.at(-1).valores, { app: "Ana" });
+      assert.equal(s.llamadas.exit, 0, nombre);
+      if (firma === undefined) assert.equal(s.pedidos.length, 1, "sin .sig no se baja nada");
+    } else {
+      assert.equal(avisos.at(-1).paso, "3");
+      assert.equal(s.llamadas.exit, 1);
+    }
+    assert.deepEqual(fs.readdirSync(s.tmp).filter((x) => x.startsWith("ana-actualizacion")), [], `${nombre}: no deja temporales`);
+    fs.rmSync(s.tmp, { recursive: true, force: true });
+  }
+});
+
+test("actualizaciones: Windows con llaves revisa la firma del instalador antes de lanzarlo", async () => {
+  const k = llaveDePrueba(5), contenido = Buffer.from("instalador");
+  for (const [firma, lanza] of [[firmar(k, "ana", "0.2.0", contenido), true], [firmar(k, "ana", "0.2.0", Buffer.from("x")), false]]) {
+    const s = escenario({ tipo: "windows", contenido, firma });
+    const lanzados = [];
+    const act = Act.crear({ app: s.app, net: s.net, repo: REPO, nombre: "Ana", plataforma: "win32", tmpdir: s.tmp, espera: 0, llaves: [k.publica],
+      spawn: (cmd, args) => { lanzados.push([path.basename(cmd), args]); return { unref() {} }; } });
+    await act.revisar();
+    const avisos = [];
+    await act.instalar((a) => avisos.push(a));
+    await esperar(10);
+    assert.equal(lanzados.length, lanza ? 1 : 0);
+    if (!lanza) assert.equal(avisos.at(-1).codigo, "firma");
+    fs.rmSync(s.tmp, { recursive: true, force: true });
+  }
+});
+
+test("actualizaciones: app.json decide las llaves; sin llaves todo sigue igual, y unas mal escritas apagan las actualizaciones", async () => {
+  const s = escenario();   // sin .sig
+  const appimage = path.join(s.tmp, "Ana.AppImage");
+  fs.writeFileSync(appimage, "vieja");
+  const opciones = { app: s.app, net: s.net, repo: REPO, nombre: "Ana", home: s.home, plataforma: "linux", entorno: { APPIMAGE: appimage }, tmpdir: s.tmp, espera: 0 };
+  const sin = Act.crear(opciones).usarApp({ id: "ana", actualizaciones: { llaves: [] } });
+  assert.equal(sin.firmadas, false);
+  await sin.revisar();
+  await sin.instalar(() => {});
+  assert.equal(fs.readFileSync(appimage, "utf8"), "version nueva", "sin llaves no pide .sig (como antes de 0.4)");
+  for (const mal of [{ llaves: ["no"] }, { llaves: "x" }, [], "x", { llaves: [llaveDePrueba(1).publica, llaveDePrueba(2).publica, llaveDePrueba(3).publica] }]) {
+    const pedidos = s.pedidos.length;
+    const errores = console.error, dichos = [];
+    console.error = (x) => dichos.push(x);
+    let act;
+    try { act = Act.crear(opciones).usarApp({ id: "ana", actualizaciones: mal }); } finally { console.error = errores; }
+    assert.match(dichos[0], /no son llaves Ed25519/);
+    assert.equal((await act.revisar()).hay, false, JSON.stringify(mal));
+    assert.equal(s.pedidos.length, pedidos, "ni pregunta a GitHub");
+  }
+  // Las llaves dadas en crear ganan a las de app.json.
+  const k = llaveDePrueba(9);
+  assert.equal(Act.crear({ ...opciones, llaves: [k.publica] }).usarApp({ id: "ana", actualizaciones: { llaves: [] } }).firmadas, true);
   fs.rmSync(s.tmp, { recursive: true, force: true });
 });
 

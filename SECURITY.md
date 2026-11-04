@@ -47,7 +47,8 @@ Están en [`docs/enchufe.md`](docs/enchufe.md#reglas-de-seguridad-las-revisa-pie
 5. **Todo tiene límite de tiempo** (`limite` es obligatorio en cada acción).
 
 Además, las brechas que ya encontramos en las apps ([`docs/catalogo.md`](docs/catalogo.md)) no pueden volver: el puente solo
-atiende al marco principal y al origen de la app; actualizaciones solo de los Releases del propio repo, con SHA-256; lo del
+atiende al marco principal y al origen de la app; actualizaciones solo de los Releases del propio repo, con SHA-256 (y, con llaves, la firma Ed25519 de quien mantiene la app, cuya
+llave privada nunca está en GitHub); lo del
 catálogo exige SHA-256; la IA nunca se reintenta sin sus protecciones; los valores que van a HTML se escapan.
 
 ## Cómo nos protegemos

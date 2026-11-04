@@ -13,10 +13,12 @@ enum {{nombre_ascii}}App {
     @MainActor static func main() {
         Host.arrancar(.init(sitio: "{{web|https}}", codigo: "https://github.com/{{repo}}", global: "{{nombre_ascii}}")) { p in
 {{#si piezas.actualizaciones}}
-            // Pieza «actualizaciones»: solo los Releases de {{repo}} ({{nombre_ascii}}-macOS.zip + .sha256). El host atiende
-            // buscarActualizacion y actualizar (nunca con algo en curso), revisa al abrir y cada 6 h con el idioma elegido.
+            // Pieza «actualizaciones»: solo los Releases de {{repo}} ({{nombre_ascii}}-macOS.zip + .sha256 y, si app.json →
+            // actualizaciones.llaves tiene llaves, su .sig). El host atiende buscarActualizacion y actualizar (nunca con algo en
+            // curso), revisa al abrir y cada 6 h con el idioma elegido.
             Actualizaciones.configurar(.init(repo: "{{repo}}", nombre: "{{nombre}}",
-                archivoDesarrollo: Host.datos.appendingPathComponent("desarrollo"), variableProgreso: Host.prefijo + "PROGRESO"))
+                archivoDesarrollo: Host.datos.appendingPathComponent("desarrollo"), variableProgreso: Host.prefijo + "PROGRESO",
+                appJSON: Host.recursos.appendingPathComponent("app.json")))
             p.actualizaciones = .init(revisar: Actualizaciones.revisar, revisarCadaRato: Actualizaciones.revisarCadaRato,
                 seguir: Actualizaciones.seguir, instalar: Actualizaciones.instalar, aviso: Actualizaciones.aviso,
                 disponible: { Actualizaciones.disponible })

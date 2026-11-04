@@ -281,6 +281,21 @@ PLATAFORMAS = ("mac", "windows", "linux", "ios", "android")
 ID = re.compile(r"^[a-z][a-z0-9]{0,30}$")
 REPO = re.compile(r"^[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9._-]{1,100}$")
 VERSION = re.compile(r"^\d+\.\d+\.\d+$")
+#: Una llave pública Ed25519 en base64 (32 bytes): app.json → actualizaciones.llaves (pieza «actualizaciones»).
+LLAVE = re.compile(r"^[A-Za-z0-9+/]{43}=$")
+
+
+def llaves_actualizaciones(app):
+    """Las llaves de app.json → actualizaciones.llaves (hasta 2, para poder cambiar de llave). Error si están mal escritas: una
+    app con llaves rotas no tiene que publicar como si no firmara."""
+    sec = app.get("actualizaciones")
+    if sec is None:
+        return []
+    llaves = sec.get("llaves", []) if isinstance(sec, dict) else None
+    if not isinstance(llaves, list) or len(llaves) > 2 or not all(isinstance(k, str) and LLAVE.match(k) for k in llaves):
+        raise PlantillaMala("app.json: «actualizaciones.llaves» es una lista de hasta 2 llaves públicas Ed25519 (32 bytes en base64:"
+                            " las da «swift herramientas/firmar/firmar.swift publica <id>» de Pieza)")
+    return llaves
 
 
 def contexto(app, piezas=(), datos=None):
@@ -323,6 +338,8 @@ def contexto(app, piezas=(), datos=None):
         "movil": "ios" in plataformas or "android" in plataformas,
         "piezas": {p: True for p in piezas},
         "datos": datos or {},
+        # Con llaves de firma, publicar.yml deja el Release como borrador: quien mantiene la app lo firma y lo publica desde su Mac.
+        "firmadas": bool(llaves_actualizaciones(app)),
     }
     return ctx
 

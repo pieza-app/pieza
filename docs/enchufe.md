@@ -221,7 +221,9 @@ algo que la interfaz nunca pide). Una que ninguna pieza declara se avisa.
 
 Claves que usan las piezas además: `"repo": "dueño/repo"` (el repo de GitHub de la app, p. ej. `"ana-app/ana"`: «red» lo pone en
 el User-Agent; si no tiene esa forma, se ignora), `"privado": true` (todo archivo
-0600) y las secciones propias de una pieza (`catalogo`, `transcribir`, `ia`…: ver su README).
+0600) y las secciones propias de una pieza (`catalogo`, `transcribir`, `ia`…: ver su README). `"actualizaciones": {"llaves": ["…"]}`:
+las llaves públicas Ed25519 con que la pieza «actualizaciones» revisa la firma de cada Release (hasta 2; `pieza.py generar` revisa su
+forma y, con llaves, `publicar.yml` deja el Release como borrador para firmarlo en el Mac de quien mantiene la app).
 
 Es la única descripción de la app que leen las piezas: de aquí sale el prefijo de las variables (`ESQUEMA_DATOS`,
 `ESQUEMA_RECURSOS`), dónde se guardan los datos y qué claves de config se aceptan. `"icono": "docs/favicon.svg"` (opcional)

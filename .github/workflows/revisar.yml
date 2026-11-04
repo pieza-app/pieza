@@ -30,6 +30,10 @@ jobs:
       - name: Compilar y probar host-mac (solo Mac)
         if: runner.os == 'macOS'
         run: bash pruebas/swift/revisar_host_mac.sh
+      - name: Compilar y probar actualizaciones y la herramienta de firma (solo Mac)
+        if: runner.os == 'macOS'
+        env: { PIEZA_PROBAR_LLAVERO: "1" }
+        run: bash pruebas/swift/revisar_actualizaciones.sh
       - name: Crear una app de ejemplo y compilar su Swift (solo Mac)
         if: runner.os == 'macOS'
         run: |

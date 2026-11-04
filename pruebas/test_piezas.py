@@ -674,7 +674,7 @@ class PiezasDeInterfaz(unittest.TestCase):
         js = self.fuente("actualizaciones", "escritorio/actualizaciones.js")
         bloque = js[js.index("const TEXTOS = {"):js.index("};", js.index("const TEXTOS = {"))]
         frases = re.findall(r':\s*"([^"]+)"', bloque)
-        self.assertEqual(len(frases), 7)
+        self.assertEqual(len(frases), 8)
         self.assertEqual(set(frases) - set(act), set())
 
     def test_componentes_trae_i18n_y_tema_con_sus_textos(self):
@@ -823,9 +823,9 @@ class PiezasDeInterfaz(unittest.TestCase):
     def test_el_guion_de_swift_solo_mete_lo_variable_con_comillas(self):
         import re
         swift = self.fuente("actualizaciones", "mac/Actualizaciones.swift")
-        guiones = re.findall(r'texto = """(.*?)"""', swift, re.S)
-        self.assertEqual(len(guiones), 2)
-        permitidos = ("comillas(", "paso(", "pid)", "progreso)", "cerrar)")
+        guiones = re.findall(r'(?:texto|instalarZip) = """(.*?)"""', swift, re.S)
+        self.assertEqual(len(guiones), 4)   # desarrollo, lo común de instalar el zip, sin firma y con firma (ya bajado)
+        permitidos = ("comillas(", "paso(", "pid)", "progreso)", "cerrar)", "instalarZip)")
         for g in guiones:
             for m in re.finditer(r"\\\(", g):
                 self.assertTrue(g[m.end():].startswith(permitidos), g[m.start():m.start() + 60])
@@ -834,6 +834,11 @@ class PiezasDeInterfaz(unittest.TestCase):
         self.assertIn('osascript -e \\(comillas(', swift)
         self.assertIn('^[A-Z][A-Z0-9_]{0,40}$', swift)
         self.assertIn("--proto-redir '=https'", swift)
+        # Con firma, el guion instala el zip ya bajado y revisado en Swift: no vuelve a bajar nada.
+        self.assertNotIn("curl", guiones[3])
+        self.assertIn("curl", guiones[2])
+        for x in ("URLSession.shared.download(for:", "isValidSignature", 'completionHandler(request.url?.scheme == "https"'):
+            self.assertIn(x, swift)
 
     def test_nada_de_una_app_adentro(self):
         import re
@@ -1282,6 +1287,28 @@ class Generar(unittest.TestCase):
         self.assertIn("Linux)", self.leer(linux, "instalar.sh"))
         self.assertNotIn("Darwin)", self.leer(linux, "instalar.sh"))
 
+    def test_actualizaciones_firmadas_publican_un_borrador(self):
+        """Con llaves en app.json → actualizaciones.llaves, publicar.yml crea el Release como borrador (lo firma y lo publica
+        firmar_release.sh en el Mac de quien mantiene la app); sin llaves, igual que antes; llaves mal escritas detienen generar."""
+        app = self.app()
+        self.assertNotIn("--draft", self.leer(app, ".github/workflows/publicar.yml"))
+        a = json.load(open(os.path.join(app, "app.json")))
+        a["actualizaciones"] = {"llaves": ["6kpsY+KcUgq+9VB7Ey7F+ZVHdq6+vnuSQh7qaRRG0iw="]}
+        json.dump(a, open(os.path.join(app, "app.json"), "w"))
+        r = correr(PIEZA, "generar", app)
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        self.revisar_todo(app)
+        pub = self.leer(app, ".github/workflows/publicar.yml")
+        self.assertIn("--generate-notes --draft", pub)
+        self.assertIn("firmar_release.sh $REPO $V ana", pub)
+        self.assertEqual(pub.count("gh release create"), 1)
+        for malas in (["corta"], ["6kpsY+KcUgq+9VB7Ey7F+ZVHdq6+vnuSQh7qaRRG0iw="] * 3, "x"):
+            a["actualizaciones"] = {"llaves": malas}
+            json.dump(a, open(os.path.join(app, "app.json"), "w"))
+            r = correr(PIEZA, "generar", app)
+            self.assertNotEqual(r.returncode, 0, malas)
+            self.assertIn("actualizaciones.llaves", r.stdout + r.stderr)
+
     def test_lo_propio_de_la_app(self):
         """Binarios extra, permisos, barra de menú, carpetas, deb: lo de app.json → empaquetado llega a cada archivo."""
         app = self.app(piezas=("host-mac",))
@@ -1387,7 +1414,8 @@ class Generar(unittest.TestCase):
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("build.sh ya existe y es distinto", r.stdout)
         self.assertEqual(self.leer(app, "build.sh"), "#!/bin/bash\necho propio\n")
-        self.assertEqual(json.load(open(os.path.join(app, "piezas.json")))["piezas"]["empaquetado"]["version"], "0.1.0")
+        self.assertEqual(json.load(open(os.path.join(app, "piezas.json")))["piezas"]["empaquetado"]["version"],
+                         json.load(open(os.path.join(BASE, "piezas", "empaquetado", "pieza.json")))["version"])
 
     def test_lo_de_github_nunca_va_solo(self):
         """Una versión nueva que cambia un workflow no se actualiza sola (el token de Actions no puede escribirlo y lo tiene que
@@ -1398,8 +1426,9 @@ class Generar(unittest.TestCase):
         shutil.copytree(os.path.join(BASE, "piezas"), cat)
         pj = os.path.join(cat, "empaquetado", "pieza.json")
         p = json.load(open(pj))
-        p["version"] = "0.1.1"
-        p["cambios"].insert(0, {"version": "0.1.1", "tipo": "arreglo", "resumen": "Prueba."})
+        x, y, z = p["version"].split(".")
+        p["version"] = f"{x}.{y}.{int(z) + 1}"
+        p["cambios"].insert(0, {"version": p["version"], "tipo": "arreglo", "resumen": "Prueba."})
         json.dump(p, open(pj, "w"), ensure_ascii=False)
         for f, extra in (("github/workflows/publicar.yml", "# cambio de prueba\n"), ("build.sh", "# arreglo de prueba\n")):
             with open(os.path.join(cat, "empaquetado", "plantillas", f), "a") as g:
