@@ -46,7 +46,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#2f5fd0\"/><g fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"21\" y=\"10\" width=\"22\" height=\"14\" rx=\"3\"/><path d=\"M32 24v8M18 32h28M18 32v6M46 32v6\"/><circle cx=\"18\" cy=\"46\" r=\"7\"/><path d=\"M39 39h14v14H39z\"/></g></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-02T14:38:12Z",
+   "actualizado": "2026-11-04T07:08:04Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -63,7 +63,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#17151c\"/><rect x=\"12\" y=\"15\" width=\"40\" height=\"28\" rx=\"5\" fill=\"none\" stroke=\"#b9b0ff\" stroke-width=\"4\"/><circle cx=\"21\" cy=\"44\" r=\"10\" fill=\"#6d5dfc\" stroke=\"#17151c\" stroke-width=\"3\"/><circle cx=\"44\" cy=\"22\" r=\"3.2\" fill=\"#ff5d5d\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-02T14:42:43Z",
+   "actualizado": "2026-11-04T12:41:25Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -93,11 +93,11 @@
    "descripcion": "Framework abierto para apps que viven en tu computador: piezas probadas que se enchufan en vez de escribirse de cero.",
    "url": "https://github.com/pieza-app/pieza",
    "pagina": "https://pieza-app.github.io/pieza/",
-   "commit": "2f768e46f55f90c934b5b806a82691a80cc941e1",
+   "commit": "5da7dcc0d8ef675558f002a874d11fcd93641be0",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-02T19:35:33Z",
+   "actualizado": "2026-11-03T17:09:20Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -114,7 +114,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#2f5bea\"/><path d=\"M14 18c6-3 12-3 18 1v30c-6-4-12-4-18-1z\" fill=\"#fffefa\"/><path d=\"M50 18c-6-3-12-3-18 1v30c6-4 12-4 18-1z\" fill=\"#e8eeff\"/><path d=\"M36 33l5 5 9-11\" fill=\"none\" stroke=\"#ffd84d\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-02T14:46:40Z",
+   "actualizado": "2026-11-03T21:25:47Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
