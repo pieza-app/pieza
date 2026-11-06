@@ -31,6 +31,7 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | `pagina` | 0.1.3 | La página pública bilingüe generada desde `docs/pagina.json`: permisos e internet y preguntas comunes que salen de las piezas, JSON-LD de lo que se ve, SEO, sello, workflow de Pages y capturas | Esquema `docs/` + `pagina_capturas.mjs` + Corta/Alcancía (permisos e internet) + Minuta (capturas) |
 | `contrato` | 0.1.3 | `pruebas/contrato.py` común del puente: cada acción atendida en cada plataforma y en la vista previa, `acciones.json`, funciones y seguridad común; lo propio en `contrato_app.py` | Lo común de los seis `pruebas/contrato.py` |
 | `universos` | 0.1.0 | Mundos que cambian colores (un tema de «tema») y los textos que la app deja cambiar; validados igual en Python y JS; tres de base originales (Espacio, Bosque, Neón) y los de la comunidad por «catalogo» | Minuta (`universo_formato.py`, galería), ahora genérico |
+| `mcp` | 0.1.0 | Servidor MCP local (stdio) armado con las herramientas que declara cada app (`app.json` → `mcp.modulos`), solo lectura por defecto, las dos formas del protocolo (`initialize` y 2026-07-28), argumentos validados, topes y registro de actividad; conectar en un clic a Claude Desktop, Claude Code, Codex, Gemini CLI y Antigravity; sección «Conectar a tu IA» | Alcancía `mcp_servidor.py` + `mcp_conectar.py` |
 | `contenido` | 0.1.0 | Leer md, txt, pdf, docx, odt, epub y html con topes (zip bombas, XML sin entidades); capítulos sin IA | Esquema `bin/contenido.py` + Alcancía (`ArchivoNoValido`) |
 | `empaquetado` | 0.2.1 | Arma, firma, publica e instala desde `app.json` (plantillas) con el host de Tauri: `empaquetar.sh <mac|windows|linux>` con un solo `python.lock` y los mismos archivos de siempre (`.zip`, `.exe`, `.AppImage`, `.tar.gz`, `.deb`, cada uno con su `.sha256`), `build.sh` que no instala con la app ocupada, `preparar.sh` (también `whisper-cli` con `empaquetado.whisper`), `instalar.sh`/`.ps1` y `publicar.yml` (macos-15, windows-2025, ubuntu-24.04) | Esquema + Corta (binarios, licencias) + Graba (`binaryTarget`, frameworks, permisos, barra de menú) + las seis (no instalar ocupada) |
 | `github` | 0.3.1 | El repo para la comunidad desde `app.json`: issues, PR, dependabot, `revisar.yml`, Pieza al día, `AGENTS`/`CONTRIBUTING`/`SECURITY` con lo que llena la IA marcado, agentes, privacidad, `.gitignore`, la wiki (`docs/wiki/` → `wiki.yml`); `pieza.py repo configurar` | Esquema `.github/` y guías + Alcancía/Repasa (job `mac` con `app.json`) + las seis (secciones comunes de `AGENTS.md`) |
@@ -51,7 +52,6 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 
 | # | Pieza | Tipo | Tomar de | Sumar de | Notas |
 |---|---|---|---|---|---|
-| 8 | `mcp` (Py) | Py | Alcancía `mcp_servidor.py` + `mcp_conectar.py` | — | `mcp.servir(nombre, …, herramientas)`; conectar a claude/codex/gemini/Claude Desktop |
 
 ### Pendientes que salieron al pasar las apps a las piezas de datos (anotados, sin hacer)
 

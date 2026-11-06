@@ -1,28 +1,33 @@
 {
  "formato": 1,
  "id": "mcp",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Hablar con tu IA (MCP)",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "ia",
- "descripcion": "Servidor MCP local para que la persona converse con sus datos desde su IA, y alta en Claude, Codex, Gemini y Claude Desktop.",
+ "descripcion": "Servidor MCP local (stdio, sin puertos ni internet) para que la persona converse con sus datos desde su propia IA, armado con las herramientas que declara cada app; solo lectura por defecto, y alta en un clic en Claude, ChatGPT/Codex, Gemini y Antigravity.",
  "en": {
   "nombre": "Talk to your AI (MCP)",
-  "descripcion": "A local MCP server so the person can talk with their data from their AI, set up in Claude, Codex, Gemini and Claude Desktop."
+  "descripcion": "A local MCP server, built from the tools each app declares, read-only by default, that the person connects in one click to Claude, Codex, Gemini and Antigravity."
  },
  "recomendar": {
   "cuando": "La persona querría preguntarle cosas a su IA sobre sus datos de la app.",
   "palabras": [
    "preguntar",
    "conversar",
-   "chat"
+   "chat",
+   "mcp",
+   "consultar"
   ]
  },
- "tomar_de": "alcancia bin/mcp_servidor.py + bin/mcp_conectar.py",
+ "origen": "alcancia/bin/mcp_servidor.py + mcp_conectar.py (stdio, solo lectura, respaldo y escritura atómica de la configuración de cada IA, reparar si la app se movió). Nuevo: herramientas declaradas por módulo (app.json → mcp.modulos), las dos formas del protocolo (initialize y 2026-07-28 sin estado, con server/discover), argumentos validados contra su esquema, escritura solo si la persona la permite, tope de pedido, de respuesta y de llamadas por minuto, registro de actividad sin argumentos, y quitar ya no crea el archivo de una IA que no lo tenía.",
  "requiere": [
-  "nucleo"
+  "nucleo",
+  "ia",
+  "i18n",
+  "componentes"
  ],
  "plataformas": [
   "mac",
@@ -33,7 +38,142 @@
   {
    "donde": "Ajustes",
    "nombre": "Conectar a tu IA",
-   "que": "conectar, ver estado y quitar"
+   "que": "conectar y quitar cada IA instalada, ver qué puede leer o cambiar, permitir cambios y lo último que consultó"
+  }
+ ],
+ "permisos": {},
+ "red": [],
+ "red_nota": "La app no sale a internet: la IA de la persona lee lo que pide y lo envía a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
+ "tareas_persona": [],
+ "archivos": {
+  "python/mcp.py": "bin/mcp.py",
+  "python/mcp_servidor.py": "bin/mcp_servidor.py",
+  "python/mcp_conectar.py": "bin/mcp_conectar.py",
+  "ui/mcp.js": "ui/mcp.js"
+ },
+ "generar": {
+  "plantillas/mcp_herramientas.py": {
+   "destino": "bin/mcp_herramientas.py",
+   "una_vez": true
+  }
+ },
+ "config": {
+  "mcp_escribir": "bool"
+ },
+ "config_opcional": {
+  "mcp_escribir": "si la app tiene herramientas que cambian algo (escribe=True): «Permitir que mi IA cambie cosas» en Ajustes"
+ },
+ "app_json": {
+  "mcp": {
+   "esqueleto": {
+    "modulos": [
+     "mcp_herramientas"
+    ]
+   },
+   "que": "Los módulos de bin/ con las herramientas que tu IA puede usar (cada uno con HERRAMIENTAS y, si quiere, INSTRUCCIONES)."
+  }
+ },
+ "acciones": {
+  "mcpEstado": {
+   "script": "mcp_conectar.py",
+   "args": [
+    "estado"
+   ],
+   "entrada": null,
+   "datos": {},
+   "responde": "mcpListo",
+   "limite": 60
+  },
+  "mcpConectar": {
+   "script": "mcp_conectar.py",
+   "args": [
+    "$orden",
+    "$cliente"
+   ],
+   "entrada": null,
+   "datos": {
+    "orden": {
+     "tipo": "enum",
+     "valores": [
+      "conectar",
+      "quitar"
+     ]
+    },
+    "cliente": {
+     "tipo": "enum",
+     "valores": [
+      "claude_desktop",
+      "claude_code",
+      "codex",
+      "gemini",
+      "antigravity"
+     ]
+    }
+   },
+   "eco": [
+    "orden",
+    "cliente"
+   ],
+   "cola": "escritura",
+   "responde": "mcpListo",
+   "limite": 120
+  },
+  "mcpReparar": {
+   "script": "mcp_conectar.py",
+   "args": [
+    "reparar"
+   ],
+   "entrada": null,
+   "datos": {},
+   "cola": "escritura",
+   "responde": null,
+   "limite": 120
+  }
+ },
+ "textos": {
+  "Conectar a tu IA": "Connect your AI",
+  "Pregúntale a la IA que ya usas por tus datos de {app}, sin copiar ni pegar. Todo corre en tu computador.": "Ask the AI you already use about your {app} data, without copying and pasting. Everything runs on your computer.",
+  "Buscando tus IA…": "Looking for your AIs…",
+  "No encontré ninguna IA de escritorio en este computador (Claude, ChatGPT/Codex o Gemini).": "I couldn't find any desktop AI on this computer (Claude, ChatGPT/Codex or Gemini).",
+  "Conectada": "Connected",
+  "Conectada (actualizando la ruta…)": "Connected (updating the path…)",
+  "Instalada en este computador": "Installed on this computer",
+  "Quitar": "Remove",
+  "Conectar": "Connect",
+  "Conectando…": "Connecting…",
+  "**Pruébalo:** abre tu IA y pregúntale «{ejemplo}». Si usas la app de Claude, ciérrala y vuelve a abrirla la primera vez.": "**Try it:** open your AI and ask it “{ejemplo}”. If you use the Claude app, quit and reopen it the first time.",
+  "Qué puede hacer tu IA": "What your AI can do",
+  "Puede leer": "It can read",
+  "Puede cambiar (si lo permites)": "It can change (if you allow it)",
+  "Permitir que mi IA cambie cosas": "Let my AI change things",
+  "Por defecto solo puede leer.": "By default it can only read.",
+  "Lo último que consultó": "What it looked up recently",
+  "no se pudo": "failed",
+  "Lo que tu IA lee de {app} viaja a tu proveedor de IA con tu cuenta, igual que si se lo escribieras. {app} no tiene servidores.": "What your AI reads from {app} goes to your AI provider with your account, just as if you typed it. {app} has no servers.",
+  "Listo: tu IA ya puede consultar {app}": "Done: your AI can now look things up in {app}",
+  "No se pudo conectar.": "Couldn't connect.",
+  "No conozco esa IA.": "I don't know that AI.",
+  "No encontré {ia} en este computador.": "I couldn't find {ia} on this computer.",
+  "{ia} no aceptó la conexión.": "{ia} didn't accept the connection.",
+  "Cierra y vuelve a abrir Claude para que aparezca.": "Quit and reopen Claude so it shows up.",
+  "Claude (app de escritorio)": "Claude (desktop app)",
+  "ChatGPT (app de escritorio y Codex)": "ChatGPT (desktop app and Codex)",
+  "Su archivo de configuración tiene un error y no lo quise tocar. Revísalo o conéctalo a mano.": "Its settings file has an error, so I didn't touch it. Check it or connect it by hand.",
+  "Su archivo de configuración tiene un formato inesperado y no lo quise tocar.": "Its settings file has an unexpected format, so I didn't touch it.",
+  "La conexión anterior se quitó: vuelve a intentarlo.": "The previous connection was removed: please try again."
+ },
+ "compatible": {
+  "nucleo": ">=0.7.0 <1.0.0",
+  "ia": ">=0.6.0 <1.0.0",
+  "i18n": ">=0.3.0 <1.0.0",
+  "componentes": ">=0.3.0 <1.0.0"
+ },
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "seguridad": true,
+   "resumen": "Primera versión, extraída de Alcancía: servidor MCP local de solo lectura armado con las herramientas que declara la app, las dos formas del protocolo (initialize y 2026-07-28), conectar en un clic a Claude Desktop, Claude Code, Codex, Gemini CLI y Antigravity, y la sección «Conectar a tu IA» de Ajustes."
   }
  ]
 }
