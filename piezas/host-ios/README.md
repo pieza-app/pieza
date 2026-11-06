@@ -10,6 +10,7 @@ La misma interfaz de `ui/` que corre en Mac, Windows y Linux, ahora en el iPhone
 | `movil/ios/Fuentes/PiezaHost/Puente.swift` | WKWebView a pantalla completa, puente con guardas, navegación solo dentro de `ui/`, acciones propias, apariencia, ciclo de vida, `Host.Vista` |
 | `movil/ios/App.xcodeproj` (generado) | Proyecto sin dependencias: `Fuentes/` se sincroniza sola (Xcode 16+), `recursos.sh` copia `app.json` y `ui/` en cada compilación |
 | `movil/ios/Info.plist` (generado) | Los permisos de `app.json → ios.permisos` y `NSBonjourServices` de `ios.bonjour` (`"ana"` → `_ana._tcp`) |
+| `movil/ios/Fuentes/Assets.xcassets/AppIcon.appiconset/` (de la app) | El ícono: un `icono.png` de 1024×1024 sin esquinas (iOS las pone) y su `Contents.json`. |
 | `movil/ios/Fuentes/App.swift` (una vez) | La entrada de la app (SwiftUI): desde aquí es de la app |
 
 ## Uso

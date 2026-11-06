@@ -1,6 +1,8 @@
 # Cambios
 
 ## Sin publicar
+- **`host-ios` 0.1.1:** la app de iPhone usa su ícono (`AppIcon` en `movil/ios/Fuentes/Assets.xcassets`).
+- **`pagina` 0.1.1:** la imagen para compartir ya no corta la intro a mitad de palabra (sale de Despeja).
 - **Pieza nueva `host-ios` 0.1.0: la app de iPhone** (sale de `host-mac` 0.3.0, para Despeja). La misma interfaz de `ui/` en un
   WKWebView a pantalla completa con `host.plataforma === "movil"`, el puente con las mismas guardas (solo el marco principal con un
   archivo de `ui/`, navegación solo dentro de `ui/`, https a Safari), `Config`/`Idioma` con las reglas de `nucleo`, datos en

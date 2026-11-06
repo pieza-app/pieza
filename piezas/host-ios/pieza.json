@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "host-ios",
- "version": "0.1.0",
+ "version": "0.1.1",
  "estado": "lista",
  "nombre": "App de iPhone",
  "icono": "icono.svg",
@@ -75,6 +75,15 @@
   "La primera vez, el iPhone por cable con el Modo desarrollador activado (Ajustes → Privacidad y seguridad)"
  ],
  "cambios": [
+  {
+   "version": "0.1.1",
+   "tipo": "mejora",
+   "seguridad": false,
+   "resumen": "El ícono de la app de iPhone: el proyecto usa el AppIcon de un catálogo en movil/ios/Fuentes/Assets.xcassets (1024×1024, sin esquinas).",
+   "migrar": [
+    "Pon tu ícono en movil/ios/Fuentes/Assets.xcassets/AppIcon.appiconset/ (icono.png de 1024×1024 y su Contents.json) y corre pieza.py generar ."
+   ]
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

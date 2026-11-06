@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "pagina",
- "version": "0.1.0",
+ "version": "0.1.1",
  "estado": "lista",
  "nombre": "Página pública",
  "icono": "icono.svg",
@@ -84,6 +84,12 @@
   "Mirar docs/img/compartir.png y las capturas antes de subirlas (datos ficticios)"
  ],
  "cambios": [
+  {
+   "version": "0.1.1",
+   "tipo": "arreglo",
+   "seguridad": false,
+   "resumen": "La imagen para compartir corta la intro al final de una frase (o de una palabra, con «…») en vez de dejarla a mitad de palabra."
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",
