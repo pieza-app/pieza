@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "contrato",
- "version": "0.1.1",
+ "version": "0.1.2",
  "estado": "lista",
  "nombre": "Contrato del puente",
  "icono": "icono.svg",
@@ -31,6 +31,12 @@
  "pantallas": [],
  "tareas_persona": [],
  "cambios": [
+  {
+   "version": "0.1.2",
+   "tipo": "mejora",
+   "seguridad": false,
+   "resumen": "El contrato también revisa la app de iPhone de «host-ios» (movil/ios/Fuentes): lo registrado en Swift, lo que atiende el host y lo que llama a la interfaz. Lo declarado y las actualizaciones son del computador (en el iPhone host-ios responde «error» con código «falta»); una acción que la interfaz pide solo en el computador y no está declarada va en EXCEPCIONES con «ios:<acción>»."
+  },
   {
    "version": "0.1.1",
    "tipo": "arreglo",

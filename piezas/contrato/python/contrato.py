@@ -51,12 +51,14 @@ import os
 import re
 import sys
 
-PLATAFORMAS_HOST = {"mac": "app/Sources", "escritorio": "escritorio/src/main.js", "movil": "movil/host/host.js"}
+PLATAFORMAS_HOST = {"mac": "app/Sources", "escritorio": "escritorio/src/main.js", "movil": "movil/host/host.js",
+                    "ios": "movil/ios/Fuentes"}
 #: Lo que trae cada host (pieza «host-mac» y «host-escritorio») sin que la app lo registre.
 DEL_HOST = {"listo", "config", "abrirEnlace", "copiar"}
 DEL_HOST_ACTUALIZACIONES = {"buscarActualizacion", "actualizar"}
 #: Respuestas que el host manda solo si la interfaz pidió algo que la app quizás no usa.
-RESPUESTAS_OPCIONALES = {"copiado": "copiar", "archivoCambiado": None}
+RESPUESTAS_OPCIONALES = {"copiado": "copiar", "archivoCambiado": None,
+                         "error": None}   # host-ios: una acción que el iPhone no atiende (la interfaz puede mostrarlo o no)
 #: Señales de que un archivo arma el comando de una IA (eso es de bin/ia.py, pieza «ia»).
 COMANDO_IA = re.compile(r'"--disallowedTools"|"--strict-mcp-config"|"--skip-git-repo-check"|["\'](claude|codex|gemini|agy)["\']\s*,\s*\[')
 
@@ -254,7 +256,7 @@ class Contrato:
 
     # ── 0. Qué tiene la app ────────────────────────────────────────────────────────────────────────────────────────────────
     def plataformas(self):
-        """Las plataformas con código en el repo: mac (app/Sources), escritorio (Electron) y movil (Capacitor)."""
+        """Las plataformas con código en el repo: mac (app/Sources), escritorio (Electron), movil (Capacitor) e ios (host-ios)."""
         declaradas = set(self.app.get("plataformas") or [])
         hay = {}
         if self.existe("app/Sources"):
@@ -263,7 +265,11 @@ class Contrato:
             hay["escritorio"] = True
         if self.existe("movil/host/host.js"):
             hay["movil"] = True
+        if self.existe("movil/ios/Fuentes/PiezaHost/Puente.swift"):   # pieza «host-ios» (Swift, sin Capacitor)
+            hay["ios"] = True
         for p, donde in (("mac", "mac"), ("windows", "escritorio"), ("linux", "escritorio"), ("ios", "movil"), ("android", "movil")):
+            if p == "ios" and "ios" in hay:
+                continue
             if p in declaradas and donde not in hay:
                 self.aviso(f"app.json dice «{p}» y no encuentro {PLATAFORMAS_HOST[donde]}: no lo reviso (¿todavía no existe?)")
         return list(hay)
@@ -395,6 +401,15 @@ class Contrato:
             con_act = bool(re.search(r"\bactualizaciones\s*[:,]", bloque(main, "crearHost({") + main[main.find("crearHost({"):][:3000]))
             llama = set(re.findall(r'llamar\("(\w+)"', sin_comentarios(propio + "\n" + host)))
             etiqueta = "Windows/Linux"
+        elif nombre == "ios":
+            # host-ios: lo propio es el Swift de movil/ios/Fuentes (sin PiezaHost). En el iPhone no hay Python: nada declarado corre.
+            propio = self.juntar("movil/ios/Fuentes/**/*.swift")
+            host = self.juntar("movil/ios/Fuentes/PiezaHost/*.swift", propios=False)
+            puente = self.leer("movil/ios/Fuentes/PiezaHost/Puente.swift") or ""
+            registradas = set(re.findall(r'registrar\("(\w+)"', sin_comentarios(propio)))
+            del_host = set(re.findall(r'internas\["(\w+)"\]', sin_comentarios(puente)))
+            llama = set(re.findall(r'llamar\("(\w+)"', sin_comentarios(propio + "\n" + host)))
+            etiqueta = "iPhone"
         else:
             propio = self.leer("movil/host/host.js") or ""
             registradas = claves(bloque(propio, "const ACCIONES = {"))
@@ -415,8 +430,12 @@ class Contrato:
         for patron in llamadas_extra:
             llama |= set(re.findall(patron, sin_comentarios(propio)))
         llama |= set(re.findall(rf"window\.{re.escape(self.global_)}\.(\w+)", sin_comentarios(propio)))
-        declaradas = set(self.declaradas) if nombre != "movil" else set()
+        declaradas = set(self.declaradas) if nombre not in ("movil", "ios") else set()
         atiende = registradas | del_host | declaradas
+        if nombre == "ios":
+            # Lo declarado (scripts de Python) y las actualizaciones son del computador: en el iPhone host-ios responde «error»
+            # con código «falta» y la interfaz no queda esperando. Lo que la interfaz pide solo en el iPhone sí tiene que estar.
+            atiende |= set(self.declaradas) | DEL_HOST_ACTUALIZACIONES
         for a in sorted(self.acciones - atiende):
             self.problema(nombre, a, f"{etiqueta} no atiende «{a}» (ni registrada, ni del host, ni declarada)")
         for a in sorted(registradas - self.acciones):
@@ -575,7 +594,7 @@ class Contrato:
         partes = [f"{len(self.acciones)} acciones", f"{len(self.funciones)} funciones en window.{self.global_}",
                   f"{len(self.declaradas)} declaradas"]
         for p in self.plataformas_:
-            partes.append(f"{ {'mac': 'Mac', 'escritorio': 'Windows/Linux', 'movil': 'celular'}[p]}: {len(self.registradas[p])} registradas")
+            partes.append(f"{ {'mac': 'Mac', 'escritorio': 'Windows/Linux', 'movil': 'celular', 'ios': 'iPhone'}[p]}: {len(self.registradas[p])} registradas")
         return ", ".join(partes)
 
 

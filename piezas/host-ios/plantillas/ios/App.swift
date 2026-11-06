@@ -6,8 +6,7 @@ import SwiftUI
 struct {{nombre_ascii}}App: App {
     init() {
         Host.arrancar(.init(sitio: "{{web|https}}", codigo: "https://github.com/{{repo}}")) { p in
-            // La app: p.registrar("accion") { datos in … p.llamar("respuesta", […]) }
-            p.registrar("hola") { _ in p.llamar("hola", ["ok": true, "plataforma": "movil"]) }
+            // La app: lo nativo del iPhone, p.registrar("accion") { datos in … p.llamar("respuesta", […]) }
         }
     }
 

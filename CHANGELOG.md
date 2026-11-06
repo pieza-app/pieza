@@ -9,7 +9,8 @@
   que copia `app.json` y `ui/`, `Info.plist` con los permisos de `app.json → ios.permisos` y `ios.bonjour`). Sin Python en el iPhone:
   una acción que nadie atiende responde `error` con `codigo: "falta"`. `pieza.py crear` ya acepta `ios` junto a una plataforma de
   computador (Android sigue esperando a `host-movil`). En un Mac: `pruebas/swift/revisar_host_ios.sh` (tipos con el SDK de iOS) y
-  `pruebas/swift/compilar_app_ios.sh` (crea una app ficticia con iPhone y la compila para el simulador).
+  `pruebas/swift/compilar_app_ios.sh` (crea una app ficticia con iPhone y la compila para el simulador). `contrato` 0.1.2 revisa
+  también la app de iPhone (`movil/ios/Fuentes`).
 - **Revisión de seguridad de las plantillas y de `pieza.py` (antes de publicar):** el filtro `json` también deja `<`, `>`, `&`,
   U+2028 y U+2029 como `\u…` (un texto de `docs/pagina.json` ya no puede cerrar el `<script type="application/ld+json">` de la
   página); filtro nuevo `color` (solo `#rgb`, `#rrggbb`, `#rrggbbaa`, `rgb()`/`hsl()` con números) para el acento de `colores.css`;
