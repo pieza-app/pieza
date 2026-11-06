@@ -12,7 +12,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#2b1d16\"/><circle cx=\"30\" cy=\"13.5\" r=\"7\" fill=\"#f2b632\"/><rect x=\"27.5\" y=\"10.5\" width=\"5\" height=\"6\" rx=\"1.2\" fill=\"#d99a1e\"/><path d=\"M42 22.5 47.5 15l1.5 10z\" fill=\"#cf6a3e\"/><ellipse cx=\"30\" cy=\"38\" rx=\"20\" ry=\"15\" fill=\"#d9774b\"/><rect x=\"23\" y=\"23.6\" width=\"14\" height=\"3.4\" rx=\"1.7\" fill=\"#2b1d16\"/><ellipse cx=\"50.5\" cy=\"39\" rx=\"4.6\" ry=\"5.4\" fill=\"#c2603a\"/><circle cx=\"49.6\" cy=\"37.4\" r=\"1\" fill=\"#2b1d16\"/><circle cx=\"49.6\" cy=\"40.8\" r=\"1\" fill=\"#2b1d16\"/><circle cx=\"41.5\" cy=\"33.5\" r=\"1.9\" fill=\"#2b1d16\"/><rect x=\"17\" y=\"49\" width=\"6\" height=\"7\" rx=\"2\" fill=\"#c2603a\"/><rect x=\"34\" y=\"49\" width=\"6\" height=\"7\" rx=\"2\" fill=\"#c2603a\"/><path d=\"M10.5 36c-3 0-4.5-2-3.5-4\" fill=\"none\" stroke=\"#c2603a\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-05T14:08:25Z",
+   "actualizado": "2026-11-05T18:13:18Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -29,11 +29,26 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#111214\"/><path d=\"M22 15.5 49 32 22 48.5z\" fill=\"#c6f432\"/><path d=\"M14 44 50 20\" stroke=\"#111214\" stroke-width=\"7\" stroke-linecap=\"round\"/><circle cx=\"14\" cy=\"44\" r=\"4.6\" fill=\"none\" stroke=\"#f4f4f0\" stroke-width=\"2.6\"/><circle cx=\"50\" cy=\"20\" r=\"4.6\" fill=\"none\" stroke=\"#f4f4f0\" stroke-width=\"2.6\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-05T14:13:13Z",
+   "actualizado": "2026-11-05T18:12:55Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
     "nota": "App de la familia Pieza, revisada por quien mantiene Pieza."
+   }
+  },
+  {
+   "repo": "despeja-app/despeja",
+   "nombre": "despeja",
+   "descripcion": "Deja tu iPhone solo con lo necesario: catastro, respaldo y limpieza desde tu Mac, con tu propia IA. Open source y local.",
+   "url": "https://github.com/despeja-app/despeja",
+   "pagina": "https://despeja-app.github.io/despeja/",
+   "commit": "5bcdf6ea5c89658319418ba44ad15b20309634b7",
+   "icono": "docs/favicon.svg",
+   "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#2f5fd0\"/><rect x=\"20\" y=\"10\" width=\"24\" height=\"44\" rx=\"6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3.5\"/><path d=\"M26 33l5 5 8-10\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><line x1=\"29\" y1=\"48\" x2=\"35\" y2=\"48\" stroke=\"#fff\" stroke-width=\"3\" stroke-linecap=\"round\"/></svg>\n",
+   "encontrado": "2026-11-06",
+   "actualizado": "2026-11-06T12:17:40Z",
+   "revision": {
+    "estado": "sin-revisar"
    }
   },
   {
@@ -63,7 +78,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#17151c\"/><rect x=\"12\" y=\"15\" width=\"40\" height=\"28\" rx=\"5\" fill=\"none\" stroke=\"#b9b0ff\" stroke-width=\"4\"/><circle cx=\"21\" cy=\"44\" r=\"10\" fill=\"#6d5dfc\" stroke=\"#17151c\" stroke-width=\"3\"/><circle cx=\"44\" cy=\"22\" r=\"3.2\" fill=\"#ff5d5d\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-05T13:42:51Z",
+   "actualizado": "2026-11-05T18:12:46Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -80,7 +95,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#14131b\"/><circle cx=\"32\" cy=\"32\" r=\"19\" fill=\"none\" stroke=\"#ff6b4a\" stroke-opacity=\".35\" stroke-width=\"7\"/><circle cx=\"32\" cy=\"32\" r=\"11\" fill=\"#ff6b4a\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-05T13:33:13Z",
+   "actualizado": "2026-11-05T18:12:42Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -93,11 +108,11 @@
    "descripcion": "Framework abierto para apps que viven en tu computador: piezas probadas que se enchufan en vez de escribirse de cero.",
    "url": "https://github.com/pieza-app/pieza",
    "pagina": "https://pieza-app.github.io/pieza/",
-   "commit": "31e6269c21f6cc7584a1bdf52697d011fbaf128e",
+   "commit": "4e7722f032050ba9a6a56c49c3e3d4ba1cedc886",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-04T17:21:18Z",
+   "actualizado": "2026-11-06T03:54:16Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -114,7 +129,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#2f5bea\"/><path d=\"M14 18c6-3 12-3 18 1v30c-6-4-12-4-18-1z\" fill=\"#fffefa\"/><path d=\"M50 18c-6-3-12-3-18 1v30c6-4 12-4 18-1z\" fill=\"#e8eeff\"/><path d=\"M36 33l5 5 9-11\" fill=\"none\" stroke=\"#ffd84d\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-05T13:38:55Z",
+   "actualizado": "2026-11-05T18:12:49Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
