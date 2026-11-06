@@ -27,6 +27,7 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | `host-mac` | 0.3.0 | App de Mac genérica (target `PiezaHost`): ventana, puente con guardas, acciones declaradas con límite de tiempo (o latido, o por orden), config/idioma de `app.json`, menús, apariencia de `tema`, actualizaciones, carpeta con marcador, vigilante (FSEvents), Finder, Llavero y avisos | Esquema `app/Sources/Esquema/` (+ `Carpeta.swift`) + Alcancía (secreto por stdin, Llavero, avisos, carpeta de la nube) + Repasa (`conEntrada` con varios args) + Corta (`Medios.swift`) + Graba y Minuta (Llavero) |
 | `host-ios` | 0.1.1 | App de iPhone genérica (WKWebView a pantalla completa, plataforma «movil»): puente con las guardas de `host-mac`, config/idioma de `app.json`, apariencia, pantalla encendida y tiempo en segundo plano mientras algo está en curso, y el proyecto de Xcode generado sin dependencias (grupo sincronizado, permisos de `app.json → ios`) | `host-mac` 0.3.0, para Despeja |
 | `host-escritorio` | 0.3.0 | Lo mismo en Electron, con `nativeTheme.themeSource` según `config.tema`; carpeta, vigilante (`fs.watch`), explorador, `safeStorage` y avisos | Esquema `escritorio/src/` (+ `vigilante.js`) + Graba (medios con rangos, permisos que abre la app, `Tokens`) + Alcancía (secreto por stdin) + Minuta (avisos) |
+| `mcp` | 0.1.0 | Servidor MCP local (stdio) armado con las herramientas que declara cada app (`app.json` → `mcp.modulos`), solo lectura por defecto, las dos formas del protocolo (`initialize` y 2026-07-28), argumentos validados, topes y registro de actividad; conectar en un clic a Claude Desktop, Claude Code, Codex, Gemini CLI y Antigravity; sección «Conectar a tu IA» | Alcancía `mcp_servidor.py` + `mcp_conectar.py` |
 | `pagina` | 0.1.1 | La página pública bilingüe generada desde `docs/pagina.json`: permisos e internet y preguntas comunes que salen de las piezas, JSON-LD de lo que se ve, SEO, sello, workflow de Pages y capturas | Esquema `docs/` + `pagina_capturas.mjs` + Corta/Alcancía (permisos e internet) + Minuta (capturas) |
 | `contrato` | 0.1.2 | `pruebas/contrato.py` común del puente: cada acción atendida en cada plataforma y en la vista previa, `acciones.json`, funciones y seguridad común; lo propio en `contrato_app.py` | Lo común de los seis `pruebas/contrato.py` |
 | `contenido` | 0.1.0 | Leer md, txt, pdf, docx, odt, epub y html con topes (zip bombas, XML sin entidades); capítulos sin IA | Esquema `bin/contenido.py` + Alcancía (`ArchivoNoValido`) |
@@ -42,7 +43,6 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 
 | # | Pieza | Tipo | Tomar de | Sumar de | Notas |
 |---|---|---|---|---|---|
-| 8 | `mcp` (Py) | Py | Alcancía `mcp_servidor.py` + `mcp_conectar.py` | — | `mcp.servir(nombre, …, herramientas)`; conectar a claude/codex/gemini/Claude Desktop |
 | 15 | `universos` | Py + UI | Minuta (`universo.py`, galería) | Catálogo (#6) | Lo que pediste como ejemplo: tras #6 queda casi listo |
 
 ### Pendientes que salieron al pasar las apps a las piezas de datos (anotados, sin hacer)
