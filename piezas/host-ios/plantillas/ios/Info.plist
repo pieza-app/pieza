@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Pieza «host-ios» (generado desde app.json → ios): los permisos de la app de iPhone, cada uno con su porqué. Xcode suma
+     lo demás (GENERATE_INFOPLIST_FILE). -->
+<plist version="1.0">
+<dict>
+{{#cada app.ios.permisos como p}}
+	<key>{{p.clave|nombre}}</key>
+	<string>{{p.texto|xml}}</string>
+{{/cada}}
+{{#si app.ios.bonjour}}
+	<key>NSBonjourServices</key>
+	<array>
+{{#cada app.ios.bonjour como s}}
+		<string>_{{s|id}}._tcp</string>
+{{/cada}}
+	</array>
+{{/si}}
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+</dict>
+</plist>

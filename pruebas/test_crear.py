@@ -123,12 +123,29 @@ class Crear(unittest.TestCase):
         self.assertIn("ana-app/nota", open(os.path.join(app, "README.md"), encoding="utf-8").read())
         self.revisar_app(app, salida)
 
+    def test_con_iphone(self):
+        """mac + ios: la app de iPhone de host-ios queda generada (proyecto, permisos, recursos y la entrada) y la app pasa sus pruebas."""
+        app = os.path.join(self.tmp, "conios")
+        r = correr(sys.executable, PIEZA, "crear", app, "--id", "ana", "--nombre", "Ana", "--plataformas", "mac,ios")
+        self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+        for rel in ("movil/ios/App.xcodeproj/project.pbxproj", "movil/ios/Info.plist", "movil/ios/recursos.sh",
+                    "movil/ios/Fuentes/App.swift", "movil/ios/Fuentes/PiezaHost/Host.swift", "movil/ios/Fuentes/PiezaHost/Puente.swift"):
+            self.assertTrue(os.path.isfile(os.path.join(app, rel)), rel)
+        proyecto = open(os.path.join(app, "movil/ios/App.xcodeproj/project.pbxproj"), encoding="utf-8").read()
+        self.assertNotIn("{{", proyecto)
+        self.assertIn("PRODUCT_BUNDLE_IDENTIFIER = app.ana.ios;", proyecto)
+        self.assertIn("productName = Ana;", proyecto)
+        self.assertIn("pieza", open(os.path.join(app, "movil/ios/recursos.sh"), encoding="utf-8").read())
+        r = correr("bash", os.path.join(app, "pruebas", "correr.sh"), cwd=app)
+        self.assertEqual(r.returncode, 0, (r.stdout + r.stderr)[-3000:])
+
     def test_lo_que_no_crea(self):
         ocupada = os.path.join(self.tmp, "ocupada")
         os.makedirs(ocupada)
         open(os.path.join(ocupada, "algo.txt"), "w").close()
         casos = [(ocupada, "ana", "Ana", []), (os.path.join(self.tmp, "a"), "ana", "Mi App", []),
-                 (os.path.join(self.tmp, "b"), "ana", "Ana", ["--plataformas", "mac,ios"]),
+                 (os.path.join(self.tmp, "b"), "ana", "Ana", ["--plataformas", "mac,android"]),
+                 (os.path.join(self.tmp, "b2"), "ana", "Ana", ["--plataformas", "ios"]),
                  (os.path.join(self.tmp, "c"), "ana", "Ana", ["--piezas", "notas-git"]),
                  (os.path.join(self.tmp, "d"), "Ana", "Ana", [])]
         for carpeta, aid, nombre, extra in casos:

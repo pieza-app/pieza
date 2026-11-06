@@ -900,8 +900,10 @@ def crear(app, aid, nombre, plataformas, extra=(), repo=None, datos="sistema"):
         sys.exit("El nombre es una palabra que empieza con letra (puede llevar tildes: «Alcancía»): con él se llaman la app, su"
                  " carpeta de Mac y los archivos de las versiones.")
     plataformas = list(plataformas or ("mac", "windows", "linux"))
-    if set(plataformas) & {"ios", "android"}:
-        sys.exit("El celular todavía no: «host-movil» está por extraer (docs/catalogo.md). Crea la app de escritorio y súmalo después.")
+    if "android" in plataformas:
+        sys.exit("Android todavía no: «host-movil» está por extraer (docs/catalogo.md). El iPhone sí («host-ios»).")
+    if "ios" in plataformas and not set(plataformas) & {"mac", "windows", "linux"}:
+        sys.exit("El iPhone va junto a una app de computador (mac, windows o linux): la interfaz y las pruebas se arman ahí.")
     if repo is not None and not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9-]{0,38}/[A-Za-z0-9._-]{1,100}", repo):
         sys.exit("--repo es «dueño/repo» (p. ej. ana-app/ana).")
     for pid in extra:

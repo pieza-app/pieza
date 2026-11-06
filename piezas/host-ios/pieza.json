@@ -1,0 +1,85 @@
+{
+ "formato": 1,
+ "id": "host-ios",
+ "version": "0.1.0",
+ "estado": "lista",
+ "nombre": "App de iPhone",
+ "icono": "icono.svg",
+ "licencia": "MPL-2.0",
+ "categoria": "plataforma",
+ "descripcion": "Host genérico en Swift para iPhone (WKWebView a pantalla completa): la misma interfaz de ui/ con plataforma «movil», puente con las guardas de host-mac, config e idioma desde app.json, apariencia, pantalla encendida y unos segundos extra en segundo plano mientras algo está en curso, y el proyecto de Xcode generado desde app.json.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre que haya app de iPhone."
+ },
+ "origen": "host-mac 0.3.0 (Host.swift: app.json, Config, Idioma, Archivos y Texto con las mismas reglas; Puente.swift: el puente solo del marco principal con un archivo de ui/, navegación solo dentro de ui/, https al navegador por abrirEnlace, recargar si se cae la página, llamar con JSON y nombres simples). Nuevo para iPhone: sin Python ni acciones declaradas (una acción que el iPhone no atiende responde «error» con código «falta», nunca queda esperando), datos en Application Support con protección de archivos, ocupar/soltar que mantienen la pantalla encendida y piden tiempo en segundo plano, guardar al irse al fondo, Host.Vista para SwiftUI y el proyecto de Xcode sin dependencias (grupo sincronizado Fuentes/, Info.plist con los permisos de app.json → ios.permisos y NSBonjourServices de ios.bonjour). Salió de Despeja.",
+ "requiere": [
+  "nucleo",
+  "host-ui"
+ ],
+ "compatible": {
+  "nucleo": ">=0.7.0 <1.0.0",
+  "host-ui": ">=0.2.0 <1.0.0"
+ },
+ "plataformas": [
+  "ios"
+ ],
+ "archivos": {
+  "ios/Host.swift": "movil/ios/Fuentes/PiezaHost/Host.swift",
+  "ios/Puente.swift": "movil/ios/Fuentes/PiezaHost/Puente.swift"
+ },
+ "solo": {
+  "ios/Host.swift": [
+   "ios"
+  ],
+  "ios/Puente.swift": [
+   "ios"
+  ]
+ },
+ "generar": {
+  "plantillas/ios/project.pbxproj": {
+   "destino": "movil/ios/App.xcodeproj/project.pbxproj",
+   "si": "ios"
+  },
+  "plantillas/ios/Info.plist": {
+   "destino": "movil/ios/Info.plist",
+   "si": "ios"
+  },
+  "plantillas/ios/recursos.sh": {
+   "destino": "movil/ios/recursos.sh",
+   "si": "ios"
+  },
+  "plantillas/ios/App.swift": {
+   "destino": "movil/ios/Fuentes/App.swift",
+   "si": "ios",
+   "una_vez": true
+  }
+ },
+ "config": {},
+ "acciones": {},
+ "textos": {
+  "Esto no se puede hacer en el iPhone.": "This can't be done on the iPhone."
+ },
+ "pantallas": [
+  {
+   "donde": "iPhone",
+   "nombre": "La app",
+   "que": "la interfaz de ui/ a pantalla completa, respetando la muesca y la barra de inicio (env(safe-area-inset-*)), en el idioma y el tema elegidos"
+  }
+ ],
+ "permisos": {},
+ "red": [],
+ "tareas_persona": [
+  "Un Mac con Xcode para compilar e instalar la app de iPhone (abrir movil/ios/App.xcodeproj)",
+  "En Xcode, «Signing & Capabilities» → Team: tu Apple ID (gratis; la app dura 7 días y se reinstala) o Apple Developer (USD 99/año) para TestFlight y la App Store",
+  "La primera vez, el iPhone por cable con el Modo desarrollador activado (Ajustes → Privacidad y seguridad)"
+ ],
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "seguridad": true,
+   "resumen": "Primera versión: host genérico de iPhone (WKWebView) con la misma interfaz y las mismas guardas que host-mac, y el proyecto de Xcode generado desde app.json."
+  }
+ ]
+}
