@@ -26,6 +26,11 @@ fn main() {
         host.registrar("propia", |d, h, ctx| {
             h.llamar("propia", json!({"n": d["n"].as_i64().unwrap_or(0) * 2}), ctx.destino());
         });
+        // El host le pide algo a la página y espera la respuesta (host.atender en prueba.js).
+        host.registrar("pedirla", |_, h, ctx| {
+            let r = h.pedir("doble", json!({"n": 5}), std::time::Duration::from_secs(20));
+            h.llamar("pedida", json!({"r": r}), ctx.destino());
+        });
         let r = raiz.clone();
         host.registrar_medios("imagenes", move |ruta, _| (ruta == "punto.png").then(|| r.join("punto.png")));
     });

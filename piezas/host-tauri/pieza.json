@@ -141,7 +141,7 @@
   {
    "version": "0.1.0",
    "tipo": "mejora",
-   "resumen": "Primera versión: un solo host en Rust (Tauri) para Mac, Windows y Linux, con la misma API que host-mac y host-escritorio. Reemplaza a los dos."
+   "resumen": "Primera versión: un solo host en Rust (Tauri) para Mac, Windows y Linux, con la misma API que host-mac y host-escritorio. Reemplaza a los dos. host.pedir(funcion, datos, límite): le pide algo a la página y espera la respuesta (la página usa host.atender de «host-ui»)."
   }
  ]
 }

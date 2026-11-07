@@ -35,7 +35,7 @@
   {
    "version": "0.3.0",
    "tipo": "mejora",
-   "resumen": "host.medio(nombre, ruta): la dirección de un medio que sirve la app (con «host-tauri», en el mismo origen que la interfaz: sin CORS; con los hosts de antes, <id>://<nombre>/…). host.base dice la dirección base que puso el host. La interfaz habla igual con host-tauri (window.<id>Escritorio).",
+   "resumen": "host.medio(nombre, ruta): la dirección de un medio que sirve la app (con «host-tauri», en el mismo origen que la interfaz: sin CORS; con los hosts de antes, <id>://<nombre>/…). host.base dice la dirección base que puso el host. La interfaz habla igual con host-tauri (window.<id>Escritorio). host.atender(funcion, async (datos) => respuesta): lo que la app le pide a la página y espera (host.pedir en «host-tauri»).",
    "migrar": [
     "Cambia cada `<id>://video/${…}` armado a mano por host.medio(\"video\", ruta)."
    ]

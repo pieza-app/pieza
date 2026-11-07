@@ -290,7 +290,7 @@ class Herramienta(AppDePrueba):
         """Copia la base a un temporal y le sube la versión a «ia» con un cambio de este tipo (y lo que diga `cambiar`)."""
         import shutil
         base = os.path.join(self.tmp.name, "base")
-        shutil.copytree(BASE, base, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+        shutil.copytree(BASE, base, ignore=shutil.ignore_patterns(".git", "__pycache__", "target"))
         ruta = os.path.join(base, "piezas", "ia", "pieza.json")
         with open(ruta) as f:
             p = json.load(f)
@@ -718,7 +718,7 @@ class PiezasDeInterfaz(unittest.TestCase):
         """Copia la base a un temporal y sube la versión de cada pieza de `cambios` ({pieza: {tipo, compatible?}})."""
         import shutil
         base = os.path.join(self.tmp.name, "base")
-        shutil.copytree(BASE, base, ignore=shutil.ignore_patterns(".git", "__pycache__"))
+        shutil.copytree(BASE, base, ignore=shutil.ignore_patterns(".git", "__pycache__", "target"))
         for pid, c in cambios.items():
             ruta = os.path.join(base, "piezas", pid, "pieza.json")
             with open(ruta, encoding="utf-8") as f:

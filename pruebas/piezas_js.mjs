@@ -572,6 +572,22 @@ test("host-ui: Mac, Electron y celular reciben {accion, datos}; Minuta puede seg
   assert.equal(PiezaHost.crearHost({ nombre: "ana", global: "Ana", ventana: raro }).plataforma, "web", "una plataforma desconocida es la vista previa");
 });
 
+test("host-ui: atender responde a lo que pide la app (host.pedir) por respuestaPagina, también si falla", async () => {
+  const mensajes = [];
+  const v = ventanaFalsa({ ANA_HOST: "mac", anaEscritorio: { enviar: (m) => mensajes.push(m) } });
+  const h = PiezaHost.crearHost({ nombre: "ana", global: "Ana", ventana: v });
+  h.atender("doble", async (d) => ({ n: d.n * 2 }));
+  h.atender("rompe", async () => { throw new Error("no"); });
+  await v.Ana.doble({ id: "a1", datos: { n: 4 } });
+  await v.Ana.rompe({ id: "a2", datos: {} });
+  await v.Ana.doble({ datos: { n: 1 } });  // sin id: nadie espera, no se responde
+  assert.deepEqual(mensajes, [
+    { accion: "respuestaPagina", datos: { id: "a1", respuesta: { n: 8 } } },
+    { accion: "respuestaPagina", datos: { id: "a2", respuesta: null } },
+  ]);
+  assert.throws(() => h.atender("x", null), /función/);
+});
+
 test("host-ui: nombres, acciones y respuestas validados", () => {
   for (const o of [{ nombre: "Ana", global: "Ana" }, { nombre: "ana app", global: "Ana" }, { nombre: "ana", global: "ana" }, { nombre: "ana", global: "A.b" },
     { nombre: "ana", global: "Ana", canales: { escritorio: "x;y" } }]) assert.throws(() => PiezaHost.crearHost({ ...o, ventana: ventanaFalsa() }), JSON.stringify(o));

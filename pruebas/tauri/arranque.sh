@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # Abre la app de prueba de «host-tauri» de verdad (Linux, con Xvfb) y revisa que el puente funcione de punta a punta: la
-# plataforma, el estado, una acción declarada, una propia y un medio por el protocolo, con la CSP de las apps.
+# plataforma, el estado, una acción declarada, una propia, un medio por el protocolo (con la CSP de las apps) y un pedido del
+# host a la página (pedir ↔ atender).
 # Con un HOME temporal: nada de la persona se toca. Necesita xvfb-run y dbus-run-session.
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -16,7 +17,7 @@ visto="$casa/.config/prueba/visto.json"
 # WebKit sin GPU en GitHub tarda: hasta 4 minutos.
 for i in $(seq 1 240); do
   sleep 1
-  if [ -f "$visto" ] && python3 -c "import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get('medio')==32 and d.get('propia')=={'n':4} and d.get('anotado') and d['estado']['idioma']=='es' else 1)" "$visto" 2>/dev/null; then
+  if [ -f "$visto" ] && python3 -c "import json,sys; d=json.load(open(sys.argv[1])); sys.exit(0 if d.get('medio')==32 and d.get('propia')=={'n':4} and d.get('pedida')=={'n':10} and d.get('anotado') and d['estado']['idioma']=='es' else 1)" "$visto" 2>/dev/null; then
     echo "host-tauri: la app de prueba abrió y el puente funciona en ${i} s ($(cat "$visto"))"
     exit 0
   fi

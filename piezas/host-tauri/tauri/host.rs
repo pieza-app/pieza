@@ -278,6 +278,8 @@ pub struct Interno {
     /// Las ventanas agregadas que hablan con el puente.
     otras: Mutex<HashSet<String>>,
     soltados: Mutex<Vec<PathBuf>>,
+    /// Lo que el host le pidió a la página y espera (`pedir`): id → quien espera.
+    pedidos: Mutex<HashMap<String, mpsc::Sender<Value>>>,
     ocupadas: AtomicUsize,
     saliendo: AtomicBool,
     tareas: AtomicBool,
@@ -345,6 +347,7 @@ impl Host {
                 listas: Mutex::new(HashSet::new()),
                 otras: Mutex::new(HashSet::new()),
                 soltados: Mutex::new(Vec::new()),
+                pedidos: Mutex::new(HashMap::new()),
                 ocupadas: AtomicUsize::new(0),
                 saliendo: AtomicBool::new(false),
                 tareas: AtomicBool::new(false),
@@ -529,6 +532,21 @@ impl Host {
         ok
     }
 
+    /// Le pide algo a la página principal y espera su respuesta (como `callAsyncJavaScript` en el Mac): llama
+    /// `window.<App>.<funcion>({id, datos})` y la página, con `host.atender("<funcion>", async (datos) => …)` de «host-ui», responde
+    /// por `respuestaPagina {id, respuesta}`. None si la página no está lista, no responde a tiempo o no atiende esa función.
+    /// Bloquea: llámala desde una acción (cada una corre en su hilo), nunca desde el hilo de la ventana.
+    pub fn pedir(&self, funcion: &str, datos: Value, limite: Duration) -> Option<Value> {
+        let id = e::aleatorio_hex(16);
+        let (tx, rx) = mpsc::channel();
+        self.pedidos.lock().ok()?.insert(id.clone(), tx);
+        let r = if self.llamar(funcion, json!({"id": id, "datos": datos}), None) { rx.recv_timeout(limite).ok() } else { None };
+        if let Ok(mut p) = self.pedidos.lock() {
+            p.remove(&id);
+        }
+        r.filter(|v| !v.is_null())
+    }
+
     // ───────────── Acciones ─────────────
     /// Primero lo que registró la app, después lo que trae el host y al final lo declarado. Bloquea: corre en un hilo propio.
     pub fn despachar(&self, accion: &str, datos: Value, ctx: Ctx) {
@@ -649,6 +667,16 @@ impl Host {
                     l.insert(etiqueta.clone());
                 }
                 self.llamar("estado", Value::Object(self.estado()), ctx.destino());
+            }
+            // La respuesta de la página a un `pedir`: solo de la ventana principal y solo para un pedido que sigue esperando.
+            "respuestaPagina" => {
+                if ctx.responder_a.is_none() {
+                    let id = d["id"].as_str().unwrap_or("");
+                    let tx = self.pedidos.lock().ok().and_then(|mut p| p.remove(id));
+                    if let Some(tx) = tx {
+                        let _ = tx.send(d.get("respuesta").cloned().unwrap_or(Value::Null));
+                    }
+                }
             }
             "config" => {
                 let antes = self.config.leer();

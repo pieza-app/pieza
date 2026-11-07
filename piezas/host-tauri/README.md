@@ -74,6 +74,7 @@ La interfaz pide un medio con `host.medio("video", "clips/a.mp4")` (pieza `host-
 |---|---|
 | `registrar(nombre, \|datos, host, ctx\| …)` | Una acción propia. Gana sobre las del host y las declaradas (se migra de a poco). Corre en un hilo propio: puede bloquear. |
 | `llamar(funcion, json, destino)` | `window.<App>.<funcion>(json)`. Solo nombres simples; nada antes de `listo`. `destino`: `ctx.destino()` (la ventana que pidió). |
+| `pedir(funcion, datos, limite)` | Le pide algo a la página principal y espera la respuesta (como `callAsyncJavaScript` en el Mac): la página lo atiende con `host.atender("<funcion>", async (datos) => …)` de «host-ui». `None` si no está lista, no responde a tiempo o falla. Bloquea: úsalo dentro de una acción. |
 | `despachar(accion, datos, ctx)` | Correr una acción como si la pidiera la interfaz. |
 | `inyector(fuente, …)`, `falta(texto, valores)` | Valores para el `inyectar` de las acciones (el host trae `idiomaUI`, `carpetaDatos` y, con `carpeta`, `carpetaActual`). |
 | `registrar_medios(nombre, resolver)` | Lo que sirve `host.medio(nombre, ruta)`: el resolvedor devuelve la ruta absoluta o `None`. |
