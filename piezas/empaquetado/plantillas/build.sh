@@ -1,7 +1,7 @@
 #!/bin/bash
 # Compila {{nombre}} y la instala en ~/Applications/{{nombre_ascii}}.app (para desarrollo en este Mac).
 # El checkout va en ~/Developer/{{id}} (macOS no distingue mayúsculas: ~/{{id}} podría chocar con una carpeta de datos ~/{{nombre}}).
-# El empaquetado está en herramientas/empaquetar.sh (el mismo que usa GitHub para publicar cada versión).
+# El empaquetado está en herramientas/empaquetar.sh (el mismo que usa GitHub para publicar cada versión, con «host-tauri»).
 # Generado por la pieza «empaquetado» de Pieza (MPL-2.0, https://mozilla.org/MPL/2.0/) desde app.json: si lo cambias, desde ahí
 # es de la app y Pieza ya no lo toca. Lo propio de la app va en app.json → empaquetado o en herramientas/antes-de-instalar.sh.
 set -euo pipefail
@@ -15,12 +15,12 @@ if [ "${FORZAR:-0}" != "1" ]; then
   # Lo que no se ve con pgrep (p. ej. «hay una grabación en curso»): la app lo revisa aquí; si sale con un error, no se instala.
   if [ -f "$RAIZ/herramientas/antes-de-instalar.sh" ]; then bash "$RAIZ/herramientas/antes-de-instalar.sh" || exit 3; fi
 fi
-bash "$RAIZ/herramientas/empaquetar.sh"
+bash "$RAIZ/herramientas/empaquetar.sh" mac
 APP="$HOME/Applications/{{nombre_ascii}}.app"
 mkdir -p "$HOME/Applications"
 osascript -e 'tell application id "{{bundle}}" to quit' 2>/dev/null || true
 sleep 1
-pkill -x {{nombre_ascii}} 2>/dev/null || true
+pkill -x {{nombre_ascii|minus}} 2>/dev/null || true
 rm -rf "$APP"
 ditto "$RAIZ/dist/{{nombre_ascii}}.app" "$APP"
 # La app sabe que viene de este checkout (fuera de la app, para no romper su firma): la pieza «actualizaciones» la pone al día con

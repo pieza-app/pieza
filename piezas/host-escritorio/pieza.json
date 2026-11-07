@@ -2,15 +2,14 @@
  "formato": 1,
  "id": "host-escritorio",
  "version": "0.3.0",
- "estado": "lista",
+ "estado": "retirada",
  "nombre": "App de Windows y Linux",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "plataforma",
  "descripcion": "Host genérico en Electron con la misma API que el de Mac: ventana con sandbox, protocolo propio solo para ui/, puente con guardas, acciones declaradas con datos validados y límite de tiempo, config, idioma, menús y apariencia.",
  "recomendar": {
-  "siempre": true,
-  "cuando": "Siempre que haya app de Windows o Linux."
+  "cuando": "Nunca para una app nueva: usa host-tauri (un solo host para Mac, Windows y Linux)."
  },
  "origen": "esquema (escritorio/src/main.js: sandbox, contextIsolation, <id>://ui/ solo con archivos de ui/, ipcMain solo del marco principal con el origen propio, will-navigate/will-redirect/setWindowOpenHandler, permisos negados, una sola instancia, guardar al salir; servicios.js: Config, Idioma, Procesador sin variables <ID>_*, EnOrden; rutas.js: absoluta) + graba (<id>://video con rangos, permisos que la app puede abrir) + alcancia (secreto por la entrada estándar). Nuevo: nada de la app adentro (id, nombre y carpeta de datos de app.json; el preload recibe el id del host), acciones declaradas (acciones.json) validadas al cargar y en cada mensaje, límite de tiempo que corta también lo que lanzó el script (su grupo de procesos), carpeta temporal propia 0700 para entrada y salida, nativeTheme.themeSource según config.tema, y todo probado en Node y con Electron de verdad. Nuevo en 0.2: «limite» \"trabajo\" (sin tope mientras lata) o por orden, «maximo» y «vigilar» por acción, el inyector con su texto (`host.falta`), el eco también en el error de datos, la carpeta elegida (`carpeta`), el vigilante (`vigilar`, fs.watch), `mostrarEnCarpeta`, secretos con safeStorage (`host.secretos`) y avisos (`host.notificaciones`), sacados de Esquema, Graba y Minuta. Nuevo en 0.3 (lo que salió al pasar las seis apps): `entorno` para todos los scripts (Corta, Graba, Minuta), `ventana.frame`, `abrirAlArrancar` y `--oculta`, `userData: \"sistema\"` y `before-quit` con la ventana que se esconde (Minuta, Graba), más de una ventana en el puente (Minuta), `tituloAjustes`/`menuApp` (Repasa), `guardarArchivo` con `privado` y la carpeta visible 0700.",
  "requiere": [
@@ -121,5 +120,6 @@
    "seguridad": true,
    "resumen": "Primera versión: Host genérico en Electron con la misma API que el de Mac: ventana con sandbox, protocolo propio solo para ui/, puente con guardas, acciones declaradas con datos validados y límite de tiempo, config, idioma, menús y apariencia."
   }
- ]
+ ],
+ "reemplazo": "host-tauri"
 }

@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "host-ui",
- "version": "0.2.0",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "Puente de la interfaz",
  "icono": "icono.svg",
@@ -32,6 +32,14 @@
  "permisos": {},
  "red": [],
  "cambios": [
+  {
+   "version": "0.3.0",
+   "tipo": "mejora",
+   "resumen": "host.medio(nombre, ruta): la dirección de un medio que sirve la app (con «host-tauri», en el mismo origen que la interfaz: sin CORS; con los hosts de antes, <id>://<nombre>/…). host.base dice la dirección base que puso el host. La interfaz habla igual con host-tauri (window.<id>Escritorio).",
+   "migrar": [
+    "Cambia cada `<id>://video/${…}` armado a mano por host.medio(\"video\", ruta)."
+   ]
+  },
   {
    "version": "0.2.0",
    "tipo": "mejora",

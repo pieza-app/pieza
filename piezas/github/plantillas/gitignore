@@ -11,8 +11,12 @@
 {{#si mac}}
 !/app/
 {{/si}}
+{{#si piezas.host-tauri}}
+!/escritorio/
+{{#sino}}
 {{#si escritorio}}
 !/escritorio/
+{{/si}}
 {{/si}}
 {{#si movil}}
 !/movil/
@@ -44,6 +48,8 @@ app/.build/
 escritorio/node_modules/
 escritorio/dist/
 escritorio/vendor/
+escritorio/target/
+escritorio/gen/
 movil/node_modules/
 node_modules/
 dist/

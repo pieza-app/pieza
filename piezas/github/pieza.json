@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "github",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Repo listo para la comunidad",
  "icono": "icono.svg",
@@ -88,6 +88,11 @@
   "Correr pieza.py repo configurar . --aplicar con gh y permisos de admin del repo (topics, Discussions, reporte privado de fallas, aprobar las pruebas de quien aporta, proteger la rama principal, etiquetas)"
  ],
  "cambios": [
+  {
+   "version": "0.2.0",
+   "tipo": "mejora",
+   "resumen": "Con «host-tauri»: .gitignore deja escritorio/ (también en una app solo de Mac) e ignora escritorio/target/ y escritorio/gen/; Dependabot revisa los crates de Rust (cargo, escritorio/Cargo.lock) en vez de npm."
+  },
   {
    "version": "0.1.0",
    "tipo": "inicial",

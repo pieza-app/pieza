@@ -8,7 +8,7 @@ jobs:
   pruebas:
     strategy:
       # Versiones fijas: ubuntu-latest pasó a 26.04 y Playwright todavía no trae Chromium para ella. Sin fail-fast, una falla
-      # en un sistema no cancela al otro (así el job de Mac siempre compila el Swift).
+      # en un sistema no cancela al otro (así el job de Mac siempre compila el Swift y el Rust del Mac).
       fail-fast: false
       matrix:
         os: [ubuntu-24.04, macos-15]
@@ -20,6 +20,9 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
+      - name: Lo que Tauri necesita en Linux (host-tauri)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev xvfb
       - name: Playwright para las piezas de interfaz (solo Linux)
         if: runner.os == 'Linux'
         run: |
@@ -27,11 +30,30 @@ jobs:
           "$RUNNER_TEMP/pw/node_modules/.bin/playwright" install --with-deps chromium
           echo "PLAYWRIGHT=$RUNNER_TEMP/pw/node_modules/playwright" >> "$GITHUB_ENV"
       - run: bash pruebas/correr.sh
+      - name: host-tauri (Rust) — pruebas, clippy sin avisos y la app de prueba abierta de verdad
+        run: |
+          cd pruebas/tauri
+          cargo test --locked
+          cargo clippy --locked --all-targets -- -D warnings
+          if [ "$RUNNER_OS" = Linux ]; then bash arranque.sh; fi
       - name: Compilar y probar host-mac (solo Mac)
         if: runner.os == 'macOS'
         run: bash pruebas/swift/revisar_host_mac.sh
-      - name: Crear una app de ejemplo y compilar su Swift (solo Mac)
-        if: runner.os == 'macOS'
+      - name: Crear una app de ejemplo y compilar su app nativa (Rust, en Mac y Linux)
         run: |
           python3 herramientas/pieza.py crear "$RUNNER_TEMP/receta" --id receta --nombre Receta --plataformas mac,windows,linux --piezas ia
-          cd "$RUNNER_TEMP/receta/app" && swift build
+          cd "$RUNNER_TEMP/receta/escritorio" && cargo build
+
+  # host-tauri en Windows: que el Rust de Windows (WebView2, Credenciales, taskkill) compile y pase sus pruebas.
+  windows:
+    runs-on: windows-2025
+    defaults: { run: { shell: bash } }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: host-tauri (Rust) — pruebas y clippy sin avisos
+        run: |
+          cd pruebas/tauri
+          cargo clippy --locked --all-targets -- -D warnings
+          cargo test --locked -- --skip procesador --skip vigilante --skip host::pruebas::declarada

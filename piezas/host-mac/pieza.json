@@ -2,15 +2,14 @@
  "formato": 1,
  "id": "host-mac",
  "version": "0.3.0",
- "estado": "lista",
+ "estado": "retirada",
  "nombre": "App de Mac",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "plataforma",
  "descripcion": "Host genérico en Swift (WKWebView): ventana, puente con guardas, acciones declaradas en acciones.json con datos validados y límite de tiempo, config e idioma desde app.json, menús y apariencia.",
  "recomendar": {
-  "siempre": true,
-  "cuando": "Siempre que haya app de Mac."
+  "cuando": "Nunca para una app nueva: usa host-tauri (un solo host para Mac, Windows y Linux)."
  },
  "origen": "esquema (Ventana.swift: marco principal + origen file, navegación solo dentro de ui/, https al navegador, <input type=file> solo del marco propio, recargar si se cae la página; Servicios.swift: Config, Idioma.elegido, Procesador sin variables <ID>_*, EnOrden; EsquemaApp.swift: menús en el idioma elegido y esperar los guardados al salir) + alcancia (secreto por la entrada estándar y su salida estándar) + repasa (conEntrada con varios args) + corta (Medios.swift: <id>:// con rangos). Nuevo: nada de la app adentro (todo de app.json y Host.Configuracion), acciones declaradas (acciones.json) validadas al cargar y en cada mensaje, límite de tiempo que corta también a los descendientes, carpeta temporal propia 0700 para entrada y salida, el puente también revisa que la página sea un archivo de ui/, config con las reglas de nucleo (incluido «interfaz»: false) y la ventana y los menús siguen config.tema (NSApp.appearance). Nuevo en 0.2: «limite» \"trabajo\" (sin tope mientras lata) o por orden, «maximo» y «vigilar» por acción, el inyector con su texto (`Puente.Falta`), el eco también en el error de datos, actualizaciones (`p.actualizaciones`), la carpeta con marcador (`CarpetaElegida`), el vigilante de la carpeta (`Vigilante`, FSEvents), `mostrarEnFinder`, secretos en el Llavero (`Secretos`) y avisos del sistema (`Notificaciones`), sacados de Esquema, Alcancía, Graba y Minuta. Nuevo en 0.3 (lo que salió al pasar las seis apps): `Procesador.entornoApp` (Corta), `barraDeMenu`/`abrirAlArrancar` y `vidrio` (Graba), `barraTransparente` y `nombreVentana` (Alcancía, Corta), soltar archivos (`alSoltar`, Corta), `tituloAjustes`, `menuApp`, ⌘W sin menú Archivo, `Menus()` público, `guardarArchivo` con `privado` y la carpeta visible 0700 (Repasa), `elegirArchivos(mensaje:)` (Alcancía, Repasa), `limiteEstado` (Alcancía) y `estadoEnFila` (Repasa).",
  "requiere": [
@@ -140,5 +139,6 @@
    "seguridad": true,
    "resumen": "Primera versión: Host genérico en Swift (WKWebView): ventana, puente con guardas, acciones declaradas en acciones.json con datos validados y límite de tiempo, config e idioma desde app.json, menús y apariencia."
   }
- ]
+ ],
+ "reemplazo": "host-tauri"
 }

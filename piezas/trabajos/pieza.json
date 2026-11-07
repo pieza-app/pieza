@@ -3,7 +3,7 @@
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "id": "trabajos",
- "version": "0.2.1",
+ "version": "0.2.2",
  "estado": "lista",
  "nombre": "Trabajos largos",
  "categoria": "datos",
@@ -30,13 +30,19 @@
  "archivos": {
   "python/trabajos.py": "bin/trabajos.py",
   "mac/LectorProgreso.swift": "app/Sources/PiezaTrabajos/LectorProgreso.swift",
-  "escritorio/progreso.js": "escritorio/src/progreso.js"
+  "escritorio/progreso.js": "escritorio/src/progreso.js",
+  "tauri/progreso.rs": "escritorio/src/pieza/progreso.rs"
  },
  "solo": {
   "mac/LectorProgreso.swift": [
    "mac"
   ],
   "escritorio/progreso.js": [
+   "windows",
+   "linux"
+  ],
+  "tauri/progreso.rs": [
+   "mac",
    "windows",
    "linux"
   ]
@@ -58,6 +64,14 @@
   "nucleo": ">=0.7.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.2.2",
+   "tipo": "mejora",
+   "resumen": "El lector de progreso también para «host-tauri» (escritorio/src/pieza/progreso.rs). Cada lector llega solo con su host: el de Swift con host-mac, el de Electron con host-escritorio y el de Rust con host-tauri.",
+   "migrar": [
+    "Al pasar la app a host-tauri: pieza.py actualizar <app> trae progreso.rs; en main.rs, lector_progreso: Some(Arc::new(progreso::Lector))."
+   ]
+  },
   {
    "version": "0.2.1",
    "tipo": "arreglo",
@@ -82,5 +96,16 @@
    "tipo": "inicial",
    "resumen": "Primera versión, desde Esquema."
   }
- ]
+ ],
+ "solo_con": {
+  "tauri/progreso.rs": [
+   "host-tauri"
+  ],
+  "mac/LectorProgreso.swift": [
+   "host-mac"
+  ],
+  "escritorio/progreso.js": [
+   "host-escritorio"
+  ]
+ }
 }

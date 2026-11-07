@@ -1,5 +1,5 @@
-# Dependabot: avisa cuando hay versiones nuevas de las actions (fijadas por SHA){{#si escritorio}} y de los paquetes de npm de la app de
-# escritorio (escritorio/: Electron y electron-builder, con versión exacta){{/si}}{{#si movil}} y de la app del celular (movil/){{/si}} y abre un pull request para revisarlas.
+# Dependabot: avisa cuando hay versiones nuevas de las actions (fijadas por SHA){{#si piezas.host-tauri}} y de los crates de Rust de la app
+# nativa (escritorio/: Tauri, fijados en Cargo.lock){{/si}}{{#si movil}} y de la app del celular (movil/){{/si}} y abre un pull request para revisarlas.
 # `cooldown`: espera unos días antes de proponer una versión recién publicada; si una action o un paquete fue secuestrado, casi
 # siempre se descubre y se retira en ese plazo. Las alertas de seguridad no esperan. Nada se junta solo: cada PR se revisa.
 version: 2
@@ -11,8 +11,8 @@ updates:
     groups:
       actions: { patterns: ["*"] }
     commit-message: { prefix: "Actions" }
-{{#si escritorio}}
-  - package-ecosystem: npm
+{{#si piezas.host-tauri}}
+  - package-ecosystem: cargo
     directory: /escritorio
     schedule: { interval: weekly }
     cooldown: { default-days: 7, semver-major-days: 30 }

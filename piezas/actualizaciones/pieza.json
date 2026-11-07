@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "actualizaciones",
- "version": "0.3.0",
+ "version": "0.4.0",
  "estado": "lista",
  "nombre": "Actualizaciones",
  "icono": "icono.svg",
@@ -37,7 +37,8 @@
  "origen": "esquema (Actualizaciones.swift + escritorio/src/actualizaciones.js: esDescargaNuestra, comillas, avance por pasos, .anterior si falla) + repasa (URL sin puerto ni «..», se vuelve a validar al instalar, PATH fijo, revisa que el .app exista) + repasa/alcancia (textos en español que traduce la interfaz). Nuevo: nada de la app adentro (repo, nombre y archivos por parámetro; Swift en su propio target), el guion solo escribe códigos de paso (ningún texto traducido entra a bash), huella de 64 hex obligatoria, versiones que no son números se ignoran, la redirección de GitHub solo por https y Electron inyectable para probarlo en Node.",
  "archivos": {
   "mac/Actualizaciones.swift": "app/Sources/PiezaActualizaciones/Actualizaciones.swift",
-  "escritorio/actualizaciones.js": "escritorio/src/actualizaciones.js"
+  "escritorio/actualizaciones.js": "escritorio/src/actualizaciones.js",
+  "tauri/actualizaciones.rs": "escritorio/src/pieza/actualizaciones.rs"
  },
  "config": {},
  "acciones": {},
@@ -53,6 +54,14 @@
  "permisos": {},
  "red_nota": "Solo pregunta a GitHub por la última versión del repo de la app (al abrir y cada 6 horas) y baja de sus Releases; GitHub redirige la descarga a su almacenamiento. Sin datos de la persona.",
  "cambios": [
+  {
+   "version": "0.4.0",
+   "tipo": "mejora",
+   "resumen": "Las actualizaciones también para «host-tauri» (escritorio/src/pieza/actualizaciones.rs): los mismos archivos del Release y la misma verificación con .sha256, en Mac, Windows y Linux. Cada versión llega solo con su host.",
+   "migrar": [
+    "Al pasar la app a host-tauri: pieza.py actualizar <app> trae actualizaciones.rs; en main.rs, actualizaciones: Actualizaciones::nuevas(repo, nombre)."
+   ]
+  },
   {
    "version": "0.3.0",
    "tipo": "mejora",
@@ -77,6 +86,22 @@
   "escritorio/actualizaciones.js": [
    "windows",
    "linux"
+  ],
+  "tauri/actualizaciones.rs": [
+   "mac",
+   "windows",
+   "linux"
+  ]
+ },
+ "solo_con": {
+  "tauri/actualizaciones.rs": [
+   "host-tauri"
+  ],
+  "mac/Actualizaciones.swift": [
+   "host-mac"
+  ],
+  "escritorio/actualizaciones.js": [
+   "host-escritorio"
   ]
  }
 }

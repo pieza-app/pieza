@@ -67,7 +67,8 @@ ID = re.compile(r"^[a-z][a-z0-9-]{1,40}$")
 SCRIPT = re.compile(r"^\w+\.py$")
 VERSION = re.compile(r"^\d+\.\d+\.\d+$")
 TIPOS = {"texto", "enum", "bool", "entero", "rutaRelativa", "base64", "lista"}
-ESTADOS = {"lista", "planeada"}
+ESTADOS = {"lista", "planeada", "retirada"}
+ID_PIEZA = re.compile(r"^[a-z][a-z0-9-]{0,40}$")
 PLATAFORMAS = ("mac", "windows", "linux", "ios", "android")
 CATEGORIAS = {"base", "ia", "interfaz", "datos", "medios", "conexiones", "plataforma", "repo"}
 TIPOS_CAMBIO = {"inicial": 0, "arreglo": 1, "mejora": 2, "rompe": 3}
@@ -256,7 +257,7 @@ def ruta_relativa_ok(r):
 #: La forma de cada campo, antes de mirar su contenido (un pieza.json de afuera puede traer cualquier cosa).
 FORMA = {"version": str, "estado": str, "nombre": str, "icono": str, "categoria": str, "descripcion": str, "recomendar": dict,
          "requiere": list, "compatible": dict, "plataformas": list, "pantallas": list, "permisos": dict, "red": list,
-         "red_nota": str, "tareas_persona": list, "archivos": dict, "solo": dict, "config": dict, "config_opcional": dict,
+         "red_nota": str, "tareas_persona": list, "archivos": dict, "solo": dict, "solo_con": dict, "config": dict, "config_opcional": dict,
          "acciones": dict, "textos": dict, "textos_si_usa": dict, "app_json": dict,
          "cambios": list, "tomar_de": (str, list), "origen": str, "generar": dict, "datos_app": dict}
 
@@ -689,7 +690,9 @@ def errores_pieza(pid, p, ids, carpeta="local"):
     if not VERSION.match(str(p.get("version", ""))):
         e.append("«version» debe ser X.Y.Z")
     if p.get("estado", "lista") not in ESTADOS:
-        e.append("«estado» debe ser lista o planeada")
+        e.append("«estado» debe ser lista, planeada o retirada")
+    if p.get("estado") == "retirada" and not (isinstance(p.get("reemplazo"), str) and p["reemplazo"]):
+        e.append("una pieza «retirada» dice qué la reemplaza («reemplazo»)")
     if p.get("estado") == "planeada" and (p.get("archivos") or not p.get("tomar_de")):
         e.append("una pieza planeada no trae archivos y dice de dónde tomarla («tomar_de»)")
     if p.get("categoria") not in CATEGORIAS:
@@ -735,6 +738,9 @@ def errores_pieza(pid, p, ids, carpeta="local"):
     for origen, plats in p.get("solo", {}).items():
         if origen not in p.get("archivos", {}) or not isinstance(plats, list) or not plats or any(x not in PLATAFORMAS for x in plats):
             e.append(f"solo: «{origen}» tiene que ser un archivo de la pieza con una lista de plataformas")
+    for origen, con in p.get("solo_con", {}).items():
+        if origen not in p.get("archivos", {}) or not isinstance(con, list) or not con or not all(isinstance(x, str) and ID_PIEZA.match(x) for x in con):
+            e.append(f"solo_con: «{origen}» tiene que ser un archivo de la pieza con una lista de piezas (ej. [\"host-tauri\"])")
     cambios = p.get("cambios", [])
     if p.get("estado", "lista") == "lista":
         if not cambios or cambios[0].get("version") != p.get("version"):
@@ -966,6 +972,15 @@ def _textos_en(app):
 _SIN_CONFIG = set()
 
 
+def aplica(p, origen, plataformas_app, lock, agregando=None):
+    """¿Va este archivo de la pieza en esta app? Su plataforma (`solo`) y, si lo dice, una de las piezas que lo usan (`solo_con`:
+    el código de un host, p. ej. el lector de progreso en Rust solo con «host-tauri»)."""
+    if not plataformas_app & set(p.get("solo", {}).get(origen, PLATAFORMAS)):
+        return False
+    con = p.get("solo_con", {}).get(origen)
+    return not con or any(x in lock["piezas"] or x == agregando for x in con)
+
+
 def copiar(pid, app, forzar=False, lock=None):
     p = pieza(pid)
     lock = lock or candado(app)
@@ -973,8 +988,8 @@ def copiar(pid, app, forzar=False, lock=None):
     copiados, saltados = {}, []
     plataformas_app = set((leer(os.path.join(app, "app.json"), {}) or {}).get("plataformas") or PLATAFORMAS)
     for origen, destino in p.get("archivos", {}).items():
-        if not plataformas_app & set(p.get("solo", {}).get(origen, PLATAFORMAS)):
-            continue  # el archivo es de una plataforma que esta app no tiene (app.json → «plataformas»)
+        if not aplica(p, origen, plataformas_app, lock, pid):
+            continue  # el archivo es de una plataforma (app.json → «plataformas») o de un host que esta app no tiene
         dst = destino_seguro(app, destino)
         anterior = antes.get("archivos", {}).get(destino)
         fuente = os.path.join(carpeta_de(pid), origen)
@@ -1097,7 +1112,7 @@ def choques(pid, app, lock):
     anotados = set(lock["piezas"].get(pid, {}).get("archivos", {}))
     r = []
     for origen, destino in p.get("archivos", {}).items():
-        if not plataformas_app & set(p.get("solo", {}).get(origen, PLATAFORMAS)) or destino in anotados:
+        if not aplica(p, origen, plataformas_app, lock, pid) or destino in anotados:
             continue
         dst, fuente = origen_seguro(app, destino), os.path.join(carpeta_de(pid), origen)
         if os.path.isfile(dst) and os.path.isfile(fuente) and huella(dst) != huella(fuente):
@@ -1106,7 +1121,7 @@ def choques(pid, app, lock):
 
 
 #: Las piezas que leen acciones.json (el host genérico). Con alguna de ellas en la app, agregar/actualizar lo arman solos.
-HOSTS = ("host-mac", "host-escritorio")
+HOSTS = ("host-tauri", "host-mac", "host-escritorio")
 
 
 def armar_acciones(app, forzar=False):
@@ -1296,6 +1311,16 @@ def agregar(pid, app, sin_revisar=False, forzar=False):
         for s in saltados:
             print(f"    ! {s} ya existía en la app y no lo pisé. Compara con: pieza.py diferencias {app} {p}")
     avisar_sin_config_desconocida(con_requisitos(pid))
+    # Una pieza ya instalada puede traer código que va solo con la que se acaba de agregar (`solo_con`: el lector de progreso
+    # en Rust llega cuando llega «host-tauri»): se copia ahora, sin tocar lo que la app cambió.
+    nuevas = set(con_requisitos(pid))
+    for otra in sorted(lock["piezas"]):
+        if otra in nuevas or not os.path.isfile(os.path.join(carpeta_de(otra), "pieza.json")):
+            continue
+        con = (pieza(otra).get("solo_con") or {}).values()
+        if any(set(x) & nuevas for x in con):
+            copiar(otra, app, lock=lock)
+            print(f"~ {otra}: lo que va con {', '.join(sorted(set().union(*map(set, con)) & nuevas))}")
     if armar_acciones(app):
         print("~ acciones.json (lo lee el host: va dentro de la app junto a app.json)")
     # Lo que generan las piezas (plantillas) se llena con todas las piezas ya instaladas: una pieza nueva puede cambiar lo de

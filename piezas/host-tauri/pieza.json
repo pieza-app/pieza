@@ -1,0 +1,144 @@
+{
+ "formato": 1,
+ "id": "host-tauri",
+ "version": "0.1.0",
+ "estado": "lista",
+ "nombre": "App de Mac, Windows y Linux",
+ "icono": "icono.svg",
+ "licencia": "MPL-2.0",
+ "categoria": "plataforma",
+ "descripcion": "Un solo host en Rust (Tauri) para Mac, Windows y Linux, con la misma API que host-mac y host-escritorio: ventana con el WebView del sistema (liviana, sin Chromium adentro), protocolo propio solo para ui/ y los medios que la app aprueba, puente con guardas, acciones declaradas con datos validados y límite de tiempo, config, idioma, menús, bandeja, apariencia, carpeta, vigilante, secretos en el llavero del sistema, avisos, diálogos y una sola instancia.",
+ "recomendar": {
+  "siempre": true,
+  "cuando": "Siempre que haya app de escritorio (Mac, Windows o Linux)."
+ },
+ "origen": "host-mac 0.3.0 (Swift) + host-escritorio 0.3.0 (Electron), con las mismas reglas que pieza.py y nucleo.py, en Rust: enchufe.rs = enchufe.js/Enchufe.swift (las reglas de una acción se comparan con pieza.py en test_piezas.py, compiladas de verdad), procesador.rs = procesador.js/Procesador.swift (grupo de procesos, latido, secreto por stdin, temporal 0700), vigilante.rs = vigilante.js/FSEvents (crate notify), protocolo.rs (ui/ y medios del mismo origen, con rangos), sistema.rs (Llavero/Credenciales/Secret Service con el mismo servicio que host-mac, avisos, portapapeles, papelera) y host.rs (ventana, puente, internas, menús, bandeja, salir). Nuevo: un solo host para los tres sistemas; los medios en el mismo origen que la interfaz (host.medio de host-ui, sin CORS); el puente es un solo comando de Tauri que se revisa por ventana y página.",
+ "requiere": [
+  "nucleo",
+  "host-ui"
+ ],
+ "compatible": {
+  "nucleo": ">=0.7.0 <1.0.0",
+  "host-ui": ">=0.3.0 <1.0.0"
+ },
+ "plataformas": [
+  "mac",
+  "windows",
+  "linux"
+ ],
+ "archivos": {
+  "tauri/mod.rs": "escritorio/src/pieza/mod.rs",
+  "tauri/enchufe.rs": "escritorio/src/pieza/enchufe.rs",
+  "tauri/procesador.rs": "escritorio/src/pieza/procesador.rs",
+  "tauri/protocolo.rs": "escritorio/src/pieza/protocolo.rs",
+  "tauri/sistema.rs": "escritorio/src/pieza/sistema.rs",
+  "tauri/vigilante.rs": "escritorio/src/pieza/vigilante.rs",
+  "tauri/host.rs": "escritorio/src/pieza/host.rs",
+  "iconos/32x32.png": "escritorio/iconos/32x32.png",
+  "iconos/128x128.png": "escritorio/iconos/128x128.png",
+  "iconos/128x128@2x.png": "escritorio/iconos/128x128@2x.png",
+  "iconos/icon.icns": "escritorio/iconos/icon.icns",
+  "iconos/icon.ico": "escritorio/iconos/icon.ico",
+  "iconos/icono.png": "escritorio/iconos/icono.png"
+ },
+ "generar": {
+  "plantillas/tauri/Cargo.toml": {
+   "destino": "escritorio/Cargo.toml"
+  },
+  "plantillas/tauri/build.rs": {
+   "destino": "escritorio/build.rs"
+  },
+  "plantillas/tauri/tauri.conf.json": {
+   "destino": "escritorio/tauri.conf.json"
+  },
+  "plantillas/tauri/vacio.html": {
+   "destino": "escritorio/vacio/index.html"
+  },
+  "plantillas/tauri/Info.plist": {
+   "destino": "escritorio/Info.plist",
+   "si": "mac"
+  },
+  "plantillas/tauri/main.rs": {
+   "destino": "escritorio/src/main.rs",
+   "una_vez": true
+  }
+ },
+ "config": {},
+ "acciones": {},
+ "textos": {
+  "No entendí lo que pediste. Intenta de nuevo.": "I didn't understand that request. Try again.",
+  "Falta algo para hacer esto.": "Something is missing to do this.",
+  "Tardó demasiado y lo detuve. Intenta de nuevo.": "It took too long, so I stopped it. Try again.",
+  "No pude terminar. Intenta de nuevo.": "I couldn't finish. Try again.",
+  "Archivo": "File",
+  "Edición": "Edit",
+  "Ver": "View",
+  "Ayuda": "Help",
+  "Deshacer": "Undo",
+  "Rehacer": "Redo",
+  "Cortar": "Cut",
+  "Copiar": "Copy",
+  "Pegar": "Paste",
+  "Seleccionar todo": "Select All",
+  "Pantalla completa": "Full Screen",
+  "Ajustes…": "Settings…",
+  "Salir de {app}": "Quit {app}",
+  "Sitio de {app}": "{app} website",
+  "Código": "Source code",
+  "Acerca de {app}": "About {app}",
+  "Ocultar {app}": "Hide {app}",
+  "Ventana": "Window",
+  "Minimizar": "Minimize",
+  "Zoom": "Zoom",
+  "Cerrar ventana": "Close Window",
+  "Agregar": "Add",
+  "Dejó de avanzar y lo detuve. Intenta de nuevo.": "It stopped making progress, so I stopped it. Try again.",
+  "Elige una carpeta primero.": "Choose a folder first.",
+  "Espera a que termine lo que está haciendo y vuelve a intentarlo.": "Wait until it finishes what it's doing and try again.",
+  "Ocultar otras": "Hide Others",
+  "Abrir {app}": "Open {app}"
+ },
+ "pantallas": [
+  {
+   "donde": "Ventana",
+   "nombre": "La app",
+   "que": "la interfaz de ui/ en una ventana que recuerda su tamaño, con los menús de siempre en el idioma elegido; en Windows y Linux, también la bandeja si la app sigue viva al cerrar"
+  }
+ ],
+ "permisos": {
+  "mac": [
+   {
+    "clave": "Notificaciones",
+    "por": "solo si la app usa avisos: macOS pregunta la primera vez"
+   },
+   {
+    "clave": "Llavero",
+    "por": "solo si la app usa secretos: quedan en el Llavero de la persona, solo en este Mac"
+   }
+  ],
+  "windows": [
+   {
+    "clave": "Credenciales de Windows",
+    "por": "solo si la app usa secretos: quedan en el Administrador de credenciales de la persona"
+   }
+  ],
+  "linux": [
+   {
+    "clave": "Secret Service (gnome-keyring o KWallet)",
+    "por": "solo si la app usa secretos; sin llavero no se guarda nada"
+   }
+  ]
+ },
+ "red": [],
+ "tareas_persona": [
+  "Para compilar: Rust (rustup.rs). En Linux, además: libwebkit2gtk-4.1-dev, libgtk-3-dev, libayatana-appindicator3-dev, librsvg2-dev",
+  "Opcional: Apple Developer (USD 99/año) para firmar y que macOS no advierta"
+ ],
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "mejora",
+   "resumen": "Primera versión: un solo host en Rust (Tauri) para Mac, Windows y Linux, con la misma API que host-mac y host-escritorio. Reemplaza a los dos."
+  }
+ ]
+}
