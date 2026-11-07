@@ -10,7 +10,7 @@ BIN="${CARGO_TARGET_DIR:-$PWD/target}/debug/prueba"
 casa=$(mktemp -d)
 pid=""
 trap '[ -n "$pid" ] && kill "$pid" 2>/dev/null; rm -rf "$casa" 2>/dev/null || true' EXIT
-HOME="$casa" XDG_CONFIG_HOME="$casa/.config" PIEZA_REGISTRO="$casa/puente.txt" \
+HOME="$casa" XDG_CONFIG_HOME="$casa/.config" PIEZA_REGISTRO="$casa/puente.txt" LANG=es_CL.UTF-8 LANGUAGE=es \
   xvfb-run -a dbus-run-session -- "$BIN" >"$casa/salida.txt" 2>&1 &
 pid=$!
 visto="$casa/.config/prueba/visto.json"
