@@ -61,6 +61,9 @@
   "plantillas/tauri/main.rs": {
    "destino": "escritorio/src/main.rs",
    "una_vez": true
+  },
+  "plantillas/tauri/arranque.sh": {
+   "destino": "escritorio/pruebas/arranque.sh"
   }
  },
  "config": {},

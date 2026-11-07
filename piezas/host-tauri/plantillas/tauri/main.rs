@@ -6,6 +6,10 @@ mod pieza;
 #[path = "pieza/progreso.rs"]
 mod progreso;
 {{/si}}
+{{#si piezas.catalogo}}
+#[path = "pieza/catalogo.rs"]
+mod catalogo;
+{{/si}}
 {{#si piezas.actualizaciones}}
 #[path = "pieza/actualizaciones.rs"]
 mod actualizaciones;

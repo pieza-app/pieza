@@ -5,6 +5,9 @@ mod pieza;
 #[path = "../../../piezas/trabajos/tauri/progreso.rs"]
 #[allow(dead_code)]
 mod progreso;
+#[path = "../../../piezas/catalogo/tauri/catalogo.rs"]
+#[allow(dead_code)]
+mod catalogo;
 #[path = "../../../piezas/actualizaciones/tauri/actualizaciones.rs"]
 #[allow(dead_code)]
 mod actualizaciones;

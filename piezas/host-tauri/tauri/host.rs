@@ -118,6 +118,8 @@ pub fn item(etiqueta: &str, accion: &str, atajo: Option<&str>) -> ItemMenu {
 /// Lo propio del menú: ítems de Archivo (arriba de Salir), de Ver y menús enteros (título, ítems).
 #[derive(Clone, Default)]
 pub struct MenuPropio {
+    /// Deshacer y rehacer los hace la interfaz (`menu({accion: "deshacer"})`): en vez de los del sistema.
+    pub deshacer_propio: bool,
     pub archivo: Vec<ItemMenu>,
     pub ver: Vec<ItemMenu>,
     pub extra: Vec<(String, Vec<ItemMenu>)>,
@@ -479,7 +481,13 @@ impl Host {
         self.ocupadas.fetch_add(1, Ordering::SeqCst);
     }
     pub fn soltar_ocupada(&self) {
-        let _ = self.ocupadas.fetch_update(Ordering::SeqCst, Ordering::SeqCst, |x| Some(x.saturating_sub(1)));
+        let mut x = self.ocupadas.load(Ordering::SeqCst);
+        while x > 0 {
+            match self.ocupadas.compare_exchange(x, x - 1, Ordering::SeqCst, Ordering::SeqCst) {
+                Ok(_) => break,
+                Err(y) => x = y,
+            }
+        }
     }
     /// Algo se cortaría si la app se cierra: un guardado en la fila, un script corriendo o algo que la app marcó.
     pub fn ocupada(&self) -> bool {
@@ -1112,7 +1120,9 @@ impl Host {
 
     fn items_archivo(&self) -> Vec<ItemMenu> {
         let mut v = Vec::new();
-        match &self.opciones.titulo_ajustes {
+        // Si la app ya puso «Ajustes…» en su lugar dentro de Archivo, el host no lo repite.
+        let propio = self.opciones.menu.archivo.iter().any(|x| matches!(x, ItemMenu::Accion { accion, .. } if accion == "ajustes"));
+        match if propio { &Some(None) } else { &self.opciones.titulo_ajustes } {
             Some(None) => {}
             Some(Some(t)) => v.push(item(t, "ajustes", Some("CmdOrCtrl+,"))),
             None => v.push(item("Ajustes…", "ajustes", Some("CmdOrCtrl+,"))),
@@ -1159,9 +1169,15 @@ impl Host {
             s = s.item(&salir);
             m = m.item(&s.build()?);
         }
-        let edicion = SubmenuBuilder::new(a, self.t("Edición"))
-            .item(&PredefinedMenuItem::undo(a, Some(&self.t("Deshacer")))?)
-            .item(&PredefinedMenuItem::redo(a, Some(&self.t("Rehacer")))?)
+        let mut edicion = SubmenuBuilder::new(a, self.t("Edición"));
+        edicion = if self.opciones.menu.deshacer_propio {
+            edicion
+                .item(&MenuItemBuilder::with_id("pieza:deshacer", self.t("Deshacer")).accelerator("CmdOrCtrl+Z").build(a)?)
+                .item(&MenuItemBuilder::with_id("pieza:rehacer", self.t("Rehacer")).accelerator("CmdOrCtrl+Shift+Z").build(a)?)
+        } else {
+            edicion.item(&PredefinedMenuItem::undo(a, Some(&self.t("Deshacer")))?).item(&PredefinedMenuItem::redo(a, Some(&self.t("Rehacer")))?)
+        };
+        let edicion = edicion
             .separator()
             .item(&PredefinedMenuItem::cut(a, Some(&self.t("Cortar")))?)
             .item(&PredefinedMenuItem::copy(a, Some(&self.t("Copiar")))?)
@@ -1345,6 +1361,14 @@ fn pieza(webview: tauri::Webview, msg: Value, estado: tauri::State<'_, Host>) {
         return;
     }
     let Some(accion) = msg.get("accion").and_then(Value::as_str).filter(|a| e::es_accion(a)).map(String::from) else { return };
+    // Para la prueba de arranque (escritorio/pruebas/arranque.sh): PIEZA_REGISTRO=<archivo> anota el nombre de cada acción que
+    // llega por el puente (solo el nombre, nunca los datos).
+    if let Some(r) = std::env::var_os("PIEZA_REGISTRO") {
+        use std::io::Write;
+        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(r) {
+            let _ = writeln!(f, "{etiqueta} {accion}");
+        }
+    }
     let datos = msg.get("datos").filter(|d| d.is_object()).cloned().unwrap_or(json!({}));
     let ctx = Ctx { responder_a: (etiqueta != PRINCIPAL).then_some(etiqueta) };
     thread::spawn(move || host.despachar(&accion, datos, ctx));

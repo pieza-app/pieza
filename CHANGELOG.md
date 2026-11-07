@@ -9,7 +9,7 @@
   revisa el puente de punta a punta (plataforma, estado, una acción declarada, una propia y un medio con la CSP de las apps).
 - **`host-ui` 0.3.0:** `host.medio(nombre, ruta)` y `host.base`: con `host-tauri` los medios viven en el mismo origen que la
   interfaz (sin CORS); la interfaz habla con `host-tauri` por el mismo `window.<id>Escritorio`.
-- **`trabajos` 0.2.2 y `actualizaciones` 0.4.0:** su parte en Rust para `host-tauri`. Campo nuevo `solo_con` en `pieza.json`: un
+- **`catalogo` 0.3.0,** **`trabajos` 0.2.2 y `actualizaciones` 0.4.0:** su parte en Rust para `host-tauri`. Campo nuevo `solo_con` en `pieza.json`: un
   archivo llega solo con el host que lo usa (el Swift con `host-mac`, el JS con `host-escritorio`, el Rust con `host-tauri`), y
   llega solo cuando ese host se agrega después.
 - **`empaquetado` 0.2.0 (rompe):** todo con Tauri. `herramientas/empaquetar.sh <mac|windows|linux>` arma los mismos archivos de

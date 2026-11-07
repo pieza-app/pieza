@@ -26,6 +26,11 @@ sys-locale = "0.3"
 {{#si piezas.actualizaciones}}
 ureq = { version = "2", features = ["json"] }
 sha2 = "0.10"
+{{#sino}}
+{{#si piezas.catalogo}}
+ureq = { version = "2", features = ["json"] }
+sha2 = "0.10"
+{{/si}}
 {{/si}}
 
 [build-dependencies]

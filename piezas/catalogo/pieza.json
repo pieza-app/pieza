@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "catalogo",
- "version": "0.2.1",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "Catálogo de la comunidad",
  "icono": "icono.svg",
@@ -43,13 +43,19 @@
  "archivos": {
   "python/catalogo.py": "bin/catalogo.py",
   "mac/Catalogo.swift": "app/Sources/PiezaCatalogo/Catalogo.swift",
-  "escritorio/catalogo.js": "escritorio/src/catalogo.js"
+  "escritorio/catalogo.js": "escritorio/src/catalogo.js",
+  "tauri/catalogo.rs": "escritorio/src/pieza/catalogo.rs"
  },
  "solo": {
   "mac/Catalogo.swift": [
    "mac"
   ],
   "escritorio/catalogo.js": [
+   "windows",
+   "linux"
+  ],
+  "tauri/catalogo.rs": [
+   "mac",
    "windows",
    "linux"
   ]
@@ -121,6 +127,14 @@
  },
  "cambios": [
   {
+   "version": "0.3.0",
+   "tipo": "mejora",
+   "resumen": "La descarga del catálogo también para «host-tauri» (escritorio/src/pieza/catalogo.rs): solo raw.githubusercontent.com, sin redirecciones, tamaño cortado al leer y SHA-256 del índice validado, igual que en Swift y Electron.",
+   "migrar": [
+    "Al pasar la app a host-tauri: en main.rs, `let cat = Arc::new(catalogo::Catalogo::nuevo(&host.app.crudo, &agente)?)` y registra `catalogo`/`descargarDelCatalogo` con cat.listar/cat.descargar."
+   ]
+  },
+  {
    "version": "0.2.1",
    "tipo": "arreglo",
    "resumen": "Un campo «archivo» o «bytes» del contenido ya no se quita: antes se borraban de todo objeto (eran los nombres viejos de «ruta» y «tamano») y una plantilla con su propio «archivo» (el nombre sugerido, en Esquema) no pasaba el validador: el índice quedaba vacío. Ahora esos alias solo se quitan en una entrada del índice y solo si están EN VEZ de «ruta»/«tamano» (lo trajo Esquema de su copia). «migrar» de la 0.2.0 queda como lista de pasos (el aviso de «Pieza al día» salía con una viñeta por letra).",
@@ -157,5 +171,16 @@
    },
    "que": "«repo» es el repo de solo datos del catálogo, como «ana-app/ana-catalogo», y en «tipos» va un tipo por cosa, con su validador de bin/; ver piezas/catalogo/README.md"
   }
+ },
+ "solo_con": {
+  "tauri/catalogo.rs": [
+   "host-tauri"
+  ],
+  "mac/Catalogo.swift": [
+   "host-mac"
+  ],
+  "escritorio/catalogo.js": [
+   "host-escritorio"
+  ]
  }
 }
