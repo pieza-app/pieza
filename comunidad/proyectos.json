@@ -108,11 +108,11 @@
    "descripcion": "Framework abierto para apps que viven en tu computador: piezas probadas que se enchufan en vez de escribirse de cero.",
    "url": "https://github.com/pieza-app/pieza",
    "pagina": "https://pieza-app.github.io/pieza/",
-   "commit": "4e7722f032050ba9a6a56c49c3e3d4ba1cedc886",
+   "commit": "cdcb30c14abd601d345abc75d92773ec922e08d4",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-06T03:54:16Z",
+   "actualizado": "2026-11-06T22:54:46Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
