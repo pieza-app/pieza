@@ -81,7 +81,7 @@ La interfaz pide un medio con `host.medio("video", "clips/a.mp4")` (pieza `host-
 | `al_estado`, `al_iniciar_tareas`, `al_cambiar_config`, `antes_de_salir`, `al_tocar_aviso`, `al_soltar`, `al_crear_ventana` | Ganchos. |
 | `config`, `idioma`, `t`, `f`, `procesador`, `fila`, `datos`, `recursos`, `app` | Lo mismo que en los otros hosts. `procesador.poner_entorno(\|\| …)`: variables para todos los scripts. |
 | `carpeta_actual`, `elegir_carpeta`, `usar_carpeta`, `olvidar_carpeta`, `vigilante()` | La carpeta de la persona y su vigilante. |
-| `dialogo_carpeta`, `dialogo_archivos`, `guardar_archivo` | Diálogos del sistema (en el hilo de la ventana, como piden Mac y GTK). `guardar_archivo` dice cómo terminó: `Ok(ruta)` o `Err("cancelado" \| "vacio" \| "tamano" \| "extension" \| "escribir")`. |
+| `dialogo_carpeta`, `dialogo_archivos`, `guardar_archivo` | Diálogos del sistema (en el hilo de la ventana, como piden Mac y GTK). `guardar_archivo` dice cómo terminó: `Ok(ruta)` o `Err("cancelado" \| "vacio" \| "tamano" \| "extension" \| "escribir")`; `guardar_archivo_con(…, ComoGuardar {privado, maximo, desde, titulo})` cambia el tope (50 MB), la carpeta y el título. |
 | `secretos(nombre)`, `notificaciones()` | El llavero del sistema (en Mac, el mismo servicio que `host-mac`: los tokens de siempre siguen ahí) y los avisos. |
 | `agregar_ventana(etiqueta, pagina, ajustar)` | Otra ventana con la misma interfaz (panel, barra flotante): habla con el puente con las mismas guardas y recibe su respuesta. |
 | `ocupar`, `soltar_ocupada`, `ocupada`, `esperar_libre(ms)`, `mostrar`, `salir` | Lo que no se puede cortar, y salir ordenado (guarda, espera 3 s, corta lo que siga). |

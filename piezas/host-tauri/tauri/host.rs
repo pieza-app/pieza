@@ -102,6 +102,22 @@ impl Default for OpcionesCarpeta {
     }
 }
 
+/// Opciones de `guardar_archivo_con`. `titulo` va en español: el host lo traduce.
+#[derive(Clone, Debug)]
+pub struct ComoGuardar {
+    pub privado: Option<bool>,
+    /// Bytes; sin decirlo, 50 MB.
+    pub maximo: usize,
+    /// Dónde abre el diálogo (si existe); sin decirlo, Documentos.
+    pub desde: Option<PathBuf>,
+    pub titulo: Option<String>,
+}
+impl Default for ComoGuardar {
+    fn default() -> Self {
+        ComoGuardar { privado: None, maximo: 50 * 1024 * 1024, desde: None, titulo: None }
+    }
+}
+
 /// Un ítem de menú. Las etiquetas van en español: el host las traduce con ui/idiomas.
 #[derive(Clone)]
 pub enum ItemMenu {
@@ -871,6 +887,10 @@ impl Host {
     /// «Guardar como»: escribe `contenido` de una vez donde la persona elija. Ok(ruta) o Err("cancelado" | "vacio" |
     /// "tamano" | "extension" | "escribir"). `privado`: el archivo queda solo para la persona (0600); sin decirlo, app.json.
     pub fn guardar_archivo(&self, sugerido: &str, extension: &str, contenido: &[u8], privado: Option<bool>) -> Result<PathBuf, &'static str> {
+        self.guardar_archivo_con(sugerido, extension, contenido, ComoGuardar { privado, ..Default::default() })
+    }
+    /// Lo mismo, con más opciones: hasta cuánto pesa, en qué carpeta abre el diálogo y su título.
+    pub fn guardar_archivo_con(&self, sugerido: &str, extension: &str, contenido: &[u8], como: ComoGuardar) -> Result<PathBuf, &'static str> {
         let ext: String = extension.chars().filter(|c| c.is_alphanumeric() || *c == '_').take(10).collect();
         if ext.is_empty() {
             return Err("extension");
@@ -878,17 +898,22 @@ impl Host {
         if contenido.is_empty() {
             return Err("vacio");
         }
-        if contenido.len() > 50 * 1024 * 1024 {
+        if contenido.len() > como.maximo {
             return Err("tamano");
         }
         let nombre = e::nombre_archivo(sugerido, &ext);
         let padre = self.padre();
         let e2 = ext.clone();
+        let desde = como.desde.filter(|d| d.is_dir()).or_else(dirs_documentos);
+        let titulo = como.titulo.map(|t| self.t(&t));
         let r = self
             .en_principal(move || {
                 let mut d = rfd::FileDialog::new().set_file_name(&nombre).add_filter(e2.to_uppercase(), &[e2.as_str()]);
-                if let Some(docs) = dirs_documentos() {
-                    d = d.set_directory(docs);
+                if let Some(x) = desde {
+                    d = d.set_directory(x);
+                }
+                if let Some(t) = titulo {
+                    d = d.set_title(t);
                 }
                 if let Some(w) = &padre {
                     d = d.set_parent(w);
@@ -900,7 +925,7 @@ impl Host {
         if !destino.to_string_lossy().to_lowercase().ends_with(&format!(".{}", ext.to_lowercase())) {
             destino.set_file_name(format!("{}.{ext}", destino.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default()));
         }
-        let solo = privado.unwrap_or_else(|| self.app.privado());
+        let solo = como.privado.unwrap_or_else(|| self.app.privado());
         e::escribir_atomico(&destino, contenido, if solo { 0o600 } else { 0o644 }).map_err(|_| "escribir")?;
         Ok(destino)
     }
