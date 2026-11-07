@@ -1,12 +1,17 @@
 #!/usr/bin/env bash
 # Abre la app de prueba de «host-tauri» de verdad (Linux, con Xvfb) y revisa que el puente funcione de punta a punta: la
 # plataforma, el estado, una acción declarada, una propia y un medio por el protocolo, con la CSP de las apps.
+# Con un HOME temporal: nada de la persona se toca. Necesita xvfb-run y dbus-run-session.
 set -euo pipefail
 cd "$(dirname "$0")"
 cargo build --quiet
+BIN="${CARGO_TARGET_DIR:-$PWD/target}/debug/prueba"
 casa=$(mktemp -d)
-trap 'rm -rf "$casa" 2>/dev/null || true' EXIT
-HOME="$casa" XDG_CONFIG_HOME="$casa/.config" PIEZA_REGISTRO="$casa/puente.txt" timeout 100 xvfb-run -a dbus-run-session -- ./target/debug/prueba >"$casa/salida.txt" 2>&1 &
+pid=""
+trap '[ -n "$pid" ] && kill "$pid" 2>/dev/null; rm -rf "$casa" 2>/dev/null || true' EXIT
+HOME="$casa" XDG_CONFIG_HOME="$casa/.config" PIEZA_REGISTRO="$casa/puente.txt" \
+  xvfb-run -a dbus-run-session -- "$BIN" >"$casa/salida.txt" 2>&1 &
+pid=$!
 visto="$casa/.config/prueba/visto.json"
 for _ in $(seq 1 90); do
   sleep 1
@@ -14,9 +19,10 @@ for _ in $(seq 1 90); do
     echo "host-tauri: la app de prueba abrió y el puente funciona ($(cat "$visto"))"
     exit 0
   fi
+  kill -0 "$pid" 2>/dev/null || break
 done
 echo "host-tauri: la app de prueba no respondió a tiempo" >&2
 echo "Lo que llegó por el puente:" >&2; cat "$casa/puente.txt" 2>/dev/null >&2 || echo "  (nada)" >&2
 echo "Lo que anotó la interfaz:" >&2; cat "$visto" 2>/dev/null >&2 || echo "  (nada)" >&2
-tail -30 "$casa/salida.txt" >&2 || true
+grep -v -e xdg-desktop-portal -e '^$' "$casa/salida.txt" | tail -40 >&2 || true
 exit 1
