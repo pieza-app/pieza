@@ -1277,7 +1277,11 @@ class Generar(unittest.TestCase):
         self.assertIn("ubuntu-24.04", rev)
         self.assertNotIn("ubuntu-latest", rev)
         self.assertIn("playwright@1.56.1", rev)
-        self.assertIn("app\\.json|acciones\\.json", rev)
+        # La app nativa se prueba en el job «app», en los tres sistemas, y no se compila Swift.
+        self.assertIn("SIN_RUST=1", rev)
+        for so in ("macos-15", "windows-2025", "bash pruebas/arranque.sh", "cargo clippy --locked"):
+            self.assertIn(so, rev)
+        self.assertNotIn("swift build", rev)
 
     def test_solo_mac_y_solo_linux(self):
         mac = self.app("mac", "mac")

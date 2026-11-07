@@ -91,7 +91,7 @@
   {
    "version": "0.2.0",
    "tipo": "mejora",
-   "resumen": "Con «host-tauri»: .gitignore deja escritorio/ (también en una app solo de Mac) e ignora escritorio/target/ y escritorio/gen/; Dependabot revisa los crates de Rust (cargo, escritorio/Cargo.lock) en vez de npm."
+   "resumen": "Con «host-tauri»: .gitignore deja escritorio/ (también en una app solo de Mac) e ignora escritorio/target/ y escritorio/gen/; Dependabot revisa los crates de Rust (cargo, escritorio/Cargo.lock) en vez de npm; revisar.yml prueba la app nativa en el job «app» (cargo test, clippy y la app abierta en Linux, en cada sistema de app.json) en vez de compilar el Swift, y el job «revisar» corre correr.sh con SIN_RUST=1."
   },
   {
    "version": "0.1.0",

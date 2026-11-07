@@ -1,7 +1,12 @@
 # Revisión automática de cada cambio (y de cada pull request): si algo falla, se ve antes de que llegue a alguien.
 # - revisar: bash pruebas/correr.sh (contrato del puente, Python, interfaz con Playwright, privacidad) con capturas para mirar.
-{{#si mac}}
+{{#si piezas.host-tauri}}
+# - app: la app nativa (Rust, pieza «host-tauri») en cada sistema de app.json: compila con Cargo.lock, pasa sus pruebas y clippy
+#   sin avisos; en Linux además se abre de verdad con una pantalla virtual (la interfaz manda «listo» por el puente).
+{{#sino}}
+{{#si piezas.host-mac}}
 # - mac: que la app de Mac compile (solo si cambió app/, app.json, acciones.json o el empaquetado).
+{{/si}}
 {{/si}}
 # Actions fijadas por SHA con su versión en un comentario (Dependabot las sube), permisos mínimos, sin credenciales guardadas y
 # ninguna expresión de GitHub dentro de `run:`. ubuntu-24.04 y no -latest: Playwright todavía no trae Chromium para 26.04.
@@ -34,12 +39,48 @@ jobs:
       - name: Pruebas
         run: |
           mkdir -p capturas
+{{#si piezas.host-tauri}}
+          # La app nativa se prueba en el job «app», con lo que Tauri necesita en cada sistema.
+          SIN_RUST=1 CAPTURAS="$PWD/capturas" bash pruebas/correr.sh
+{{#sino}}
           CAPTURAS="$PWD/capturas" bash pruebas/correr.sh
+{{/si}}
       - name: Capturas para revisar a ojo
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with: { name: capturas, path: capturas, retention-days: 14, if-no-files-found: ignore }
+{{#si piezas.host-tauri}}
+
+  app:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
 {{#si mac}}
+          - macos-15
+{{/si}}
+{{#si windows}}
+          - windows-2025
+{{/si}}
+          - ubuntu-24.04
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 40
+    defaults: { run: { shell: bash, working-directory: escritorio } }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: { persist-credentials: false }
+      - name: Lo que Tauri necesita en Linux
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev xvfb
+      - name: Pruebas y clippy (exactamente lo de Cargo.lock)
+        run: |
+          cargo test --locked
+          cargo clippy --locked --all-targets -- -D warnings
+      - name: La app abierta en Linux (pantalla virtual)
+        if: runner.os == 'Linux'
+        run: bash pruebas/arranque.sh
+{{#sino}}
+{{#si piezas.host-mac}}
 
   mac:
     runs-on: macos-15
@@ -55,4 +96,5 @@ jobs:
       - name: Compilar
         if: steps.cambio.outputs.si == '1'
         run: cd app && swift build -c release
+{{/si}}
 {{/si}}
