@@ -1,0 +1,1 @@
+{"formato": 1, "acciones": {"anotar": {"script": "anotar.py", "datos": {"texto": {"tipo": "texto", "max": 20000}}, "entrada": "archivo", "limite": 10, "responde": "anotado", "cola": "escritura"}}}

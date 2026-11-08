@@ -4,3 +4,4 @@ __pycache__/
 docs/skills/
 .terminos-privados
 docs/iconos/
+pruebas/tauri/target/

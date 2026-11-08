@@ -45,12 +45,14 @@ menos tokens: elegir piezas, no reescribirlas.
 
 ## El host (app nativa)
 
-`host-mac` (Swift) y `host-escritorio` (Electron) son la app nativa genérica. Una acción que solo corre un script **no se programa
-en el host**: se declara en el `pieza.json` de la pieza (o en `app.json` → `acciones` si es de la app) y `pieza.py` arma
-`acciones.json`. Lo nativo propio se registra en la app; lo nativo que usan dos apps o más (carpeta, vigilante, secretos,
-avisos…) va en los dos hosts con la misma API. Si cambias las reglas de una acción, cámbialas en los tres lados
-(`errores_accion` de `pieza.py`, `enchufe.js` y `Enchufe.swift`): `test_piezas.py` (`HostGenerico`) los compara. Swift no compila
-aquí: imita código que ya compila y deja anotado qué revisar en el Mac (`pruebas/swift/revisar_host_mac.sh`).
+`host-tauri` (Rust + Tauri) es la app nativa genérica para Mac, Windows y Linux: **un solo host**. `host-mac` (Swift) y
+`host-escritorio` (Electron) quedan **retirados** (`"estado": "retirada"`): siguen para las apps que aún no se pasan, pero ninguna
+app nueva los usa. Una acción que solo corre un script **no se programa en el host**: se declara en el `pieza.json` de la pieza
+(o en `app.json` → `acciones` si es de la app) y `pieza.py` arma `acciones.json`. Lo nativo propio se registra en la app
+(`host.registrar` en `escritorio/src/main.rs`); lo nativo que usan dos apps o más va en `host-tauri`. Si cambias las reglas de
+una acción, cámbialas en `errores_accion` de `pieza.py` y en `enchufe.rs` (y en `enchufe.js`/`Enchufe.swift` mientras existan):
+`test_piezas.py` (`HostGenerico`) las compara, con el Rust compilado de verdad. Rust compila aquí: `cd pruebas/tauri && cargo test`
+y `bash arranque.sh` (abre la app de prueba con Xvfb). Un archivo de una pieza que es de un host lleva `solo_con: [host]`.
 
 ## Cuando una app mejora una pieza
 
@@ -94,6 +96,6 @@ adentro: las lee con `pieza.py catalogo` y `pieza.py ficha`. Por eso:
 | `.github/` | `workflows/` (`revisar.yml`, `pagina.yml`: actions fijadas por SHA, permisos mínimos, `persist-credentials: false`), `ISSUE_TEMPLATE/` (error, idea, pieza, probar; seguridad y Discussions en `config.yml`), `pull_request_template.md` (checklist) y `dependabot.yml` (solo actions, con `cooldown`) |
 | `herramientas/revisar_privacidad.sh` | Busca datos personales antes de cada commit (`.terminos-privados`, local y nunca versionado); `--generico` corre en `pruebas/correr.sh` |
 | `.claude/agents/` | `pieza-revisor` (revisar PRs: regla de oro, ficha honesta, versión y cambios, brechas conocidas; nunca junta sin aprobación) y `pieza-privacidad` (antes de cada commit) |
-| `pruebas/` | `correr.sh` (valida los `pieza.json`, la versión de cada flujo, que toda action esté fijada por SHA y que la plantilla «Pieza al día» use las mismas versiones, la privacidad, `test_piezas.py`: una app ficticia con CLIs de IA falsos, y `test_piezas_datos.py`: red, catálogo, transcribir, trabajos, contenido e IA en vivo con servidores, whisper y CLIs falsos), `piezas_js.mjs` (las piezas de JavaScript en Node), `host_escritorio.mjs` (el host de Electron en Node, con un Electron falso) y `host_escritorio_electron.mjs` (con Electron de verdad y Xvfb, si `ELECTRON` apunta a uno), `test_pagina_contrato.py` (las piezas `pagina` y `contrato` con una app ficticia), `test_crear.py` (`pieza.py crear` de dos apps, Receta y Nota, y sus propias pruebas en verde; con `ELECTRON`, `crear_electron.mjs` abre la de Linux) y `pagina.mjs` (la página generada en Chromium), `swift/revisar_host_mac.sh` (solo en un Mac: compila y prueba `host-mac`) e `interfaz.mjs` (las piezas de interfaz en Chromium con Playwright, con la CSP de las apps: foco, tema, contraste AA, 390 px; sin Playwright se salta) |
+| `pruebas/` | `correr.sh` (valida los `pieza.json`, la versión de cada flujo, que toda action esté fijada por SHA y que la plantilla «Pieza al día» use las mismas versiones, la privacidad, `test_piezas.py`: una app ficticia con CLIs de IA falsos, y `test_piezas_datos.py`: red, catálogo, transcribir, trabajos, contenido e IA en vivo con servidores, whisper y CLIs falsos), `piezas_js.mjs` (las piezas de JavaScript en Node), `host_escritorio.mjs` (el host de Electron en Node, con un Electron falso) y `host_escritorio_electron.mjs` (con Electron de verdad y Xvfb, si `ELECTRON` apunta a uno), `test_pagina_contrato.py` (las piezas `pagina` y `contrato` con una app ficticia), `test_crear.py` (`pieza.py crear` de dos apps, Receta y Nota, y sus propias pruebas en verde; con `ELECTRON`, `crear_electron.mjs` abre la de Linux) y `pagina.mjs` (la página generada en Chromium), `tauri/` (la app de prueba de `host-tauri`: `cargo test`, `arranque.sh` con Xvfb y `reglas`, que compara las reglas con `pieza.py`), `swift/revisar_host_mac.sh` (solo en un Mac: compila y prueba `host-mac`, retirada) e `interfaz.mjs` (las piezas de interfaz en Chromium con Playwright, con la CSP de las apps: foco, tema, contraste AA, 390 px; sin Playwright se salta) |
 
 Licencia AGPL-3.0, como las apps.

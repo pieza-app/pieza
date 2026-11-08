@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Lo que Tauri suma al Info.plist de {{nombre|xml}} en Mac: los permisos de app.json → empaquetado.permisos (con su texto) y
+     la barra de menú. Generado por Pieza («host-tauri»). -->
+<plist version="1.0">
+<dict>
+	<key>LSApplicationCategoryType</key><string>{{#si app.empaquetado.categoria}}{{app.empaquetado.categoria|xml}}{{#sino}}public.app-category.productivity{{/si}}</string>
+{{#si app.empaquetado.barra_de_menu}}
+	<key>LSUIElement</key><true/>
+{{/si}}
+{{#cada app.empaquetado.permisos como p}}
+	<key>{{p.clave|nombre}}</key><string>{{p.texto|xml}}</string>
+{{/cada}}
+</dict>
+</plist>

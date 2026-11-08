@@ -1,6 +1,23 @@
 # Cambios
 
 ## Sin publicar
+- **Pieza nueva `host-tauri` 0.1.0: un solo host para Mac, Windows y Linux** (Rust + Tauri). La misma API que `host-mac` y
+  `host-escritorio`, que quedan **retirados** (`"estado": "retirada"`, con `reemplazo`): siguen para las apps que aún no se pasan,
+  pero ninguna app nueva los usa y el creador ya no los ofrece. Apps mucho más livianas (el WebView del sistema en vez de un Chromium
+  en cada app) y un compilador estricto en la capa con más riesgo (el puente, los permisos, los procesos). Las reglas de una acción
+  (`enchufe.rs`) se comparan con `pieza.py` compiladas de verdad; `pruebas/tauri/arranque.sh` abre una app de prueba con Xvfb y
+  revisa el puente de punta a punta (plataforma, estado, una acción declarada, una propia y un medio con la CSP de las apps).
+- **`host-ui` 0.3.0:** `host.medio(nombre, ruta)` y `host.base`: con `host-tauri` los medios viven en el mismo origen que la
+  interfaz (sin CORS); la interfaz habla con `host-tauri` por el mismo `window.<id>Escritorio`.
+- **`catalogo` 0.3.0,** **`trabajos` 0.2.2 y `actualizaciones` 0.4.0:** su parte en Rust para `host-tauri`. Campo nuevo `solo_con` en `pieza.json`: un
+  archivo llega solo con el host que lo usa (el Swift con `host-mac`, el JS con `host-escritorio`, el Rust con `host-tauri`), y
+  llega solo cuando ese host se agrega después.
+- **`empaquetado` 0.2.0 (rompe):** todo con Tauri. `herramientas/empaquetar.sh <mac|windows|linux>` arma los mismos archivos de
+  siempre (`<Base>-macOS.zip`, `-Windows.exe`, `-Linux.AppImage`, `-Linux.tar.gz`, `-Linux.deb`, con su `.sha256`), así
+  `instalar.sh`, `instalar.ps1` y el actualizador no cambian; `preparar.sh` arma también el Python del Mac; `publicar.yml` compila
+  en macos-15, windows-2025 y ubuntu-24.04. Ya no genera `Info.plist`/`Package.swift` de Swift ni `package.json`/NSIS de Electron.
+- **`esqueleto` 0.2.0, `github` 0.2.0, `contrato`, `pagina`:** la app nueva nace con `host-tauri` (su `main.rs`), `.gitignore` y
+  Dependabot para Rust, el contrato revisa lo registrado en Rust y la página cuenta el llavero de Windows y Linux.
 - **`host-ios` 0.1.1:** la app de iPhone usa su ícono (`AppIcon` en `movil/ios/Fuentes/Assets.xcassets`).
 - **`pagina` 0.1.1:** la imagen para compartir ya no corta la intro a mitad de palabra (sale de Despeja).
 - **Pieza nueva `host-ios` 0.1.0: la app de iPhone** (sale de `host-mac` 0.3.0, para Despeja). La misma interfaz de `ui/` en un

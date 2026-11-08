@@ -2,8 +2,8 @@
 
 Dos apps ficticias: «Receta» (Mac, Windows y Linux, con la pieza «ia») y «Nota» (solo Mac, sin IA). Cada una se crea en una carpeta
 temporal, se corre su pruebas/correr.sh (contrato, Python, interfaz con Playwright si está —PLAYWRIGHT=…— y privacidad) y se revisa
-que `pieza.py estado` quede limpio, que sus workflows cumplan las reglas y que lo que le toca a la IA esté dicho. Con ELECTRON
-(…/electron/dist/electron), Playwright y xvfb-run, la app de Linux se abre de verdad (pruebas/crear_electron.mjs).
+que `pieza.py estado` quede limpio, que sus workflows cumplan las reglas y que lo que le toca a la IA esté dicho. Con TAURI=1 (y
+Rust), la app nativa de la receta compila de verdad.
 """
 import glob
 import json
@@ -87,7 +87,8 @@ class Crear(unittest.TestCase):
             self.assertEqual(errores_workflow(f), [], f)
         # Sus propias pruebas, de una (en un repo git, como queda al subirla).
         self.assertEqual(correr("git", "init", "-q", cwd=app).returncode, 0)
-        r = correr("bash", "pruebas/correr.sh", cwd=app)
+        # Sin compilar el Rust de cada app (minutos cada una): eso lo hace TAURI=1 una vez y revisar.yml.
+        r = correr("bash", "pruebas/correr.sh", cwd=app, entorno={"SIN_RUST": "1"})
         self.assertEqual(r.returncode, 0, r.stdout[-3000:] + r.stderr[-3000:])
         self.assertIn("Todo bien", r.stdout)
         return r.stdout
@@ -98,25 +99,25 @@ class Crear(unittest.TestCase):
         self.assertEqual(a["acciones"]["ejemplo"]["entrada"], "archivo")
         acciones = json.load(open(os.path.join(app, "acciones.json"), encoding="utf-8"))["acciones"]
         self.assertEqual({"ejemplo", "probarIA", "listaIA"}, set(acciones))
-        for f in ("app/Sources/Receta/RecetaApp.swift", "escritorio/src/main.js", "escritorio/package.json", "bin/ia.py",
+        for f in ("escritorio/src/main.rs", "escritorio/Cargo.toml", "escritorio/tauri.conf.json", "escritorio/src/pieza/host.rs", "bin/ia.py",
                   "ui/index.html", "ui/demo.json", "pruebas/contrato_app.py", ".github/workflows/publicar.yml", "docs/index.html"):
             self.assertTrue(os.path.isfile(os.path.join(app, f)), f)
-        swift = open(os.path.join(app, "app/Sources/Receta/RecetaApp.swift"), encoding="utf-8").read()
-        self.assertIn("p.actualizaciones = ", swift)
-        self.assertIn('global: "Receta"', swift)
-        self.assertNotIn("{{", swift)
+        rs = open(os.path.join(app, "escritorio/src/main.rs"), encoding="utf-8").read()
+        self.assertIn("actualizaciones: actualizaciones::Actualizaciones::nuevas(", rs)
+        self.assertIn('global: Some("Receta".into())', rs)
+        self.assertNotIn("{{", rs)
+        for viejo in ("app/Sources", "escritorio/src/main.js", "escritorio/package.json"):
+            self.assertFalse(os.path.exists(os.path.join(app, viejo)), viejo)
         self.revisar_app(app, salida)
-        electron = os.environ.get("ELECTRON")
-        if electron and os.path.isfile(electron) and shutil.which("xvfb-run"):
-            casa = os.path.join(self.tmp, "casa")
-            os.makedirs(casa)
-            r = correr("xvfb-run", "-a", "node", os.path.join(BASE, "pruebas", "crear_electron.mjs"), app,
-                       entorno={"HOME": casa, "XDG_CONFIG_HOME": os.path.join(casa, ".config")})
+        # Con TAURI=1 (y Rust con lo de Linux), la app nueva compila de verdad.
+        if os.environ.get("TAURI") == "1" and shutil.which("cargo"):
+            r = correr("cargo", "build", "--quiet", cwd=os.path.join(app, "escritorio"))
             self.assertEqual(r.returncode, 0, r.stdout[-2000:] + r.stderr[-2000:])
 
     def test_nota_solo_mac_sin_ia(self):
         app, salida = self.crear("Nota", "--plataformas", "mac", "--repo", "ana-app/nota")
-        self.assertFalse(os.path.exists(os.path.join(app, "escritorio")))
+        self.assertTrue(os.path.isfile(os.path.join(app, "escritorio", "src", "main.rs")), "host-tauri también en un Mac solo")
+        self.assertFalse(os.path.exists(os.path.join(app, "instalar.ps1")))
         self.assertFalse(os.path.exists(os.path.join(app, "bin", "ia.py")))
         self.assertNotIn("filasIA", open(os.path.join(app, "ui", "app.js"), encoding="utf-8").read())
         self.assertEqual(json.load(open(os.path.join(app, "app.json"), encoding="utf-8"))["repo"], "ana-app/nota")
@@ -136,7 +137,7 @@ class Crear(unittest.TestCase):
         self.assertIn("PRODUCT_BUNDLE_IDENTIFIER = app.ana.ios;", proyecto)
         self.assertIn("productName = Ana;", proyecto)
         self.assertIn("pieza", open(os.path.join(app, "movil/ios/recursos.sh"), encoding="utf-8").read())
-        r = correr("bash", os.path.join(app, "pruebas", "correr.sh"), cwd=app)
+        r = correr("bash", os.path.join(app, "pruebas", "correr.sh"), cwd=app, entorno={"SIN_RUST": "1"})
         self.assertEqual(r.returncode, 0, (r.stdout + r.stderr)[-3000:])
 
     def test_lo_que_no_crea(self):

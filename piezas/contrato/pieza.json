@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "contrato",
- "version": "0.1.2",
+ "version": "0.1.3",
  "estado": "lista",
  "nombre": "Contrato del puente",
  "icono": "icono.svg",
@@ -31,6 +31,11 @@
  "pantallas": [],
  "tareas_persona": [],
  "cambios": [
+  {
+   "version": "0.1.3",
+   "tipo": "mejora",
+   "resumen": "Revisa también las apps con «host-tauri»: lo registrado en Rust (host.registrar en escritorio/src fuera de pieza/), lo que trae el host (sus internas), el identificador de tauri.conf.json contra la firma de empaquetar.sh, acciones.json en bundle.resources y que la página no vea la API de Tauri (withGlobalTauri). Reconoce host.atender(\"x\") en la interfaz y h.pedir(\"x\") en el Rust. «soltando» (el arrastre encima con soltar) es una respuesta opcional, como «soltados»."
+  },
   {
    "version": "0.1.2",
    "tipo": "mejora",

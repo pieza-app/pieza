@@ -193,6 +193,24 @@
         <li><b><span data-es>{{datos.comunes.permisos.llavero.nombre.es|xml}}</span><span data-en>{{datos.comunes.permisos.llavero.nombre.en|xml}}</span></b> <span data-sin-traducir>({{datos.comunes.permisos.llavero.sistema.es|xml}})</span>: <span data-es>{{datos.comunes.permisos.llavero.es|xml}}</span><span data-en>{{datos.comunes.permisos.llavero.en|xml}}</span></li>
 {{/si}}
 {{/si}}
+{{#si piezas.host-tauri}}
+{{#si datos.pagina.usa.notificaciones}}
+{{#si mac}}
+        <li><b><span data-es>{{datos.comunes.permisos.notificaciones.nombre.es|xml}}</span><span data-en>{{datos.comunes.permisos.notificaciones.nombre.en|xml}}</span></b> <span data-sin-traducir>({{datos.comunes.permisos.notificaciones.sistema.es|xml}})</span>: <span data-es>{{datos.comunes.permisos.notificaciones.es|xml}}</span><span data-en>{{datos.comunes.permisos.notificaciones.en|xml}}</span></li>
+{{/si}}
+{{/si}}
+{{#si datos.pagina.usa.llavero}}
+{{#si mac}}
+        <li><b><span data-es>{{datos.comunes.permisos.llavero.nombre.es|xml}}</span><span data-en>{{datos.comunes.permisos.llavero.nombre.en|xml}}</span></b> <span data-sin-traducir>({{datos.comunes.permisos.llavero.sistema.es|xml}})</span>: <span data-es>{{datos.comunes.permisos.llavero.es|xml}}</span><span data-en>{{datos.comunes.permisos.llavero.en|xml}}</span></li>
+{{/si}}
+{{#si windows}}
+        <li><b><span data-es>{{datos.comunes.permisos.credenciales.nombre.es|xml}}</span><span data-en>{{datos.comunes.permisos.credenciales.nombre.en|xml}}</span></b> <span data-sin-traducir>({{datos.comunes.permisos.credenciales.sistema.es|xml}})</span>: <span data-es>{{datos.comunes.permisos.credenciales.es|xml}}</span><span data-en>{{datos.comunes.permisos.credenciales.en|xml}}</span></li>
+{{/si}}
+{{#si linux}}
+        <li><b><span data-es>{{datos.comunes.permisos.llaverolinux.nombre.es|xml}}</span><span data-en>{{datos.comunes.permisos.llaverolinux.nombre.en|xml}}</span></b> <span data-sin-traducir>({{datos.comunes.permisos.llaverolinux.sistema.es|xml}})</span>: <span data-es>{{datos.comunes.permisos.llaverolinux.es|xml}}</span><span data-en>{{datos.comunes.permisos.llaverolinux.en|xml}}</span></li>
+{{/si}}
+{{/si}}
+{{/si}}
 {{#si piezas.transcribir}}
 {{#si datos.pagina.usa.microfono}}
         <li><b><span data-es>{{datos.comunes.permisos.microfono.nombre.es|xml}}</span><span data-en>{{datos.comunes.permisos.microfono.nombre.en|xml}}</span></b> <span data-sin-traducir>({{datos.comunes.permisos.microfono.sistema.es|xml}})</span>: <span data-es>{{datos.comunes.permisos.microfono.es|xml}}</span><span data-en>{{datos.comunes.permisos.microfono.en|xml}}</span></li>

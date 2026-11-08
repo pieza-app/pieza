@@ -1,19 +1,21 @@
 {
  "formato": 1,
  "id": "empaquetado",
- "version": "0.1.0",
+ "version": "0.2.0",
  "estado": "lista",
  "nombre": "Empaquetado",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "repo",
- "descripcion": "Arma, firma, publica e instala la app desde app.json: Info.plist, Package.swift, build.sh, empaquetar.sh con un solo Python portátil, package.json de Electron, preparar.sh, instalador de Windows, instalar.sh/ps1 y publicar.yml.",
+ "descripcion": "Arma, firma, publica e instala la app desde app.json con su host de Tauri: empaquetar.sh para Mac, Windows y Linux con un solo Python portátil, build.sh (desarrollo en el Mac), preparar.sh, instalar.sh/ps1 y publicar.yml.",
  "origen": "Esquema (build.sh, herramientas/empaquetar.sh con bajar() y huellas, escritorio/ con package.json, preparar.sh, instalador NSIS e instalar.sh/ps1, publicar.yml con nombres fijos) + Corta (binarios extra con huella, LICENCIAS-TERCEROS, ffmpeg) + Graba (Package.swift con whisper como binaryTarget y un ejecutable aparte, frameworks, permisos de cámara y micrófono, barra de menú) + Minuta/Graba/Corta/Alcancía/Repasa (no instalar con un trabajo en curso). El Python portátil (CPython 3.13.16, ya idéntico en las seis) queda en un solo herramientas/python.lock. La versión sale de app.json → version (antes, Info.plist y package.json a mano).",
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre: es lo que arma la app de Mac, Windows y Linux y la publica en los Releases del repo."
  },
- "requiere": [],
+ "requiere": [
+  "host-tauri"
+ ],
  "plataformas": [
   "mac",
   "windows",
@@ -28,36 +30,10 @@
    "si": "mac"
   },
   "plantillas/empaquetar.sh": {
-   "destino": "herramientas/empaquetar.sh",
-   "si": "mac"
-  },
-  "plantillas/Info.plist": {
-   "destino": "app/Info.plist",
-   "si": "mac"
-  },
-  "plantillas/Package.swift": {
-   "destino": "app/Package.swift",
-   "si": "mac"
-  },
-  "plantillas/package.json": {
-   "destino": "escritorio/package.json",
-   "si": "escritorio"
-  },
-  "plantillas/npmrc": {
-   "destino": "escritorio/.npmrc",
-   "si": "escritorio"
+   "destino": "herramientas/empaquetar.sh"
   },
   "plantillas/preparar.sh": {
-   "destino": "escritorio/herramientas/preparar.sh",
-   "si": "escritorio"
-  },
-  "plantillas/instalador-windows.sh": {
-   "destino": "escritorio/herramientas/instalador-windows.sh",
-   "si": "windows"
-  },
-  "plantillas/instalador.nsi": {
-   "destino": "escritorio/herramientas/instalador.nsi",
-   "si": "windows"
+   "destino": "escritorio/herramientas/preparar.sh"
   },
   "plantillas/instalar.sh": {
    "destino": "instalar.sh",
@@ -87,9 +63,22 @@
  ],
  "cambios": [
   {
+   "version": "0.2.0",
+   "tipo": "rompe",
+   "resumen": "Un solo host para los tres sistemas: el empaquetado pasa a Tauri («host-tauri», Rust). herramientas/empaquetar.sh <mac|windows|linux> arma en cada sistema los mismos archivos de siempre (<Base>-macOS.zip, -Windows.exe, -Linux.AppImage, -Linux.tar.gz, -Linux.deb, cada uno con su .sha256), así instalar.sh, instalar.ps1 y el actualizador no cambian. preparar.sh también arma el Python portátil del Mac. publicar.yml compila en macos-15, windows-2025 y ubuntu-24.04. Ya no se generan Info.plist ni Package.swift de Swift, ni package.json, .npmrc ni el NSIS propio de Electron. Las pruebas rápidas de publicar.yml corren correr.sh con SIN_RUST=1 (Ubuntu sin lo que pide Tauri). Con app.json → empaquetado.whisper: true, preparar.sh compila whisper-cli (whisper.cpp v1.8.3, commit fijo) en vendor/<os>/herramientas: en el Mac con Metal y Accelerate, en Windows y Linux con zig. Reemplaza al ejecutable de Swift (<id>-transcribir) y al whisper.framework.",
+   "migrar": [
+    "Pasa la app a «host-tauri» (README de esa pieza, «Pasar una app a esta pieza»): pieza.py agregar host-tauri <app>.",
+    "Borra app/ (Swift) y escritorio/package.json, escritorio/.npmrc, escritorio/src/*.js, escritorio/herramientas/instalador*.",
+    "Pon un ícono de 1024×1024 en escritorio/iconos/icono.png (empaquetar.sh arma los de cada sistema)."
+   ]
+  },
+  {
    "version": "0.1.0",
    "tipo": "inicial",
    "resumen": "Primera versión: todo el empaquetado generado desde app.json (Info.plist, Package.swift, build.sh, empaquetar.sh, package.json, .npmrc, preparar.sh, instalador de Windows, instalar.sh/ps1 y publicar.yml) con un solo python.lock. Para publicar se sube app.json → version."
   }
- ]
+ ],
+ "compatible": {
+  "host-tauri": ">=0.1.0 <1.0.0"
+ }
 }

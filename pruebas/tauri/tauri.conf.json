@@ -1,0 +1,25 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Prueba",
+  "version": "0.1.0",
+  "identifier": "app.pieza.prueba",
+  "build": {
+    "frontendDist": "vacio"
+  },
+  "app": {
+    "windows": [],
+    "withGlobalTauri": false,
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": false,
+    "icon": [
+      "iconos/32x32.png",
+      "iconos/128x128.png",
+      "iconos/icon.png",
+      "iconos/icon.ico"
+    ]
+  }
+}

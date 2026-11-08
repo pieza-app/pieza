@@ -35,6 +35,7 @@ if (host.esWeb) …                              // también esEscritorio, esMov
 | `crearHost({nombre, global, simular, ventana?, plano?, canales?})` | `nombre`: id en minúsculas (el de `app.json`); `global`: el objeto de respuestas. Un nombre que no calza lanza un error. |
 | `enviar(accion, datos)` | `accion` validada (`^[A-Za-z][A-Za-z0-9]*$`); `datos` siempre un objeto (otra cosa viaja como `{}`). En la vista previa los datos van como copia JSON: la simulación nunca comparte objetos con la interfaz, igual que en la app. Una acción sin simular no hace nada. |
 | `responder({funcion})` | Suma funciones a `window.<Global>` sin reemplazar el objeto (nunca `__proto__` ni `constructor`). También acepta objetos (`_pruebas`, lo que leen las pruebas de la app); otra cosa se avisa en la consola. Si la app hace `window.<Global> = {…}` después de `crearHost`, se avisa y lo nuevo se **suma** al mismo objeto (la app nativa y las piezas tienen sus respuestas ahí). |
+| `atender(funcion, async (datos) => respuesta)` | Lo que la app le pide a la página y espera (`host.pedir` en «host-tauri»): lo que devuelve vuelve por `respuestaPagina {id, respuesta}` (o `null` si falla). |
 | `llamar(funcion, json)` | Lo que hace la app: llama `window.<Global>.<funcion>` con una copia JSON. La simulación lo recibe como `ctx.responder`. |
 | `luego(ms, f)`, `cancelarPendientes()` | Esperas de la simulación (y cortarlas en las pruebas). |
 | `simulacionesComunes({espera?})` | Las respuestas de vista previa que toda app repetía. |

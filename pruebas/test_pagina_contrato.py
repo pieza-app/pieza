@@ -234,7 +234,9 @@ class Pagina(unittest.TestCase):
         """Toda pieza lista que sale a internet o pide un permiso tiene su texto en pagina-comunes.json (y la plantilla lo usa)."""
         comunes = json.loads(leer(os.path.join(BASE, "piezas", "pagina", "datos", "pagina-comunes.json")))
         plantilla = leer(os.path.join(BASE, "piezas", "pagina", "plantillas", "index.html"))
-        permisos = {"host-mac": {"Notificaciones": "notificaciones", "Llavero": "llavero"}, "transcribir": {"NSMicrophoneUsageDescription": "microfono"}}
+        permisos = {"host-mac": {"Notificaciones": "notificaciones", "Llavero": "llavero"},
+                    "host-tauri": {"Notificaciones": "notificaciones", "Llavero": "llavero", "Credenciales de Windows": "credenciales",
+                                   "Secret Service (gnome-keyring o KWallet)": "llaverolinux"}, "transcribir": {"NSMicrophoneUsageDescription": "microfono"}}
         for f in sorted(glob.glob(os.path.join(BASE, "piezas", "*", "pieza.json"))):
             p = json.loads(leer(f))
             if p.get("estado") != "lista":

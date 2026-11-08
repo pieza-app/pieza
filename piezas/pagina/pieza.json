@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "pagina",
- "version": "0.1.1",
+ "version": "0.1.2",
  "estado": "lista",
  "nombre": "Página pública",
  "icono": "icono.svg",
@@ -84,6 +84,11 @@
   "Mirar docs/img/compartir.png y las capturas antes de subirlas (datos ficticios)"
  ],
  "cambios": [
+  {
+   "version": "0.1.2",
+   "tipo": "mejora",
+   "resumen": "La lista de permisos cuenta el llavero de Windows (Credenciales) y de Linux (Secret Service) cuando la app usa «host-tauri»."
+  },
   {
    "version": "0.1.1",
    "tipo": "arreglo",
