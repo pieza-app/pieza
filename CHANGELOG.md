@@ -1,6 +1,8 @@
 # Cambios
 
 ## Sin publicar
+- **`empaquetado` 0.2.1 (arreglo):** `publicar.yml` instala Playwright antes de las pruebas rápidas. Sin eso, `correr.sh`
+  fallaba en la interfaz y la versión no se publicaba (Alcancía, Esquema y Repasa, al pasar a `host-tauri`).
 - **Pieza nueva `host-tauri` 0.1.0: un solo host para Mac, Windows y Linux** (Rust + Tauri). La misma API que `host-mac` y
   `host-escritorio`, que quedan **retirados** (`"estado": "retirada"`, con `reemplazo`): siguen para las apps que aún no se pasan,
   pero ninguna app nueva los usa y el creador ya no los ofrece. Apps mucho más livianas (el WebView del sistema en vez de un Chromium
