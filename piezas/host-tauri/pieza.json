@@ -141,7 +141,7 @@
   {
    "version": "0.1.0",
    "tipo": "mejora",
-   "resumen": "Primera versión: un solo host en Rust (Tauri) para Mac, Windows y Linux, con la misma API que host-mac y host-escritorio. Reemplaza a los dos. host.pedir(funcion, datos, límite): le pide algo a la página y espera la respuesta (la página usa host.atender de «host-ui»). guardar_archivo_con(…, ComoGuardar {privado, maximo, desde, titulo}): «Guardar como» con tope, carpeta y título propios."
+   "resumen": "Primera versión: un solo host en Rust (Tauri) para Mac, Windows y Linux, con la misma API que host-mac y host-escritorio. Reemplaza a los dos. host.pedir(funcion, datos, límite): le pide algo a la página y espera la respuesta (la página usa host.atender de «host-ui»). guardar_archivo_con(…, ComoGuardar {privado, maximo, desde, titulo}): «Guardar como» con tope, carpeta y título propios. despues_del_estado(f): un gancho justo después de mandar el estado. config_de_interfaz(d): lo que hace la acción config, para una app que registra la suya. Config::poner_propia: una clave que app.json no describe (un objeto propio de la app). Ventana.alto_franja: con barra_transparente en el Mac, la franja de arriba que mueve la ventana (doble clic: agrandar)."
   }
  ]
 }

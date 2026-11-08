@@ -74,6 +74,8 @@ La interfaz pide un medio con `host.medio("video", "clips/a.mp4")` (pieza `host-
 |---|---|
 | `registrar(nombre, \|datos, host, ctx\| …)` | Una acción propia. Gana sobre las del host y las declaradas (se migra de a poco). Corre en un hilo propio: puede bloquear. |
 | `llamar(funcion, json, destino)` | `window.<App>.<funcion>(json)`. Solo nombres simples; nada antes de `listo`. `destino`: `ctx.destino()` (la ventana que pidió). |
+| `despues_del_estado(f)` | Justo después de mandarle el estado a la ventana principal (al abrir y con `enviar_estado`): p. ej. pedirle a la página algo que se arma con ese estado. |
+| `config_de_interfaz(d)` | Lo que hace la acción `config` (guardar, menús en el idioma nuevo, apariencia, `al_cambiar_config`, tareas). Para una app que registra su propio `config` y después sigue con esto. `config.poner_propia(clave, valor)` guarda antes una clave que app.json no describe (un objeto propio, que la app valida). |
 | `pedir(funcion, datos, limite)` | Le pide algo a la página principal y espera la respuesta (como `callAsyncJavaScript` en el Mac): la página lo atiende con `host.atender("<funcion>", async (datos) => …)` de «host-ui». `None` si no está lista, no responde a tiempo o falla. Bloquea: úsalo dentro de una acción. |
 | `despachar(accion, datos, ctx)` | Correr una acción como si la pidiera la interfaz. |
 | `inyector(fuente, …)`, `falta(texto, valores)` | Valores para el `inyectar` de las acciones (el host trae `idiomaUI`, `carpetaDatos` y, con `carpeta`, `carpetaActual`). |
