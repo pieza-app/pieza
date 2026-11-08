@@ -57,7 +57,7 @@ PLATAFORMAS_HOST = {"tauri": "escritorio/src/pieza/host.rs", "mac": "app/Sources
 DEL_HOST = {"listo", "config", "abrirEnlace", "copiar"}
 DEL_HOST_ACTUALIZACIONES = {"buscarActualizacion", "actualizar"}
 #: Respuestas que el host manda solo si la interfaz pidió algo que la app quizás no usa.
-RESPUESTAS_OPCIONALES = {"copiado": "copiar", "archivoCambiado": None, "soltados": None,
+RESPUESTAS_OPCIONALES = {"copiado": "copiar", "archivoCambiado": None, "soltados": None, "soltando": None,
                          "error": None}   # host-ios: una acción que el iPhone no atiende (la interfaz puede mostrarlo o no)
 #: Señales de que un archivo arma el comando de una IA (eso es de bin/ia.py, pieza «ia»).
 COMANDO_IA = re.compile(r'"--disallowedTools"|"--strict-mcp-config"|"--skip-git-repo-check"|["\'](claude|codex|gemini|agy)["\']\s*,\s*\[')

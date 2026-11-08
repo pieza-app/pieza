@@ -34,6 +34,9 @@ cat > escritorio/LICENCIAS-TERCEROS.txt <<'TXT'
 
 - Python 3.13 de python-build-standalone (https://github.com/astral-sh/python-build-standalone), licencia PSF y las de sus partes.
 - Tauri (https://tauri.app) y los crates de Rust de escritorio/Cargo.lock, con licencias MIT, Apache-2.0 y otras compatibles.
+{{#si app.empaquetado.whisper}}
+- whisper.cpp v1.8.3 (https://github.com/ggml-org/whisper.cpp), licencia MIT: whisper-cli, compilado al empaquetar.
+{{/si}}
 {{#cada app.empaquetado.licencias como l}}
 - {{l|linea}}
 {{/cada}}

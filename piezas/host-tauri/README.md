@@ -64,7 +64,7 @@ La interfaz pide un medio con `host.medio("video", "clips/a.mp4")` (pieza `host-
 | `titulo_ajustes`, `menu` | «Ajustes…» con otro nombre (`Some(None)`: sin él) y lo propio del menú (`archivo`, `ver`, `extra`). En Mac, Ajustes y Salir van en el menú de la app. |
 | `bandeja`, `solo_barra_de_menu` | Ícono en la bandeja o la barra de menú (con `AlCerrar::Esconder`, siempre). `solo_barra_de_menu`: en Mac, sin ícono en el Dock. |
 | `abrir_al_arrancar` | Sin decirlo: sí, salvo `--oculta` (al iniciar sesión). |
-| `soltar` | Soltar archivos: el host guarda las rutas y avisa `soltados {nombres}`; la app pide la ruta con `host.soltado(nombre)`. Sin esto, la página recibe su `drop` de HTML como siempre. |
+| `soltar` | Soltar archivos: el host guarda las rutas y avisa `soltados {nombres}` (y `soltando {encima}` mientras se arrastra encima, para marcar la zona); la app pide la ruta con `host.soltado(nombre)`. Sin esto, la página recibe su `drop` de HTML como siempre. |
 | `lector_progreso`, `actualizaciones` | De las piezas `trabajos` (`progreso::Lector`) y `actualizaciones`. |
 | `idioma_elegido`, `guardar_al_salir`, `devtools` | Si la app guarda el idioma en otro lado; si la interfaz atiende `menu({accion: "guardar"})`; herramientas de la página (solo en desarrollo). |
 
@@ -81,7 +81,7 @@ La interfaz pide un medio con `host.medio("video", "clips/a.mp4")` (pieza `host-
 | `inyector(fuente, …)`, `falta(texto, valores)` | Valores para el `inyectar` de las acciones (el host trae `idiomaUI`, `carpetaDatos` y, con `carpeta`, `carpetaActual`). |
 | `registrar_medios(nombre, resolver)` | Lo que sirve `host.medio(nombre, ruta)`: el resolvedor devuelve la ruta absoluta o `None`. |
 | `al_estado`, `al_iniciar_tareas`, `al_cambiar_config`, `antes_de_salir`, `al_tocar_aviso`, `al_soltar`, `al_crear_ventana` | Ganchos. |
-| `config`, `idioma`, `t`, `f`, `procesador`, `fila`, `datos`, `recursos`, `app` | Lo mismo que en los otros hosts. `procesador.poner_entorno(\|\| …)`: variables para todos los scripts. |
+| `config`, `idioma`, `t`, `f`, `procesador`, `fila`, `datos`, `recursos`, `app` | Lo mismo que en los otros hosts. `procesador.poner_entorno(\|\| …)`: variables para todos los scripts. Los programas que trae la app (`vendor/<os>/herramientas` de la pieza «empaquetado»: ffmpeg, whisper-cli…) llegan a cada script en `<ID>_HERRAMIENTAS` (`procesador.herramientas`; la app no la puede pisar). |
 | `carpeta_actual`, `elegir_carpeta`, `usar_carpeta`, `olvidar_carpeta`, `vigilante()` | La carpeta de la persona y su vigilante. |
 | `dialogo_carpeta`, `dialogo_archivos`, `guardar_archivo` | Diálogos del sistema (en el hilo de la ventana, como piden Mac y GTK). `guardar_archivo` dice cómo terminó: `Ok(ruta)` o `Err("cancelado" \| "vacio" \| "tamano" \| "extension" \| "escribir")`; `guardar_archivo_con(…, ComoGuardar {privado, maximo, desde, titulo})` cambia el tope (50 MB), la carpeta y el título. |
 | `secretos(nombre)`, `notificaciones()` | El llavero del sistema (en Mac, el mismo servicio que `host-mac`: los tokens de siempre siguen ahí) y los avisos. |

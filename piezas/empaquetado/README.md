@@ -45,11 +45,9 @@ python3 herramientas/pieza.py generar <app>                 # después de cambia
  "permisos": [{"clave": "NSMicrophoneUsageDescription", "texto": "Ana graba tu voz para…"}],
  "ocupada": [{"proceso": "bin/procesar.py", "mensaje": "✗ Ana está procesando. Espera a que termine."}],
  "licencias": ["ffmpeg (https://ffmpeg.org), licencia GPL; …"],
+ "whisper": true,
  "mac": {
-  "binarios": [{"nombre": "ffmpeg", "url": "https://…/ffmpeg-darwin-arm64.gz", "sha256": "<64 hex>", "gz": true}],
-  "ejecutables": ["ana-transcribir"], "frameworks": ["whisper.framework"],
-  "swift": {"binarios": [{"nombre": "whisper", "url": "https://…xcframework.zip", "checksum": "<64 hex>"}],
-            "ejecutables": [{"nombre": "ana-transcribir", "ruta": "Sources/Transcribir", "dependencias": ["whisper"], "rpath": true}]}
+  "binarios": [{"nombre": "ffmpeg", "url": "https://…/ffmpeg-darwin-arm64.gz", "sha256": "<64 hex>", "gz": true}]
  },
  "escritorio": {"binarios": [{"nombre": "ffmpeg", "gz": true, "linux": {"url": "https://…", "sha256": "…"}, "windows": {"url": "https://…", "sha256": "…"}}]}
 }
@@ -61,7 +59,11 @@ genera la pieza, nunca los pisa):
 - `herramientas/antes-de-instalar.sh`: `build.sh` lo corre antes de instalar; si sale con error, no instala (p. ej. «hay una
   grabación en curso»).
 - `herramientas/empaquetar-extra.sh <App.app> <.build/release>`: lo propio antes de firmar.
-- `escritorio/herramientas/preparar-extra.sh <linux|win> <vendor/os> <caché>`: p. ej. compilar `whisper-cli` con zig.
+- `escritorio/herramientas/preparar-extra.sh <mac|linux|win> <vendor/os> <caché>`: lo que la app arma a su manera.
+
+`"whisper": true` compila `whisper-cli` (whisper.cpp v1.8.3, commit fijo) en `vendor/<os>/herramientas`: en el Mac con Apple clang,
+Metal y Accelerate (Apple Silicon); en Windows y Linux con zig, sin bibliotecas aparte. Necesita `git` y `cmake`. Los scripts lo
+encuentran en `<ID>_HERRAMIENTAS` (pieza «host-tauri») y la pieza «transcribir» lo usa con su archivo de argumentos.
 
 Lo que sigue escribiendo la app: los íconos (`app/<NombreAscii>.icns`, `escritorio/iconos/<id>.png`, `<id>-256.png`, `<id>.ico`),
 `Sources/<NombreAscii>/` y `escritorio/src/main.js`, y `npm install --ignore-scripts` en `escritorio/` para el `package-lock.json`.
