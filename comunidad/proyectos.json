@@ -12,7 +12,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#2b1d16\"/><circle cx=\"30\" cy=\"13.5\" r=\"7\" fill=\"#f2b632\"/><rect x=\"27.5\" y=\"10.5\" width=\"5\" height=\"6\" rx=\"1.2\" fill=\"#d99a1e\"/><path d=\"M42 22.5 47.5 15l1.5 10z\" fill=\"#cf6a3e\"/><ellipse cx=\"30\" cy=\"38\" rx=\"20\" ry=\"15\" fill=\"#d9774b\"/><rect x=\"23\" y=\"23.6\" width=\"14\" height=\"3.4\" rx=\"1.7\" fill=\"#2b1d16\"/><ellipse cx=\"50.5\" cy=\"39\" rx=\"4.6\" ry=\"5.4\" fill=\"#c2603a\"/><circle cx=\"49.6\" cy=\"37.4\" r=\"1\" fill=\"#2b1d16\"/><circle cx=\"49.6\" cy=\"40.8\" r=\"1\" fill=\"#2b1d16\"/><circle cx=\"41.5\" cy=\"33.5\" r=\"1.9\" fill=\"#2b1d16\"/><rect x=\"17\" y=\"49\" width=\"6\" height=\"7\" rx=\"2\" fill=\"#c2603a\"/><rect x=\"34\" y=\"49\" width=\"6\" height=\"7\" rx=\"2\" fill=\"#c2603a\"/><path d=\"M10.5 36c-3 0-4.5-2-3.5-4\" fill=\"none\" stroke=\"#c2603a\" stroke-width=\"2.2\" stroke-linecap=\"round\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-05T18:13:18Z",
+   "actualizado": "2026-11-08T15:26:00Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -46,7 +46,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#2f5fd0\"/><rect x=\"20\" y=\"10\" width=\"24\" height=\"44\" rx=\"6\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3.5\"/><path d=\"M26 33l5 5 8-10\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/><line x1=\"29\" y1=\"48\" x2=\"35\" y2=\"48\" stroke=\"#fff\" stroke-width=\"3\" stroke-linecap=\"round\"/></svg>\n",
    "encontrado": "2026-11-06",
-   "actualizado": "2026-11-06T12:17:40Z",
+   "actualizado": "2026-11-08T15:18:01Z",
    "revision": {
     "estado": "sin-revisar"
    }
@@ -61,7 +61,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#2f5fd0\"/><g fill=\"none\" stroke=\"#fff\" stroke-width=\"4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"21\" y=\"10\" width=\"22\" height=\"14\" rx=\"3\"/><path d=\"M32 24v8M18 32h28M18 32v6M46 32v6\"/><circle cx=\"18\" cy=\"46\" r=\"7\"/><path d=\"M39 39h14v14H39z\"/></g></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-05T13:33:23Z",
+   "actualizado": "2026-11-08T15:17:57Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -108,11 +108,11 @@
    "descripcion": "Framework abierto para apps que viven en tu computador: piezas probadas que se enchufan en vez de escribirse de cero.",
    "url": "https://github.com/pieza-app/pieza",
    "pagina": "https://pieza-app.github.io/pieza/",
-   "commit": "cdcb30c14abd601d345abc75d92773ec922e08d4",
+   "commit": "951d61a901f1fe739837c29fc24ed3e193aea746",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-06T22:54:46Z",
+   "actualizado": "2026-11-08T15:16:33Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -129,7 +129,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"16\" fill=\"#2f5bea\"/><path d=\"M14 18c6-3 12-3 18 1v30c-6-4-12-4-18-1z\" fill=\"#fffefa\"/><path d=\"M50 18c-6-3-12-3-18 1v30c6-4 12-4 18-1z\" fill=\"#e8eeff\"/><path d=\"M36 33l5 5 9-11\" fill=\"none\" stroke=\"#ffd84d\" stroke-width=\"5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-05T18:12:49Z",
+   "actualizado": "2026-11-08T15:17:59Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
