@@ -1,6 +1,8 @@
 # Cambios
 
 ## Sin publicar
+- **`host-tauri` 0.1.1 (arreglo):** `arranque.sh` resuelve la ruta del ejecutable antes del `cd`. Con eso, «Publicar versión»
+  vuelve a probar la app de Linux (fallaba en Esquema 0.3.0).
 - **`github` 0.3.0 (mejora):** la wiki se escribe en `docs/wiki/` y `wiki.yml` la publica sola en cada cambio. Llegan cinco
   páginas de partida. Pieza ya tiene su wiki. El README de Pieza está en STE (frases cortas, una idea cada una).
 - **`github` 0.2.1 (arreglo):** en las apps, Dependabot solo abre PR de seguridad para los crates. Las versiones nuevas
