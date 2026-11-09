@@ -1,6 +1,16 @@
 # Cambios
 
 ## Sin publicar
+- **El catálogo en inglés:** cada `pieza.json` trae `en: {nombre, descripcion}`. La página de Pieza y el programa los
+  muestran en inglés. Una prueba revisa que ninguna pieza quede sin inglés.
+- **Pieza nueva `universos` 0.1.0:** mundos que cambian los colores (un tema de «tema») y los textos que la app deja cambiar.
+  Solo datos, validados igual en Python (`bin/universo_formato.py`, también validador del catálogo) y JS (`ui/universos.js`).
+  Trae tres universos originales: Espacio (vidrio), Bosque (claro) y Neón (oscuro). Los de la comunidad llegan por «catalogo».
+- **`tema` 0.3.0 (mejora): tema «Vidrio».** Sigue al sistema (claro u oscuro), con luces de color detrás y paneles
+  esmerilados. Con «reducir transparencia», los paneles quedan sólidos. Nuevo `tema.registrar({id, nombre, base, colores})`
+  para temas de afuera (universos, comunidad): solo `#rrggbb` de los tokens conocidos. `config.tema` suma `vidrio`.
+- **`pagina` 0.1.3 (mejora):** `docs/tema.css` al día con `tema` 0.3.0.
+- **Página de Pieza en vidrio:** tarjetas esmeriladas, luces de color y barra flotante. El programa ya crea apps.
 - **`github` 0.3.1 y `esqueleto` 0.2.1 (arreglo):** el `AGENTS.md` y `ui/app.js` que genera `pieza.py crear` describen la app de
   `host-tauri`. Antes hablaban de `app/` (Swift) y de Electron. `crear` ya no pide un ícono `.icns` en `app/`.
 - **El programa Pieza:** el plan está en `docs/programa.md`. La app vive en `pieza-app/estudio`.

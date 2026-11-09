@@ -1,27 +1,34 @@
 {
  "formato": 1,
  "id": "universos",
- "version": "0.0.0",
- "estado": "planeada",
+ "version": "0.1.0",
+ "estado": "lista",
  "nombre": "Universos",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
- "categoria": "datos",
- "descripcion": "Mundos temáticos que cambian textos, colores y juego de la app; se descargan, se votan y se crean con la IA.",
+ "categoria": "interfaz",
+ "descripcion": "Mundos que cambian los colores (un tema) y los textos que la app deja cambiar. Tres de base (Espacio, Bosque, Neón) y los de la comunidad por el catálogo, validados: solo datos.",
+ "en": {
+  "nombre": "Universes",
+  "descripcion": "Worlds that change the colors (a theme) and the texts the app lets you change. Three to start (Space, Forest, Neon) and the community's through the catalog, validated: data only."
+ },
  "recomendar": {
   "cuando": "Quieres que la app sea entretenida y personalizable por temas.",
   "palabras": [
    "universos",
+   "universo",
    "juego",
    "gamificar",
-   "temas"
+   "temas",
+   "personalizar"
   ]
  },
- "tomar_de": "minuta bin/universo.py + galería de ui/app.js",
  "requiere": [
-  "catalogo",
   "tema"
  ],
+ "compatible": {
+  "tema": ">=0.3.0 <1.0.0"
+ },
  "plataformas": [
   "mac",
   "windows",
@@ -31,14 +38,29 @@
  ],
  "pantallas": [
   {
-   "donde": "Galería",
-   "nombre": "Universos",
-   "que": "elegir, previsualizar, votar y descargar"
-  },
-  {
    "donde": "Ajustes",
-   "nombre": "Crear universo",
-   "que": "pedírselo a tu IA"
+   "nombre": "Universos",
+   "que": "elegir un universo (cambia colores y textos)"
+  }
+ ],
+ "origen": "Minuta (bin/universo_formato.py y la galería de universos). Nuevo: genérico para cualquier app (la app elige qué textos y listas deja cambiar), el estilo es un tema de la pieza «tema» (tema.registrar), validación igual en Python y JS, y universos de base originales (sin personajes ni marcas de otros).",
+ "archivos": {
+  "ui/universos.js": "ui/universos.js",
+  "python/universo_formato.py": "bin/universo_formato.py",
+  "ui/universos/espacio.json": "ui/universos/espacio.json",
+  "ui/universos/bosque.json": "ui/universos/bosque.json",
+  "ui/universos/neon.json": "ui/universos/neon.json"
+ },
+ "config": {},
+ "acciones": {},
+ "permisos": {},
+ "red": [],
+ "textos": {},
+ "cambios": [
+  {
+   "version": "0.1.0",
+   "tipo": "inicial",
+   "resumen": "Formato de un universo (tema + textos + listas), validado igual en Python (bin/universo_formato.py, también validador del catálogo) y JS (ui/universos.js: usar, dejar, texto, lista). Tres universos de base: Espacio (vidrio), Bosque (claro) y Neón (oscuro)."
   }
  ]
 }

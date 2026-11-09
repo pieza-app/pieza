@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "base",
  "descripcion": "Lo propio de una app nueva, mínimo y andando de punta a punta: interfaz con bienvenida (idioma primero), una pantalla de ejemplo, un script declarado, la app de Mac y la de Windows/Linux sobre el host, demo y pruebas. Se escribe una vez y desde ahí es de la app.",
+ "en": {
+  "nombre": "New app starter",
+  "descripcion": "What is unique to a new app, minimal and working end to end: interface with welcome (language first), a sample screen, a declared script, the desktop app, demo and tests. Written once; from then on it belongs to the app."
+ },
  "origen": "Lo que las seis apps escribieron a mano al empezar, reducido a lo mínimo que funciona con las piezas: ui/index.html con la CSP de Esquema, ui/app.js como el de Graba (crearHost, i18n, tema, componentes, bienvenida con el idioma primero, simular con las comunes), y la app nativa de «host-tauri» (su main.rs), correr.sh y la prueba de interfaz de Pieza (CSP, sin textos sin traducir, 390 px).",
  "recomendar": {
   "cuando": "Al crear una app nueva: la agrega pieza.py crear (no hace falta pedirla). Es el punto de partida de lo propio, que la IA de la app reemplaza."

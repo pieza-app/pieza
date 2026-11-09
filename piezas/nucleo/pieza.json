@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "base",
  "descripcion": "Lo que todo script necesita: app.json, carpeta de datos, config validada, escritura atómica y el contrato «el último argumento es la salida».",
+ "en": {
+  "nombre": "Core",
+  "descripcion": "What every script needs: app.json, data folder, validated config, atomic writes and the contract «the last argument is the output»."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre: es la base de cualquier script de la app."

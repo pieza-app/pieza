@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "conexiones",
  "descripcion": "Pedidos HTTPS desde los scripts: solo a dominios permitidos, sin redirecciones, con tope de tamaño y de tiempo, y la credencial nunca en un error.",
+ "en": {
+  "nombre": "Safe network",
+  "descripcion": "HTTPS requests from the scripts: only to allowed domains, no redirects, with size and time limits, and the credential never in an error."
+ },
  "recomendar": {
   "cuando": "Algún script de la app sale a internet (APIs, descargas)."
  },

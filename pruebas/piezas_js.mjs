@@ -1211,3 +1211,28 @@ test("trabajos: el lector pasa las líneas nuevas, salta las rotas y las enormes
   assert.ok(!fs.existsSync(l.ruta));
   fs.rmSync(dir, { recursive: true });
 });
+
+test("universos: valida igual que Python, registra su tema y da textos con respaldo", () => {
+  const U = require("../piezas/universos/ui/universos.js");
+  const T = require("../piezas/tema/ui/tema.js");
+  const html = { dataset: {}, style: { p: {}, setProperty(k, v) { this.p[k] = v; }, removeProperty(k) { delete this.p[k]; } } };
+  const tema = T.crear({ ventana: { matchMedia: () => ({ matches: false }), location: { search: "" } }, documento: { documentElement: html } });
+  const u = U.crear({ tema });
+  const espacio = JSON.parse(require("node:fs").readFileSync(new URL("../piezas/universos/ui/universos/espacio.json", import.meta.url)));
+  assert.ok(u.usar(espacio));
+  assert.equal(tema.valor, "u-espacio");
+  assert.equal(html.dataset.pzEstilo, "vidrio");
+  assert.equal(html.style.p["--acento-claro"], "#ffb020");
+  assert.equal(u.texto("saludo", "Hola"), "Bienvenida a bordo");
+  assert.equal(u.texto("otra", "Hola"), "Hola");
+  assert.deepEqual(u.lista("nada", ["x"]), ["x"]);
+  const malo = U.validar({ ...espacio, textos: { saludo: "<b>x</b>", ok: "Sí" }, tema: { base: "oscuro", colores: { acento: "red" } } });
+  assert.deepEqual(malo.textos, { ok: "Sí" });
+  assert.deepEqual(malo.tema.colores, {});
+  assert.equal(U.validar({ ...espacio, tema: { base: "morado" } }), null);
+  u.usar({ ...espacio, id: "liso", tema: { base: "oscuro", colores: {} } });
+  assert.equal(tema.valor, "oscuro", "sin colores propios, se aplica su base");
+  u.dejar();
+  assert.equal(tema.valor, "sistema", "dejar vuelve al tema de antes");
+  assert.equal(html.style.p["--acento-claro"], undefined);
+});

@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "interfaz",
  "descripcion": "host.enviar(accion, datos) y las respuestas window.<App>.*, igual en Mac, Electron, móvil y navegador (modo demo).",
+ "en": {
+  "nombre": "Interface bridge",
+  "descripcion": "host.enviar(accion, datos) and the window.<App>.* responses, the same on desktop, phone and browser (demo mode)."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre: es como la interfaz habla con la app."

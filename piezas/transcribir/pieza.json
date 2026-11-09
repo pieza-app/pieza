@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "medios",
  "descripcion": "Audio a texto en el computador con whisper.cpp: modelos con huella fija, vocabulario por archivo privado (nunca como argumento), VAD y filtro de inventos y bucles.",
+ "en": {
+  "nombre": "Transcribe",
+  "descripcion": "Audio to text on the computer with whisper.cpp: models with fixed fingerprints, vocabulary in a private file (never as an argument), VAD and a filter for made-up text and loops."
+ },
  "recomendar": {
   "cuando": "La app trabaja con voz, reuniones o videos.",
   "palabras": [

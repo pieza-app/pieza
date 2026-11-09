@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "medios",
  "descripcion": "Pantalla + cámara + voz, con recorte, pausa y atajos globales.",
+ "en": {
+  "nombre": "Screen recording",
+  "descripcion": "Screen + camera + voice, with trimming, pause and global shortcuts."
+ },
  "recomendar": {
   "cuando": "La app graba la pantalla o la cámara.",
   "palabras": [

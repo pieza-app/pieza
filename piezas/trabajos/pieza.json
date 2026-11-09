@@ -8,6 +8,10 @@
  "nombre": "Trabajos largos",
  "categoria": "datos",
  "descripcion": "Lo que tarda minutos corre por etapas en segundo plano: estado en disco, avance en vivo, latido, «Detener», «Seguir donde quedó» y trabajos que esperan respuestas.",
+ "en": {
+  "nombre": "Long jobs",
+  "descripcion": "What takes minutes runs in stages in the background: state on disk, live progress, heartbeat, «Stop», «Continue where it left off» and jobs that wait for answers."
+ },
  "recomendar": {
   "cuando": "La app hace algo que tarda minutos (documentar, transcribir, resumir un libro) y no puede perderse si se cierra.",
   "palabras": [

@@ -50,7 +50,7 @@ def guardar_icono(tipo, nombre, svg, solo_current):
 
 def catalogo():
     import pieza
-    campos = ("nombre", "categoria", "estado", "version", "descripcion", "plataformas", "pantallas", "permisos", "red", "red_nota", "requiere", "compatible", "cambios")
+    campos = ("nombre", "categoria", "estado", "version", "descripcion", "en", "plataformas", "pantallas", "permisos", "red", "red_nota", "requiere", "compatible", "cambios")
     piezas = []
     for pid, p in pieza.todas().items():
         d = {"id": pid, **{k: p[k] for k in campos if k in p}}

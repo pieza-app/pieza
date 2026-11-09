@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "plataforma",
  "descripcion": "Un solo host en Rust (Tauri) para Mac, Windows y Linux, con la misma API que host-mac y host-escritorio: ventana con el WebView del sistema (liviana, sin Chromium adentro), protocolo propio solo para ui/ y los medios que la app aprueba, puente con guardas, acciones declaradas con datos validados y límite de tiempo, config, idioma, menús, bandeja, apariencia, carpeta, vigilante, secretos en el llavero del sistema, avisos, diálogos y una sola instancia.",
+ "en": {
+  "nombre": "Mac, Windows and Linux app",
+  "descripcion": "One Rust (Tauri) host for Mac, Windows and Linux: window with the system WebView (light, no Chromium inside), a guarded bridge, declared actions with validated data and time limits, config, language, menus, tray, appearance, folder, watcher, keychain secrets, notices, dialogs and a single instance."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre que haya app de escritorio (Mac, Windows o Linux)."

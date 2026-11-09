@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "ia",
  "descripcion": "La IA de la persona (Claude Code, Codex o Gemini) con su propia cuenta: sin herramientas, sin su memoria, el pedido nunca como argumento, material y revisión a fondo de solo lectura, y en vivo (lo que lee y «Detener»).",
+ "en": {
+  "nombre": "Your AI",
+  "descripcion": "The person's AI (Claude Code, Codex or Gemini) with their own account: no tools, no memory, the request never as an argument, read-only material and deep review, and live (what it reads and «Stop»)."
+ },
  "recomendar": {
   "cuando": "La app usa IA para algo (resumir, generar, ordenar, responder) con la cuenta de la persona.",
   "palabras": [

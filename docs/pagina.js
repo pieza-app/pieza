@@ -218,11 +218,13 @@
         const r = revision(p);
         const li = el("li");
         const cab = el("div", "cabeza");
-        cab.append(iconoMascara(p.icono), el("b", null, p.nombre || p.id));
+        // En inglés, el nombre y la descripción de pieza.json → "en" (si los trae); si no, los de siempre.
+        const en = idioma === "en" && p.en && typeof p.en === "object" ? p.en : {};
+        cab.append(iconoMascara(p.icono), el("b", null, String(en.nombre || p.nombre || p.id)));
         const lista = (p.estado || "lista") === "lista";
         cab.append(el("span", "etiqueta" + (lista ? " lista" : ""), lista ? t("lista") + " · " + p.version : t("camino")));
         cab.append(el("span", "etiqueta " + r, r === "oficial" ? t("oficial") : r === "revisada" ? t("revisada") : t("sinRevisar")));
-        li.append(cab, el("p", null, p.descripcion || ""));
+        li.append(cab, el("p", null, String(en.descripcion || p.descripcion || "")));
         if (r !== "oficial" && typeof p.repo === "string" && REPO.test(p.repo)) {
           const a = el("a", "repo", t("deRepo").replace("{x}", p.repo));
           a.href = "https://github.com/" + p.repo;

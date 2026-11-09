@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "repo",
  "descripcion": "Una prueba que revisa que la interfaz y cada plataforma (Mac, Windows/Linux, celular, vista previa) digan lo mismo: cada acción atendida (registrada, del host o declarada), acciones.json al día, las respuestas existen y la seguridad común. Lo propio de la app va en un archivo chico.",
+ "en": {
+  "nombre": "Bridge contract",
+  "descripcion": "A test that checks the interface and each platform (Mac, Windows/Linux, phone, preview) say the same: every action handled, acciones.json up to date, the responses exist and the common security."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Toda app con interfaz y al menos un host (Mac, Windows/Linux o celular)."

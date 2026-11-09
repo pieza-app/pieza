@@ -1,13 +1,17 @@
 {
  "formato": 1,
  "id": "tema",
- "version": "0.2.1",
+ "version": "0.3.0",
  "estado": "lista",
- "nombre": "Tema claro y oscuro",
+ "nombre": "Temas: claro, oscuro y vidrio",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "interfaz",
- "descripcion": "Sistema, claro u oscuro con un solo juego de tokens CSS y light-dark(): cada color se escribe una vez.",
+ "descripcion": "Sistema, claro, oscuro o vidrio (paneles esmerilados) con un solo juego de tokens CSS y light-dark(). Suma temas de afuera (universos, comunidad) validados: solo colores.",
+ "en": {
+  "nombre": "Themes: light, dark and glass",
+  "descripcion": "System, light, dark or glass (frosted panels) with one set of CSS tokens and light-dark(). Adds outside themes (universes, community), validated: colors only."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre."
@@ -24,7 +28,7 @@
   {
    "donde": "Ajustes",
    "nombre": "Apariencia",
-   "que": "sistema, claro u oscuro"
+   "que": "sistema, claro, oscuro o vidrio"
   }
  ],
  "origen": "esquema/ui/app.css (data-tema=\"claro|oscuro\" sobre el sistema, colores neutros con contraste AA) + los nombres que ya compartían graba, corta, repasa y alcancia (--fondo, --panel, --texto, --linea, --acento, --sobre-acento, --rojo, --verde). Nuevo: un solo juego de nombres (--texto-suave para el texto secundario y --panel-2 para el fondo secundario: antes --suave era texto en cuatro apps y fondo en Esquema), cada color como par --x-claro/--x-oscuro elegido con light-dark() (sin repetir el bloque oscuro), derivados con color-mix() (--hover, --acento-suave, --rojo-suave, --verde-suave), las variables de la bienvenida conectadas y ?tema= para vistas previas.",
@@ -36,7 +40,8 @@
   "tema": [
    "sistema",
    "claro",
-   "oscuro"
+   "oscuro",
+   "vidrio"
   ]
  },
  "acciones": {},
@@ -44,11 +49,17 @@
   "Apariencia": "Appearance",
   "Como el sistema": "Match system",
   "Claro": "Light",
-  "Oscuro": "Dark"
+  "Oscuro": "Dark",
+  "Vidrio": "Glass"
  },
  "permisos": {},
  "red": [],
  "cambios": [
+  {
+   "version": "0.3.0",
+   "tipo": "mejora",
+   "resumen": "Tema «Vidrio»: sigue al sistema (claro u oscuro), pone <html data-pz-estilo=\"vidrio\"> con luces de color detrás y paneles translúcidos y esmerilados (diálogos, avisos, barras, fieldset y .pz-vidrio). Con «reducir transparencia», paneles sólidos. Nuevo tema.registrar({id, nombre, base, colores}) para temas de afuera (universos, comunidad): solo #rrggbb de los tokens conocidos, puestos con CSSOM. app.json → config.tema suma «vidrio» (pieza.py actualizar lo agrega)."
+  },
   {
    "version": "0.2.1",
    "tipo": "arreglo",

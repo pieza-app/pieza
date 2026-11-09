@@ -8,6 +8,10 @@
  "nombre": "Leer archivos",
  "categoria": "datos",
  "descripcion": "El texto de un .md, .txt, .pdf, .docx, .odt, .epub o .html solo con la biblioteca estándar, con topes contra zip bombas y XML sin entidades; y partir un libro en capítulos sin IA.",
+ "en": {
+  "nombre": "Read files",
+  "descripcion": "The text of a .md, .txt, .pdf, .docx, .odt, .epub or .html with the standard library only, with limits against zip bombs and XML without entities; and splitting a book into chapters without AI."
+ },
  "recomendar": {
   "cuando": "La persona agrega documentos, libros, apuntes o actas para que la app los lea.",
   "palabras": [

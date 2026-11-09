@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "datos",
  "descripcion": "Guarda los datos de la persona en un repo suyo de GitHub o GitLab, nunca en un servidor nuestro.",
+ "en": {
+  "nombre": "Data in your git",
+  "descripcion": "Saves the person's data in their own GitHub or GitLab repo, never on a server of ours."
+ },
  "recomendar": {
   "cuando": "Los datos deben tener historial y respaldo en la cuenta de la persona.",
   "palabras": [

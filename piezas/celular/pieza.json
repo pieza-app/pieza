@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "datos",
  "descripcion": "El computador es la fuente; el celular lee una copia cifrada en una carpeta de la nube de la persona.",
+ "en": {
+  "nombre": "Copy to your phone",
+  "descripcion": "The computer is the source; the phone reads an encrypted copy in a cloud folder of the person."
+ },
  "recomendar": {
   "cuando": "Hay app de celular y los datos viven en el computador."
  },

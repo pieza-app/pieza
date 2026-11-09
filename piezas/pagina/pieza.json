@@ -1,13 +1,17 @@
 {
  "formato": 1,
  "id": "pagina",
- "version": "0.1.2",
+ "version": "0.1.3",
  "estado": "lista",
  "nombre": "Página pública",
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "categoria": "repo",
  "descripcion": "La página pública bilingüe (GitHub Pages) generada desde docs/pagina.json: descarga según el sistema, demo, permisos e internet que salen de sus piezas, preguntas frecuentes con su JSON-LD, SEO y el sello «Hecho con Pieza».",
+ "en": {
+  "nombre": "Public website",
+  "descripcion": "The bilingual public website (GitHub Pages) generated from docs/pagina.json: download by system, demo, permissions and internet from its pieces, FAQ with JSON-LD, SEO and the «Made with Pieza» badge."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre."
@@ -84,6 +88,11 @@
   "Mirar docs/img/compartir.png y las capturas antes de subirlas (datos ficticios)"
  ],
  "cambios": [
+  {
+   "version": "0.1.3",
+   "tipo": "mejora",
+   "resumen": "docs/tema.css al día con tema 0.3.0 (el estilo «Vidrio» queda disponible para la página)."
+  },
   {
    "version": "0.1.2",
    "tipo": "mejora",

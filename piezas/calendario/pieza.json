@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "conexiones",
  "descripcion": "Leer las reuniones del calendario (EventKit en Mac, archivo .ics en el resto) para avisar y nombrar.",
+ "en": {
+  "nombre": "Calendar",
+  "descripcion": "Reads the meetings in the calendar (EventKit on Mac, an .ics file elsewhere) to remind and name them."
+ },
  "recomendar": {
   "cuando": "La app depende de reuniones o eventos.",
   "palabras": [

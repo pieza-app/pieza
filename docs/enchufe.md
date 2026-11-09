@@ -36,6 +36,7 @@ enruten solos.
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "descripcion": "Una línea: qué resuelve.",
+ "en": {"nombre": "The name in English", "descripcion": "One line: what it solves."},
  "origen": "De qué app salió y qué mejoras sumó de las otras.",
  "requiere": ["nucleo"],
  "archivos": {"python/ia.py": "bin/ia.py"},

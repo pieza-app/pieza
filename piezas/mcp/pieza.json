@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "ia",
  "descripcion": "Servidor MCP local para que la persona converse con sus datos desde su IA, y alta en Claude, Codex, Gemini y Claude Desktop.",
+ "en": {
+  "nombre": "Talk to your AI (MCP)",
+  "descripcion": "A local MCP server so the person can talk with their data from their AI, set up in Claude, Codex, Gemini and Claude Desktop."
+ },
  "recomendar": {
   "cuando": "La persona querría preguntarle cosas a su IA sobre sus datos de la app.",
   "palabras": [

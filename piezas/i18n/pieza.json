@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "interfaz",
  "descripcion": "Traducciones con la frase en español como clave, plantillas {n}, escape seguro y traducir la página entera.",
+ "en": {
+  "nombre": "Languages",
+  "descripcion": "Translations with the Spanish phrase as key, {n} templates, safe escaping and translating the whole page."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre: toda app sale en español e inglés y deja sumar idiomas."

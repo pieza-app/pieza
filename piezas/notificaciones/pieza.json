@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "plataforma",
  "descripcion": "Avisos programados del sistema (pagos, repasos, recordatorios), con permiso y opción de apagarlos.",
+ "en": {
+  "nombre": "Notices",
+  "descripcion": "Scheduled system notices (payments, reviews, reminders), with permission and a way to turn them off."
+ },
  "recomendar": {
   "cuando": "La app tiene que recordarle algo a la persona aunque esté cerrada."
  },

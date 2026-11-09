@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "repo",
  "descripcion": "Arma, firma, publica e instala la app desde app.json con su host de Tauri: empaquetar.sh para Mac, Windows y Linux con un solo Python portátil, build.sh (desarrollo en el Mac), preparar.sh, instalar.sh/ps1 y publicar.yml.",
+ "en": {
+  "nombre": "Packaging",
+  "descripcion": "Builds, signs, publishes and installs the app from app.json with its Tauri host: empaquetar.sh for Mac, Windows and Linux with one portable Python, build.sh, preparar.sh, instalar.sh/ps1 and publicar.yml."
+ },
  "origen": "Esquema (build.sh, herramientas/empaquetar.sh con bajar() y huellas, escritorio/ con package.json, preparar.sh, instalador NSIS e instalar.sh/ps1, publicar.yml con nombres fijos) + Corta (binarios extra con huella, LICENCIAS-TERCEROS, ffmpeg) + Graba (Package.swift con whisper como binaryTarget y un ejecutable aparte, frameworks, permisos de cámara y micrófono, barra de menú) + Minuta/Graba/Corta/Alcancía/Repasa (no instalar con un trabajo en curso). El Python portátil (CPython 3.13.16, ya idéntico en las seis) queda en un solo herramientas/python.lock. La versión sale de app.json → version (antes, Info.plist y package.json a mano).",
  "recomendar": {
   "siempre": true,

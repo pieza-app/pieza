@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "repo",
  "descripcion": "El repo listo para la comunidad desde app.json: plantillas de issues y PR, dependabot, revisar.yml, Pieza al día, AGENTS/CONTRIBUTING/SECURITY con lo que llena la IA marcado, agentes, revisión de privacidad, .gitignore de lista blanca y pieza.py repo configurar.",
+ "en": {
+  "nombre": "Repo ready for the community",
+  "descripcion": "The repo ready for the community from app.json: issue and PR templates, dependabot, revisar.yml, Pieza up to date, AGENTS/CONTRIBUTING/SECURITY, agents, privacy check, allow-list .gitignore and the wiki."
+ },
  "origen": "Esquema (.github/ entero, CONTRIBUTING con «Cómo revisamos» y la línea de los flujos de Pieza, SECURITY, agentes revisor y privacidad, revisar_privacidad.sh, .gitignore de lista blanca) + Alcancía y Repasa (job mac que compila también si cambia app.json o acciones.json) + las seis apps (secciones comunes de AGENTS.md: «Piezas», «Reglas al cambiar cosas», «Lo que rodea a un cambio», «Revisar aportes») + Pieza (Pieza al día, .claude/settings.json con solo extraKnownMarketplaces). La configuración del repo que se hacía a mano queda en pieza.py repo configurar.",
  "recomendar": {
   "siempre": true,

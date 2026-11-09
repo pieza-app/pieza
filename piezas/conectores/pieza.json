@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "conexiones",
  "descripcion": "Contrato para conectar servicios externos (bancos, billeteras, APIs) con credencial en el llavero y por la entrada estándar.",
+ "en": {
+  "nombre": "Service connectors",
+  "descripcion": "A contract to connect outside services (banks, wallets, APIs) with the credential in the keychain and through standard input."
+ },
  "recomendar": {
   "cuando": "La app trae datos de servicios de la persona (banco, billetera, tienda).",
   "palabras": [
