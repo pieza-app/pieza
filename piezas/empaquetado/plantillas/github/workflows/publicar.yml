@@ -95,9 +95,29 @@ jobs:
       contents: write
     if: needs.empaquetar.result == 'success'
     runs-on: ubuntu-24.04
+{{#si app.actualizaciones.llaves}}
+    # La llave privada vive solo en el entorno «publicar» (Settings → Environments). Ahí se puede exigir aprobación.
+    environment: publicar
+{{/si}}
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with: { path: descargas, merge-multiple: true }
+{{#si app.actualizaciones.llaves}}
+      - name: Firmar las descargas (Ed25519)
+        env: { LLAVE: "${{ secrets.ACTUALIZACIONES_LLAVE }}", VERSION: "${{ needs.version.outputs.version }}" }
+        run: |
+          # Firma «<id>-actualizacion|<versión>|<sha256>» de cada archivo: la app no instala nada sin una firma válida.
+          [ -n "$LLAVE" ] || { echo "Falta el secreto ACTUALIZACIONES_LLAVE en el entorno «publicar» (pieza «actualizaciones»)."; exit 1; }
+          umask 077
+          printf '%s\n' "$LLAVE" > "$RUNNER_TEMP/llave.pem"
+          for f in descargas/*; do
+            case "$f" in *.sha256|*.sig) continue ;; esac
+            h=$(cut -d' ' -f1 "$f.sha256" | tr 'A-F' 'a-f')
+            printf '%s' "{{id}}-actualizacion|$VERSION|$h" > "$RUNNER_TEMP/mensaje"
+            openssl pkeyutl -sign -inkey "$RUNNER_TEMP/llave.pem" -rawin -in "$RUNNER_TEMP/mensaje" | base64 -w0 > "$f.sig"
+          done
+          rm -f "$RUNNER_TEMP/llave.pem" "$RUNNER_TEMP/mensaje"
+{{/si}}
       - name: Crear el Release
         env: { GH_TOKEN: "${{ github.token }}", VERSION: "${{ needs.version.outputs.version }}", REPO: "${{ github.repository }}", SHA: "${{ github.sha }}" }
         run: |

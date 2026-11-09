@@ -26,6 +26,8 @@ sys-locale = "0.3"
 {{#si piezas.actualizaciones}}
 ureq = { version = "2", features = ["json"] }
 sha2 = "0.10"
+base64 = "0.22"
+ed25519-dalek = { version = "2", default-features = false, features = ["std"] }
 {{#sino}}
 {{#si piezas.catalogo}}
 ureq = { version = "2", features = ["json"] }

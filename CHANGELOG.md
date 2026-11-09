@@ -1,6 +1,9 @@
 # Cambios
 
 ## Sin publicar
+- **`actualizaciones` 0.5.0 (mejora): versiones firmadas con Ed25519 en Rust** (rehace #13). Con llaves en `app.json`, la
+  app no instala nada sin una firma válida de la llave privada, que vive fuera de GitHub. `llave.sh` crea las llaves.
+  **`host-tauri` 0.1.2** suma las dependencias para verificar y **`empaquetado` 0.2.2** firma en `publicar.yml`.
 - **`ia` 0.7.0 (mejora): escribir en una carpeta.** `preguntar(..., escribir=carpeta)` deja que Claude o Codex editen archivos solo
   ahí, sin terminal ni internet. Sale de la prueba real del programa Pieza.
 - **El catálogo en inglés:** cada `pieza.json` trae `en: {nombre, descripcion}`. La página de Pieza y el programa los

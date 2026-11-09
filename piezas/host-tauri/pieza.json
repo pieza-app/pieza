@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "host-tauri",
- "version": "0.1.1",
+ "version": "0.1.2",
  "estado": "lista",
  "nombre": "App de Mac, Windows y Linux",
  "icono": "icono.svg",
@@ -142,6 +142,11 @@
   "Opcional: Apple Developer (USD 99/año) para firmar y que macOS no advierta"
  ],
  "cambios": [
+  {
+   "version": "0.1.2",
+   "tipo": "mejora",
+   "resumen": "Cargo.toml suma base64 y ed25519-dalek (sin funciones por defecto) cuando la app tiene «actualizaciones»: verificar la firma de las versiones."
+  },
   {
    "version": "0.1.1",
    "tipo": "arreglo",

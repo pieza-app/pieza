@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "empaquetado",
- "version": "0.2.1",
+ "version": "0.2.2",
  "estado": "lista",
  "nombre": "Empaquetado",
  "icono": "icono.svg",
@@ -66,6 +66,11 @@
   "Un Mac con Apple Silicon y Xcode para compilar la app de Mac la primera vez (después la arma GitHub en cada versión)"
  ],
  "cambios": [
+  {
+   "version": "0.2.2",
+   "tipo": "mejora",
+   "resumen": "publicar.yml firma cada descarga con Ed25519 si app.json trae «actualizaciones.llaves»: el job «release» corre en el entorno «publicar» y usa el secreto ACTUALIZACIONES_LLAVE (openssl pkeyutl -rawin). Sin el secreto, no publica."
+  },
   {
    "version": "0.2.1",
    "tipo": "arreglo",

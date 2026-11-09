@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "actualizaciones",
- "version": "0.4.0",
+ "version": "0.5.0",
  "estado": "lista",
  "nombre": "Actualizaciones",
  "icono": "icono.svg",
@@ -58,6 +58,11 @@
  "permisos": {},
  "red_nota": "Solo pregunta a GitHub por la última versión del repo de la app (al abrir y cada 6 horas) y baja de sus Releases; GitHub redirige la descarga a su almacenamiento. Sin datos de la persona.",
  "cambios": [
+  {
+   "version": "0.5.0",
+   "tipo": "mejora",
+   "resumen": "Firma Ed25519 en host-tauri (rehace #13 en Rust). Con app.json → \"actualizaciones\": {\"llaves\": [\"<pública base64>\"]} (hasta 2, para rotar), la app exige <archivo>.sig del mismo Release: la firma de «<id>-actualizacion|<versión>|<sha256>», verificada con verify_strict. Sin firma válida no instala y avisa «firma». Sin llaves, todo igual que antes. llave.sh crea el par de llaves con openssl."
+  },
   {
    "version": "0.4.0",
    "tipo": "mejora",

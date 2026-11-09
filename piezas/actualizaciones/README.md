@@ -71,3 +71,24 @@ el origen de la descarga: pasarla primero.
 | Qué cambió | Qué hacer en la app |
 |---|---|
 | `desarrollo` en la respuesta de revisar y en `disponible` | Nada: lo lee la fila de `componentes` 0.2.0. Si tu interfaz mostraba «Versión» vacía en una instalación de desarrollo, ya no. |
+
+## Firma de las versiones (0.5.0)
+
+Sin firma, quien entre a tu cuenta de GitHub puede publicar una versión falsa y todas las apps la instalan. Con firma, también
+necesita la llave privada, que vive fuera de GitHub.
+
+1. En tu computador, en una carpeta fuera del repo: `bash <pieza>/piezas/actualizaciones/llave.sh`.
+2. Copia la llave pública a `app.json`: `"actualizaciones": {"llaves": ["<pública>"]}`.
+3. Guarda la privada en el entorno «publicar» del repo: `gh secret set ACTUALIZACIONES_LLAVE --env publicar < llave-privada.pem`.
+4. Guarda la privada en tu gestor de claves y bórrala de la carpeta.
+5. Corre `pieza.py generar .`: `publicar.yml` suma el paso «Firmar las descargas» y el entorno «publicar».
+6. Opcional: en Settings → Environments → publicar, exige tu aprobación antes de publicar.
+
+La app verifica `<archivo>.sig` con `verify_strict`. El mensaje firmado es `<id>-actualizacion|<versión sin v>|<sha256>`. Una
+firma de otra app, otra versión u otro archivo no sirve.
+
+**Rotar la llave:** suma la nueva a `llaves` (hasta 2), publica una versión firmada con la vieja, cambia el secreto y después
+quita la vieja de `app.json`.
+
+**Ojo:** las versiones que ya están instaladas no tienen llaves. La primera versión con llaves se instala como antes (solo
+con su `.sha256`). Desde ahí, todas exigen firma.
