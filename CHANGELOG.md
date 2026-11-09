@@ -1,6 +1,9 @@
 # Cambios
 
 ## Sin publicar
+- **Pieza nueva `universos` 0.1.0:** mundos que cambian los colores (un tema de «tema») y los textos que la app deja cambiar.
+  Solo datos, validados igual en Python (`bin/universo_formato.py`, también validador del catálogo) y JS (`ui/universos.js`).
+  Trae tres universos originales: Espacio (vidrio), Bosque (claro) y Neón (oscuro). Los de la comunidad llegan por «catalogo».
 - **`tema` 0.3.0 (mejora): tema «Vidrio».** Sigue al sistema (claro u oscuro), con luces de color detrás y paneles
   esmerilados. Con «reducir transparencia», los paneles quedan sólidos. Nuevo `tema.registrar({id, nombre, base, colores})`
   para temas de afuera (universos, comunidad): solo `#rrggbb` de los tokens conocidos. `config.tema` suma `vidrio`.
