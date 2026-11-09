@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "ia",
- "version": "0.7.0",
+ "version": "0.7.1",
  "estado": "lista",
  "nombre": "Tu IA",
  "icono": "icono.svg",
@@ -101,6 +101,11 @@
  },
  "red_nota": "La app no sale a internet: la IA de la persona se conecta a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
  "cambios": [
+  {
+   "version": "0.7.1",
+   "tipo": "mejora",
+   "resumen": "preguntar_vivo también acepta escribir=carpeta y cuenta los archivos que la IA cambia: {\"t\": \"escribe\", \"ruta\"} (Claude: Edit/Write/MultiEdit; Codex: los cambios de su sandbox). Así la app muestra en vivo qué está haciendo la IA."
+  },
   {
    "version": "0.7.0",
    "tipo": "mejora",

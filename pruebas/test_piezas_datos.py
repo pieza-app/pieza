@@ -851,6 +851,20 @@ class IAVivo(App):
         self.assertEqual(r["env"].get("CLAUDE_CODE_DISABLE_AUTO_MEMORY"), "1")
         self.assertFalse([k for k in r["env"] if k.startswith("PRUEBA_")])
 
+    def test_eventos_de_escribir(self):
+        ev = self.py("""
+            import json, ia
+            ev = []
+            ia._evento_claude(json.dumps({"type": "assistant", "message": {"content": [
+                {"type": "tool_use", "name": "Write", "input": {"file_path": "/app/bin/recetas.py"}},
+                {"type": "tool_use", "name": "Edit", "input": {"file_path": "/app/ui/app.js"}}]}}), ev.append)
+            ia._evento_codex(json.dumps({"type": "item.started", "item": {"type": "file_change",
+                             "changes": [{"path": "/app/README.md", "kind": "update"}]}}), ev.append)
+            print(json.dumps(ev))
+            """)
+        self.assertEqual(ev, [{"t": "escribe", "ruta": "/app/bin/recetas.py"}, {"t": "escribe", "ruta": "/app/ui/app.js"},
+                              {"t": "escribe", "ruta": "/app/README.md"}])
+
     def test_sin_aviso_de_multiedit_y_sin_dejar_de_prohibir(self):
         material = os.path.join(self.tmp.name, "foto.png")
         open(material, "wb").write(b"x")
