@@ -4,27 +4,43 @@
 
 <p align="center"><b>Framework modular y abierto para apps que viven en tu computador.</b><br>
 <a href="https://pieza-app.github.io/pieza/">Página</a> · <a href="https://pieza-app.github.io/pieza/#empezar">Empezar</a> ·
-<a href="MANIFIESTO.md">Manifiesto</a> · <a href="https://github.com/pieza-app/pieza/discussions">Comunidad</a> · <a href="CONTRIBUTING.md">Cómo aportar</a></p>
+<a href="https://github.com/pieza-app/pieza/wiki">Wiki</a> · <a href="MANIFIESTO.md">Manifiesto</a> ·
+<a href="https://github.com/pieza-app/pieza/discussions">Comunidad</a> · <a href="CONTRIBUTING.md">Cómo aportar</a></p>
 
 <p align="center"><i>Construimos en abierto. Compartimos lo que funciona. Nadie es dueño de tu computador más que tú.</i></p>
 
-Arma tu app por módulos, como un rompecabezas. Cada pieza es un módulo probado que resuelve una cosa (tu IA, el idioma, el
-catálogo, las actualizaciones…) y se enchufa en cualquier app con un comando, en vez de escribirla de cero.
+Pieza arma una app por módulos. Cada módulo es una **pieza**. Una pieza resuelve una sola cosa: tu IA, el idioma, el catálogo,
+las actualizaciones. Un comando la agrega a cualquier app. Así no la escribes de cero.
 
-> **En construcción.** Las piezas salen de [Minuta](https://github.com/minuta-app/minuta), [Graba](https://github.com/graba-app/graba),
-> [Corta](https://github.com/corta-app/corta), [Alcancía](https://github.com/alcancia-app/alcancia),
-> [Repasa](https://github.com/repasa-app/repasa) y [Esquema](https://github.com/esquema-app/esquema), y esas apps van pasando a
-> usarlas una por una. Mira cuáles ya están listas en el [catálogo](docs/catalogo.md) y
-> [súmate a extraer las que faltan](https://github.com/pieza-app/pieza/issues).
+> **En construcción.** Las piezas salen de seis apps: [Minuta](https://github.com/minuta-app/minuta),
+> [Graba](https://github.com/graba-app/graba), [Corta](https://github.com/corta-app/corta),
+> [Alcancía](https://github.com/alcancia-app/alcancia), [Repasa](https://github.com/repasa-app/repasa) y
+> [Esquema](https://github.com/esquema-app/esquema). Esas apps pasan a usarlas una por una. El [catálogo](docs/catalogo.md) dice
+> qué piezas están listas. Las [issues](https://github.com/pieza-app/pieza/issues) dicen cuáles faltan.
 
-**Instala los flujos** (crear una app y revisar aportes) en tu IA y pídele «creemos una app para…»:
+## La app de escritorio
+
+Toda app de Pieza usa la pieza `host-tauri` (Rust + Tauri) en Mac, Windows y Linux. Es un solo código para los tres sistemas.
+Usa el navegador que ya trae el sistema. Por eso la app es liviana.
+
+- Hechas con `host-tauri`: Alcancía, Corta, Despeja, Esquema y Repasa.
+- Falta: Graba y Minuta. Usan funciones que solo existen en Apple (capturar la pantalla y el audio del sistema). Primero necesitan
+  un ayudante en Swift.
+
+## Crear una app con tu IA
+
+1. Instala los flujos de Pieza en tu IA (tabla de abajo).
+2. Pídele: «creemos una app para…».
 
 | Claude Code | Gemini CLI | Codex |
 |---|---|---|
 | `/plugin marketplace add pieza-app/pieza`<br>`/plugin install pieza@pieza` | `gemini extensions install https://github.com/pieza-app/pieza --auto-update` | `python3 herramientas/pieza.py skills instalar codex` |
 
-Con otra IA, que siga [`AGENTS.md`](AGENTS.md). Equivalencias entre herramientas en [docs/otras-ias.md](docs/otras-ias.md).
-**Sin IA**, la herramienta funciona sola:
+Con otra IA, sigue [`AGENTS.md`](AGENTS.md). La tabla de equivalencias está en [docs/otras-ias.md](docs/otras-ias.md).
+
+## Crear una app sin IA
+
+La herramienta funciona sola:
 
 ```bash
 python3 herramientas/pieza.py catalogo                    # todas las piezas, listas y en camino
@@ -37,34 +53,53 @@ python3 herramientas/pieza.py estado ~/MiApp               # qué tiene, qué ha
 python3 herramientas/pieza.py actualizar ~/MiApp           # trae lo nuevo sin pisar tus cambios
 ```
 
-**Copiar y adueñarse.** La pieza se copia dentro de tu app y desde ahí es tuya: la puedes cambiar. `piezas.json` recuerda la
-versión y la huella de cada archivo, así `actualizar` nunca pisa lo que cambiaste y `diferencias` te muestra qué mejoraste para
-devolverlo a la base.
+## Copiar y adueñarse
 
+- La pieza se copia dentro de tu app. Desde ahí es tuya y la puedes cambiar.
+- `piezas.json` guarda la versión y la huella de cada archivo.
+- `actualizar` nunca pisa lo que cambiaste.
+- `diferencias` muestra lo que mejoraste. Así lo devuelves a la base.
+
+## Más información
+
+- [Wiki](https://github.com/pieza-app/pieza/wiki): guías paso a paso.
 - [El enchufe](docs/enchufe.md): cómo se conecta una pieza (contrato y reglas de seguridad).
 - [Catálogo y plan](docs/catalogo.md): qué hay y qué viene.
-- [Crear una app nueva](skills/lanzar-proyecto-open-source/SKILL.md): el flujo completo, con entrevista y ficha
-  (`pieza.py ficha ia transcribir --plataformas mac,windows,linux` muestra pantallas, configuración, permisos y red).
+- [Crear una app nueva](skills/lanzar-proyecto-open-source/SKILL.md): el flujo completo, con entrevista y ficha.
+  `pieza.py ficha ia transcribir --plataformas mac,windows,linux` muestra pantallas, configuración, permisos y red.
 - [Guía para contribuir](AGENTS.md).
 
-**Al día solo.** Cada pieza dice qué tipo de cambio trae (arreglo, mejora, rompe, seguridad). Las apps reciben un PR semanal con
-lo que se puede actualizar solo y un issue con los pasos para lo demás ([cómo](docs/enchufe.md#versiones-y-actualizaciones)).
+## Al día solo
 
-**El catálogo crece con la comunidad.** Publica una pieza en tu repo con el topic `pieza-comunidad` y aparece en la página
-como «Sin revisar»; revisada, se instala como segura ([cómo](docs/comunidad.md)). Sin fines de lucro, sin cuentas, sin
-telemetría: [lee el manifiesto](MANIFIESTO.md) y súmate.
+- Cada pieza dice qué tipo de cambio trae: arreglo, mejora, rompe o seguridad.
+- Cada semana, la app recibe un PR con lo que se actualiza solo ([cómo](docs/enchufe.md#versiones-y-actualizaciones)).
+- Lo demás llega en un issue, con sus pasos.
 
-**¿Hiciste una app con Pieza?** Ponle el topic `hecho-con-pieza` a su repo y aparece en la [página](https://pieza-app.github.io/pieza/).
-Y si quieres, el sello: [![Hecho con Pieza](https://pieza-app.github.io/pieza/sello.svg)](https://pieza-app.github.io/pieza/)
+## La comunidad
 
-Sin dependencias: Python con su biblioteca estándar.
+- **Tu pieza:** publícala en tu repo con el topic `pieza-comunidad`. Aparece en la página como «Sin revisar». Después de la
+  revisión, se instala como segura ([cómo](docs/comunidad.md)).
+- **Tu app hecha con Pieza:** ponle el topic `hecho-con-pieza` a su repo. Aparece en la [página](https://pieza-app.github.io/pieza/).
+- **El sello:** [![Hecho con Pieza](https://pieza-app.github.io/pieza/sello.svg)](https://pieza-app.github.io/pieza/)
 
-**Licencias.** Las piezas (`piezas/`) son [MPL-2.0](piezas/LICENSE): si cambias un archivo de una pieza, compartes ese
-cambio, pero la app que la usa puede tener la licencia que quiera. Las herramientas (`herramientas/`, las skills, la página) son
-[AGPL-3.0](LICENSE). *Pieces are MPL-2.0; tools are AGPL-3.0.*
+Pieza no tiene fines de lucro, cuentas ni telemetría. [Lee el manifiesto](MANIFIESTO.md) y súmate.
+
+## Requisitos
+
+- Python con su biblioteca estándar. Sin dependencias.
+- Rust, solo para compilar la app de escritorio.
+
+## Licencias
+
+- Las piezas (`piezas/`) son [MPL-2.0](piezas/LICENSE). Si cambias un archivo de una pieza, compartes ese cambio. La app que la
+  usa puede tener la licencia que quiera.
+- Las herramientas (`herramientas/`, las skills y la página) son [AGPL-3.0](LICENSE).
+
+*Pieces are MPL-2.0; tools are AGPL-3.0.*
 
 ---
 
-**English:** Pieza is an open framework of tested pieces for apps that live on your computer (your own AI, languages, safe
-updates, a community catalog). Install the flows in Claude Code, Gemini CLI or Codex (table above) and ask for “let's build an
-app for…”. Everything is documented in Spanish; any AI can follow it in your language.
+**English:** Pieza is an open framework of tested pieces for apps that live on your computer: your own AI, languages, safe
+updates and a community catalog. One desktop host (`host-tauri`, Rust + Tauri) runs every app on Mac, Windows and Linux.
+Install the flows in Claude Code, Gemini CLI or Codex (table above). Then ask: “let's build an app for…”. The documentation is in
+Spanish. Any AI can explain it in your language.

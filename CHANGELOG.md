@@ -1,6 +1,8 @@
 # Cambios
 
 ## Sin publicar
+- **`github` 0.3.0 (mejora):** la wiki se escribe en `docs/wiki/` y `wiki.yml` la publica sola en cada cambio. Llegan cinco
+  páginas de partida. Pieza ya tiene su wiki. El README de Pieza está en STE (frases cortas, una idea cada una).
 - **`github` 0.2.1 (arreglo):** en las apps, Dependabot solo abre PR de seguridad para los crates. Las versiones nuevas
   suben en Pieza (`pruebas/tauri`, con sus pruebas) y llegan con «Pieza al día». Se ignora `glib` hasta que Tauri use gtk4.
 - **`empaquetado` 0.2.1 (arreglo):** `publicar.yml` instala Playwright antes de las pruebas rápidas. Sin eso, `correr.sh`
