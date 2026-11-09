@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "github",
- "version": "0.3.0",
+ "version": "0.3.1",
  "estado": "lista",
  "nombre": "Repo listo para la comunidad",
  "icono": "icono.svg",
@@ -110,6 +110,11 @@
   "Crear la wiki una vez: pestaña «Wiki» → «Create the first page» → «Save» (después se publica sola desde docs/wiki/)"
  ],
  "cambios": [
+  {
+   "version": "0.3.1",
+   "tipo": "arreglo",
+   "resumen": "AGENTS.md: el mapa del repo describe la app de escritorio de «host-tauri» (escritorio/, Rust + Tauri). Antes hablaba de app/ (Swift) y de Electron, que ya no se generan."
+  },
   {
    "version": "0.3.0",
    "tipo": "mejora",

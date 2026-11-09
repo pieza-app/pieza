@@ -1,6 +1,9 @@
 # Cambios
 
 ## Sin publicar
+- **`github` 0.3.1 y `esqueleto` 0.2.1 (arreglo):** el `AGENTS.md` y `ui/app.js` que genera `pieza.py crear` describen la app de
+  `host-tauri`. Antes hablaban de `app/` (Swift) y de Electron. `crear` ya no pide un ícono `.icns` en `app/`.
+- **El programa Pieza:** el plan está en `docs/programa.md`. La app vive en `pieza-app/estudio`.
 - **`host-tauri` 0.1.1 (arreglo):** `arranque.sh` resuelve la ruta del ejecutable antes del `cd`. Con eso, «Publicar versión»
   vuelve a probar la app de Linux (fallaba en Esquema 0.3.0).
 - **`github` 0.3.0 (mejora):** la wiki se escribe en `docs/wiki/` y `wiki.yml` la publica sola en cada cambio. Llegan cinco

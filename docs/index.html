@@ -27,7 +27,7 @@
 {"@context":"https://schema.org","@graph":[
  {"@type":"SoftwareSourceCode","name":"Pieza","description":"Framework modular y abierto para apps que viven en tu computador: módulos probados (piezas) (tu propia IA, idiomas, actualizaciones seguras, catálogo de la comunidad) que se enchufan en vez de escribirse de cero.","url":"https://pieza-app.github.io/pieza/","codeRepository":"https://github.com/pieza-app/pieza","license":"https://www.mozilla.org/MPL/2.0/","programmingLanguage":["Python","JavaScript","Swift"],"isAccessibleForFree":true},
  {"@type":"FAQPage","mainEntity":[
-  {"@type":"Question","name":"¿Pieza es un framework?","acceptedAnswer":{"@type":"Answer","text":"Sí, con una diferencia: las piezas se copian dentro de tu app y son tuyas. No dependes de un paquete que pueda romperse desde afuera, y cuando una pieza mejora la recibes sin perder tus cambios."}},
+  {"@type":"Question","name":"¿Pieza es un programa o un framework?","acceptedAnswer":{"@type":"Answer","text":"Las dos cosas. El programa Pieza te guía paso a paso y usa el catálogo de piezas. Las piezas se copian dentro de tu app y son tuyas: no dependes de un paquete que pueda romperse desde afuera, y cuando una pieza mejora la recibes sin perder tus cambios."}},
   {"@type":"Question","name":"¿Necesito Claude Code?","acceptedAnswer":{"@type":"Answer","text":"No. Los flujos funcionan igual en Claude Code, Gemini CLI y Codex, y con cualquier otra IA siguiendo AGENTS.md. La herramienta pieza.py funciona sola, con Python."}},
   {"@type":"Question","name":"¿Pieza manda datos a algún servidor?","acceptedAnswer":{"@type":"Answer","text":"No. No hay servidores ni telemetría. El contador de apps solo cuenta repos públicos que se pusieron el topic hecho-con-pieza en GitHub."}},
   {"@type":"Question","name":"¿Cómo me entero de las versiones nuevas de una pieza?","acceptedAnswer":{"@type":"Answer","text":"Cada app hecha con Pieza trae el workflow Pieza al día: una vez por semana abre un PR con los arreglos y mejoras que se pueden aplicar solos, y un issue con los pasos para lo que hay que hacer a mano."}},
@@ -61,12 +61,12 @@
   <canvas class="estrellas" id="estrellas" aria-hidden="true"></canvas>
   <div class="envoltura portada-dentro">
     <div class="portada-texto">
-      <p class="antetitulo" data-t="ante">Framework modular, abierto y gratis</p>
+      <p class="antetitulo" data-t="ante">Programa gratis y abierto para crear apps</p>
       <h1 data-t="h1">Arma tu app por módulos, como un rompecabezas.</h1>
-      <p class="bajada" data-t="bajada2">Cada pieza es un módulo probado: tu propia IA, idiomas, actualizaciones seguras, un catálogo de la comunidad… Eliges los módulos, tu IA los enchufa y tu app queda armada. Cada app que se hace deja módulos para la siguiente.</p>
+      <p class="bajada" data-t="bajada2">Eliges para qué sistemas es tu app, cuentas tu idea y Pieza te guía paso a paso. Cada pieza es un módulo ya probado: idiomas, tu IA, actualizaciones seguras… Lo ya hecho no gasta tokens de tu IA, y cada app nueva deja piezas para la siguiente.</p>
       <div class="acciones">
-        <a class="boton" href="#empezar" data-t="b_emp">Empezar</a>
-        <a class="boton secundario" href="https://github.com/pieza-app/pieza" data-t="b_cod">Ver el código</a>
+        <a class="boton" href="#empezar" data-t="b_bajar">Descargar Pieza</a>
+        <a class="boton secundario" href="app/" data-t="b_probar">Probar en el navegador</a>
       </div>
       <div class="cifras" aria-live="polite">
         <div><strong id="n-apps">—</strong><span data-t="c_apps">apps hechas con Pieza</span></div>
@@ -138,9 +138,9 @@
         </div>
       </div>
       <ol class="pasos-relato">
-        <li data-paso="1"><span class="num">1</span><h3 data-t="s1">Cuéntale tu idea a tu IA.</h3><p data-t="s1p">Con tus palabras, como se la contarías a alguien. Por ejemplo: «una app para ordenar mis recetas».</p></li>
+        <li data-paso="1"><span class="num">1</span><h3 data-t="s1">Elige los sistemas y cuenta tu idea.</h3><p data-t="s1p">Mac, Windows, Linux o iPhone. Después, tu idea con tus palabras. Por ejemplo: «una app para ordenar mis recetas».</p></li>
         <li data-paso="2"><span class="num">2</span><h3 data-t="s2">Mira la ficha antes de crear nada.</h3><p data-t="s2p">Ves qué pantallas tendrá, qué permisos pide y si sale a internet. Si algo no te gusta, lo cambias.</p></li>
-        <li data-paso="3"><span class="num">3</span><h3 data-t="s3">Las piezas se enchufan solas.</h3><p data-t="s3p">Idiomas, tu IA, actualizaciones… ya probadas en otras apps. Nada se escribe de cero.</p></li>
+        <li data-paso="3"><span class="num">3</span><h3 data-t="s3">Lo ya hecho no gasta tokens.</h3><p data-t="s3p">Las piezas con el ícono de Pieza ya están probadas en otras apps. Tu IA no las escribe: solo hace lo propio de tu app, paso a paso.</p></li>
         <li data-paso="4"><span class="num">4</span><h3 data-t="s4">Se mantienen al día solas.</h3><p data-t="s4p">Cuando una pieza mejora, tu app recibe el arreglo sin perder lo que tú cambiaste.</p></li>
       </ol>
     </div>
@@ -158,7 +158,16 @@
 <section id="empezar" class="raya">
   <div class="envoltura">
     <h2 data-t="h_emp">Empezar</h2>
-    <p class="pregunta" id="q-ia" data-t="q_ia">¿Qué IA usas?</p>
+    <div class="programa">
+      <img src="favicon.svg" alt="" width="56" height="56">
+      <div>
+        <h3 data-t="prog_t">Descarga el programa Pieza</h3>
+        <p data-t="prog_p">Para Mac, Windows y Linux. Te guía paso a paso: los sistemas, tu idea, las piezas y la ficha de tu app.</p>
+        <p class="descargas"><a class="boton" href="https://github.com/pieza-app/estudio/releases/latest" data-t="prog_bajar">Descargar</a><a class="boton secundario" href="app/" data-t="b_probar">Probar en el navegador</a></p>
+        <p class="nota" data-t="prog_nota">En construcción: crear la app con tu IA llega en la próxima versión. Mientras, usa tu IA en la terminal (abajo).</p>
+      </div>
+    </div>
+    <p class="pregunta" id="q-ia" data-t="q_ia">¿Prefieres tu IA en la terminal? ¿Cuál usas?</p>
     <div class="selector solo-js" role="tablist" aria-labelledby="q-ia" id="selector-ia">
       <button type="button" role="tab" id="t-claude" aria-controls="ia-claude" data-ia="claude">Claude Code</button>
       <button type="button" role="tab" id="t-gemini" aria-controls="ia-gemini" data-ia="gemini">Gemini CLI</button>
@@ -295,7 +304,7 @@
   <div class="envoltura">
     <h2 data-t="h_faq">Preguntas frecuentes</h2>
     <div class="preguntas">
-      <details><summary data-t="q1">¿Pieza es un framework?</summary><p data-t="a1">Sí, con una diferencia: las piezas se copian dentro de tu app y son tuyas. No dependes de un paquete que pueda romperse desde afuera, y cuando una pieza mejora la recibes sin perder tus cambios.</p></details>
+      <details><summary data-t="q1">¿Pieza es un programa o un framework?</summary><p data-t="a1">Las dos cosas. El programa Pieza te guía paso a paso y usa el catálogo de piezas. Las piezas se copian dentro de tu app y son tuyas: no dependes de un paquete que pueda romperse desde afuera, y cuando una pieza mejora la recibes sin perder tus cambios.</p></details>
       <details><summary data-t="q2">¿Necesito Claude Code?</summary><p data-t="a2">No. Los flujos funcionan igual en Claude Code, Gemini CLI y Codex, y con cualquier otra IA siguiendo AGENTS.md. La herramienta pieza.py funciona sola, con Python.</p></details>
       <details><summary data-t="q3">¿Pieza manda datos a algún servidor?</summary><p data-t="a3">No. No hay servidores ni telemetría. El contador de apps solo cuenta repos públicos que se pusieron el topic hecho-con-pieza en GitHub.</p></details>
       <details><summary data-t="q4">¿Cómo me entero de las versiones nuevas de una pieza?</summary><p data-t="a4">Cada app hecha con Pieza trae el workflow «Pieza al día»: una vez por semana abre un PR con los arreglos y mejoras que se pueden aplicar solos, y un issue con los pasos para lo que hay que hacer a mano.</p></details>

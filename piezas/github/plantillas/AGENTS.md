@@ -20,10 +20,11 @@ cuentas ni publicidad; nada personal en el código (Ana Pérez, Matías Soto). B
 | `bin/` | Python **solo biblioteca estándar**: lo que corren las apps. El último argumento siempre es el JSON de salida; lo que escribe la persona llega en un JSON de entrada, nunca como argumento. |
 | `ui/` | La interfaz única (`index.html` con CSP, `app.js`, `app.css`), las piezas de interfaz (ver «Piezas») e `idiomas/en.json`. |
 {{#si mac}}
-| `app/` | App de Mac (SwiftPM, macOS 15): lo propio en `Sources/{{nombre_ascii}}/`, las piezas en `Sources/Pieza*/`. `Info.plist` y `Package.swift` los genera la pieza «empaquetado». |
-{{/si}}
+| `escritorio/` | App de escritorio (Rust + Tauri, pieza «host-tauri»): lo propio en `src/main.rs` (y los módulos que sume la app); `src/pieza/` es de la pieza. `Cargo.toml`, `tauri.conf.json`, `Info.plist` y `pruebas/arranque.sh` los genera Pieza. |
+{{#sino}}
 {{#si escritorio}}
-| `escritorio/` | App de Windows y Linux (Electron): `src/main.js` es lo propio; lo demás de `src/` es de la pieza «host-escritorio». |
+| `escritorio/` | App de escritorio (Rust + Tauri, pieza «host-tauri»): lo propio en `src/main.rs` (y los módulos que sume la app); `src/pieza/` es de la pieza. `Cargo.toml`, `tauri.conf.json` y `pruebas/arranque.sh` los genera Pieza. |
+{{/si}}
 {{/si}}
 {{#si movil}}
 | `movil/` | App del celular. |

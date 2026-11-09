@@ -1,5 +1,5 @@
 # Publica la página (docs/) con los datos al día: catálogo desde los pieza.json, las apps con el topic «hecho-con-pieza» y las
-# skills en .zip. Corre en cada cambio y una vez al día (para el contador). Pages: Settings → Pages → Source: GitHub Actions.
+# skills en .zip, más la vista previa del programa (pieza-app/estudio) en /app/. Corre en cada cambio y una vez al día (para el contador). Pages: Settings → Pages → Source: GitHub Actions.
 name: pagina
 on:
   push:
@@ -29,6 +29,13 @@ jobs:
       - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.13"
+      # La vista previa del programa Pieza (pieza-app/estudio, público) en /app/: la misma interfaz, con datos ficticios.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: pieza-app/estudio
+          path: _estudio
+          persist-credentials: false
+      - run: cp -R _estudio/ui docs/app && rm -rf _estudio
       - run: python3 herramientas/pagina.py todo
         env:
           GITHUB_TOKEN: ${{ github.token }}
