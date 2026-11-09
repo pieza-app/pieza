@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "host-tauri",
- "version": "0.1.0",
+ "version": "0.1.1",
  "estado": "lista",
  "nombre": "App de Mac, Windows y Linux",
  "icono": "icono.svg",
@@ -138,6 +138,11 @@
   "Opcional: Apple Developer (USD 99/año) para firmar y que macOS no advierta"
  ],
  "cambios": [
+  {
+   "version": "0.1.1",
+   "tipo": "arreglo",
+   "resumen": "escritorio/pruebas/arranque.sh resuelve la ruta del ejecutable antes de entrar a escritorio/. Antes, «arranque.sh dist/<App>-Linux.AppImage» (lo que corre publicar.yml) buscaba /<App>-Linux.AppImage y la publicación de Linux fallaba."
+  },
   {
    "version": "0.1.0",
    "tipo": "mejora",
