@@ -1,6 +1,8 @@
 # Cambios
 
 ## Sin publicar
+- **`github` 0.2.1 (arreglo):** en las apps, Dependabot solo abre PR de seguridad para los crates. Las versiones nuevas
+  suben en Pieza (`pruebas/tauri`, con sus pruebas) y llegan con «Pieza al día». Se ignora `glib` hasta que Tauri use gtk4.
 - **`empaquetado` 0.2.1 (arreglo):** `publicar.yml` instala Playwright antes de las pruebas rápidas. Sin eso, `correr.sh`
   fallaba en la interfaz y la versión no se publicaba (Alcancía, Esquema y Repasa, al pasar a `host-tauri`).
 - **Pieza nueva `host-tauri` 0.1.0: un solo host para Mac, Windows y Linux** (Rust + Tauri). La misma API que `host-mac` y
