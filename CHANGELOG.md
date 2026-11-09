@@ -1,6 +1,7 @@
 # Cambios
 
 ## Sin publicar
+- **`ia` 0.7.1 (mejora):** `preguntar_vivo(..., escribir=carpeta)` cuenta en vivo los archivos que la IA cambia (`{"t": "escribe"}`).
 - **`actualizaciones` 0.5.0 (mejora): versiones firmadas con Ed25519 en Rust** (rehace #13). Con llaves en `app.json`, la
   app no instala nada sin una firma válida de la llave privada, que vive fuera de GitHub. `llave.sh` crea las llaves.
   **`host-tauri` 0.1.2** suma las dependencias para verificar y **`empaquetado` 0.2.2** firma en `publicar.yml`.

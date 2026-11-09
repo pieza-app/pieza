@@ -442,6 +442,8 @@ def _evento_claude(linea, al_evento):
                 h, e = str(c.get("name") or ""), c["input"]
                 if h == "Read" and isinstance(e.get("file_path"), str):
                     al_evento({"t": "lee", "ruta": e["file_path"][:1000]})
+                elif h in ("Edit", "Write", "MultiEdit") and isinstance(e.get("file_path"), str):
+                    al_evento({"t": "escribe", "ruta": e["file_path"][:1000]})
                 elif h in ("Glob", "Grep") and isinstance(e.get("pattern"), str):
                     al_evento({"t": "busca", "patron": e["pattern"][:200], **({"ruta": e["path"][:1000]} if isinstance(e.get("path"), str) else {})})
     return None
@@ -463,6 +465,18 @@ def _evento_codex(linea, al_evento):
         return
     item = x.get("item") if isinstance(x.get("item"), dict) else x.get("msg") if isinstance(x.get("msg"), dict) else x
     if str(x.get("type") or item.get("type") or "") in ("item.completed", "exec_command_end"):
+        return
+    # Al escribir (workspace-write), Codex cuenta los archivos que cambia en un «file_change» o «patch_apply».
+    cambios = item.get("changes")
+    if isinstance(cambios, list):
+        for ch in cambios[:50]:
+            if isinstance(ch, dict) and isinstance(ch.get("path"), str):
+                al_evento({"t": "escribe", "ruta": ch["path"][:1000]})
+        return
+    if isinstance(cambios, dict):
+        for ruta in list(cambios)[:50]:
+            if isinstance(ruta, str):
+                al_evento({"t": "escribe", "ruta": ruta[:1000]})
         return
     cmd = item.get("command")
     if isinstance(cmd, list):
@@ -489,16 +503,17 @@ def detenido(error):
     return isinstance(error, dict) and error.get("codigo") == "detenido"
 
 
-def preguntar_vivo(prompt, *, ia=None, timeout=600, archivos=(), leer=None, no_leer=(), modelo=None, al_evento=None, detener=None):
-    """Como `preguntar`, pero cuenta lo que la IA va haciendo: `al_evento({"t": "lee" | "busca", …})` por cada archivo que lee o
-    búsqueda que hace (Claude y Codex; Gemini no lo cuenta). `detener()`: si devuelve True, se corta la IA. Devuelve (texto, error)
+def preguntar_vivo(prompt, *, ia=None, timeout=600, archivos=(), leer=None, no_leer=(), modelo=None, al_evento=None, detener=None,
+                   escribir=None):
+    """Como `preguntar`, pero cuenta lo que la IA va haciendo: `al_evento({"t": "lee" | "busca" | "escribe", …})` por cada archivo
+    que lee, búsqueda que hace o archivo que cambia (con `escribir`) (Claude y Codex; Gemini no lo cuenta). `detener()`: si devuelve True, se corta la IA. Devuelve (texto, error)
     con error None o {codigo, plantilla, valores}; codigo "detenido" si se detuvo (ver `detenido(error)`)."""
     ia = ia or elegida()
     error = _errores(ia)
     al_evento = al_evento or (lambda e: None)
     with tempfile.TemporaryDirectory(prefix=f"{nucleo.app()['id']}-ia-") as tmp:
         try:
-            c = _armar(prompt, ia, tmp, archivos=archivos, leer=leer, no_leer=no_leer, modelo=modelo, vivo=True)
+            c = _armar(prompt, ia, tmp, archivos=archivos, leer=leer, no_leer=no_leer, modelo=modelo, vivo=True, escribir=escribir)
             p = subprocess.Popen(c["cmd"], stdin=subprocess.PIPE if c["entrada"] is not None else subprocess.DEVNULL,
                                  stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=tmp, env=c["env"])
         except FileNotFoundError:
