@@ -173,6 +173,29 @@ class IA(AppDePrueba):
         self.assertEqual(argv[argv.index("--allowedTools") + 1], "Read,Glob,Grep")
         self.assertIn("Bash", argv[argv.index("--disallowedTools") + 1])
 
+    def test_claude_escribe_solo_en_la_carpeta_y_sin_terminal(self):
+        carpeta = os.path.join(self.tmp.name, "mi-app")
+        os.makedirs(carpeta)
+        self.preguntar("claude", f", escribir={carpeta!r}")
+        r = self.registro_ia()
+        argv = r["argv"]
+        permitidas = argv[argv.index("--allowedTools") + 1].split(",")
+        self.assertTrue({"Read", "Edit", "Write"} <= set(permitidas))
+        prohibidas = argv[argv.index("--disallowedTools") + 1].split(",")
+        self.assertTrue({"Bash", "WebFetch", "WebSearch", "Task"} <= set(prohibidas))
+        self.assertNotIn("Edit", prohibidas)
+        self.assertEqual(argv[argv.index("--add-dir") + 1], carpeta)
+        self.assertIn(carpeta, r["stdin"])  # se le dice dónde trabaja en el pedido, no como argumento suelto
+        self.assertNotIn(SECRETO, " ".join(argv))
+
+    def test_codex_escribe_en_su_sandbox(self):
+        carpeta = os.path.join(self.tmp.name, "mi-app")
+        os.makedirs(carpeta)
+        self.preguntar("codex", f", escribir={carpeta!r}")
+        argv = self.registro_ia()["argv"]
+        self.assertEqual(argv[argv.index("-s") + 1], "workspace-write")
+        self.assertEqual(argv[argv.index("-C") + 1], carpeta)
+
     def test_codex_solo_lectura(self):
         self.assertIn("listo None", self.preguntar("codex"))
         r = self.registro_ia()

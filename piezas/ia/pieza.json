@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "ia",
- "version": "0.6.3",
+ "version": "0.7.0",
  "estado": "lista",
  "nombre": "Tu IA",
  "icono": "icono.svg",
@@ -101,6 +101,11 @@
  },
  "red_nota": "La app no sale a internet: la IA de la persona se conecta a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
  "cambios": [
+  {
+   "version": "0.7.0",
+   "tipo": "mejora",
+   "resumen": "Escribir en una carpeta (opcional): preguntar(..., escribir=carpeta) deja que la IA edite archivos SOLO ahí, sin terminal, internet ni subagentes. Claude: Read/Glob/Grep/Edit/Write con --permission-mode acceptEdits y --add-dir; Codex: -s workspace-write -C carpeta. Gemini no lo ofrece (puede_escribir() dice si se puede). Quien lo usa revisa después lo que cambió. Sale de la prueba real de Pieza: devolver archivos enteros en JSON tardaba más de 15 minutos por paso."
+  },
   {
    "version": "0.6.3",
    "tipo": "arreglo",

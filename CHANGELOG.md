@@ -1,6 +1,8 @@
 # Cambios
 
 ## Sin publicar
+- **`ia` 0.7.0 (mejora): escribir en una carpeta.** `preguntar(..., escribir=carpeta)` deja que Claude o Codex editen archivos solo
+  ahí, sin terminal ni internet. Sale de la prueba real del programa Pieza.
 - **El catálogo en inglés:** cada `pieza.json` trae `en: {nombre, descripcion}`. La página de Pieza y el programa los
   muestran en inglés. Una prueba revisa que ninguna pieza quede sin inglés.
 - **Pieza nueva `universos` 0.1.0:** mundos que cambian los colores (un tema de «tema») y los textos que la app deja cambiar.

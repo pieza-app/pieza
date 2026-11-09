@@ -11,6 +11,9 @@ de las seis apps:
   estándar o en un archivo de la carpeta temporal (Alcancía).
 - Material opcional (fotos, PDF): se copian a la carpeta temporal y la IA solo puede leer esas copias (Repasa).
 - Revisión a fondo opcional: leer una carpeta, solo lectura y nunca los secretos (Esquema).
+- Escribir opcional (`escribir=carpeta`): la IA edita archivos SOLO dentro de esa carpeta, sin terminal, sin internet ni
+  subagentes (Claude: Read/Glob/Grep/Edit/Write con acceptEdits; Codex: sandbox workspace-write en esa carpeta). Quien la usa
+  revisa después lo que cambió (Pieza: nada de las piezas, y corre las pruebas). Gemini no lo ofrece: `puede_escribir()`.
 - Nunca se quitan protecciones para que un CLI viejo funcione: se pregunta antes qué opciones conoce (`_soporta`). Si no las conoce,
   se usa la forma segura que sí conoce o se falla con un mensaje claro.
 - No recibe las variables de entorno de la app (<ID>_*).
@@ -125,6 +128,16 @@ def puede_leer(ia=None):
         return True
     c = comando(ia)
     return bool(c and _es_agy(c))
+
+
+def puede_escribir(ia=None):
+    """Si la IA sabe editar archivos limitada a una carpeta (`escribir=`): Claude y Codex. Si no, usa una respuesta con los archivos."""
+    ia = ia or elegida()
+    return ia in ("claude", "codex") and bool(comando(ia))
+
+
+#: Lo que sí puede usar Claude al escribir (y nada más: ni terminal, ni internet, ni subagentes).
+ESCRIBE_CLAUDE = ["Read", "Glob", "Grep", "Edit", "Write", "MultiEdit"]
 
 
 def _soporta(cmd, opcion):
@@ -255,7 +268,7 @@ def _codex_json(cmd):
 
 # ── Armar el comando (un solo lugar para todas las protecciones) ─────────────────────────────────────────────────────────────
 
-def _armar(prompt, ia, tmp, *, archivos=(), leer=None, no_leer=(), modelo=None, vivo=False):
+def _armar(prompt, ia, tmp, *, archivos=(), leer=None, no_leer=(), modelo=None, vivo=False, escribir=None):
     """Cómo correr la IA en la carpeta temporal `tmp`: {cmd, entrada, env, salida, formato, comando}. Lo usan `ejecutar` y
     `preguntar_vivo`: las protecciones se arman SOLO aquí. `formato`: "texto", "claude-json" o "codex-json" (en vivo, si el CLI
     sabe contar lo que hace). Lanza FileNotFoundError (no está) o VersionVieja (le falta una protección)."""
@@ -263,6 +276,10 @@ def _armar(prompt, ia, tmp, *, archivos=(), leer=None, no_leer=(), modelo=None, 
     if not cmd0:
         raise FileNotFoundError(IAS[ia][0][0])
     if leer and not (os.path.isdir(leer) and puede_leer(ia)):
+        leer = None
+    if escribir and not (os.path.isdir(escribir) and puede_escribir(ia)):
+        raise ValueError("Esta IA no sabe editar una carpeta: usa puede_escribir() antes.")
+    if escribir:
         leer = None
     entorno = _entorno()
     copias = []
@@ -280,12 +297,17 @@ def _armar(prompt, ia, tmp, *, archivos=(), leer=None, no_leer=(), modelo=None, 
     # se le dice dónde está en el pedido (por la entrada estándar o en un archivo, nunca como argumento).
     if leer:
         prompt = f"La carpeta que puedes leer (solo leer) está en: {leer}\n\n" + prompt
+    if escribir:
+        prompt = (f"La carpeta donde trabajas está en: {escribir}\nPuedes leer y editar archivos SOLO ahí. No tienes terminal.\n\n"
+                  + prompt)
     r = {"entrada": prompt, "env": entorno, "salida": None, "formato": "texto", "comando": cmd0}
 
     if ia == "codex":
         salida = os.path.join(tmp, "respuesta.txt")
         json_ = vivo and _codex_json(cmd0)
-        cmd = [cmd0, "exec", "--skip-git-repo-check", "-s", "read-only", "-C", tmp, "-o", salida, *(["--json"] if json_ else [])]
+        # Al escribir, su sandbox (sin red) solo deja escribir en la carpeta de trabajo.
+        modo, donde = ("workspace-write", escribir) if escribir else ("read-only", tmp)
+        cmd = [cmd0, "exec", "--skip-git-repo-check", "-s", modo, "-C", donde, "-o", salida, *(["--json"] if json_ else [])]
         cmd += [x for c in copias if c.endswith(IMAGENES) for x in ("-i", c)]
         cmd += (["-m", modelo] if modelo else []) + ["-"]
         return {**r, "cmd": cmd, "salida": salida, "formato": "codex-json" if json_ else "texto"}
@@ -311,7 +333,17 @@ def _armar(prompt, ia, tmp, *, archivos=(), leer=None, no_leer=(), modelo=None, 
             raise VersionVieja(obligatoria)
     flujo = vivo and _soporta(cmd0, "stream-json")
     cmd = [cmd0, "-p", "--output-format", *(["stream-json", "--verbose"] if flujo else ["text"]), "--strict-mcp-config"]
-    if leer or copias:
+    if escribir:
+        # Editar SOLO en esa carpeta: sus herramientas de archivos, nunca terminal, internet ni subagentes, ni los secretos.
+        permitidas = [h for h in ESCRIBE_CLAUDE if h in _prohibido(cmd0) or h in ("Read", "Glob", "Grep")]
+        prohibidas = [h for h in _prohibido(cmd0) if h not in ESCRIBE_CLAUDE]
+        cmd += ["--add-dir", escribir, "--allowedTools", ",".join(permitidas),
+                "--disallowedTools", ",".join(prohibidas + _sin_secretos(no_leer))]
+        if _soporta(cmd0, "--permission-mode"):
+            cmd += ["--permission-mode", "acceptEdits"]
+        if _soporta(cmd0, "--tools"):
+            cmd += ["--tools", ",".join(permitidas)]
+    elif leer or copias:
         if leer:
             cmd += ["--add-dir", leer]
         cmd += ["--allowedTools", "Read,Glob,Grep", "--disallowedTools", ",".join(_prohibido(cmd0) + _sin_secretos(no_leer))]
@@ -332,16 +364,17 @@ def _armar(prompt, ia, tmp, *, archivos=(), leer=None, no_leer=(), modelo=None, 
 
 # ── Correr ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
-def ejecutar(prompt, *, ia=None, timeout=600, archivos=(), leer=None, no_leer=(), modelo=None):
+def ejecutar(prompt, *, ia=None, timeout=600, archivos=(), leer=None, no_leer=(), modelo=None, escribir=None):
     """Corre la IA y devuelve un CompletedProcess (stdout = respuesta).
 
     archivos: material que la IA puede leer (se copian a la carpeta temporal como material-N.ext).
     leer: una carpeta que la IA puede LEER entera (revisión a fondo), nunca lo de `no_leer`. Se ignora si la IA no sabe leer.
     modelo: nombre de modelo para el CLI, si la app deja elegirlo.
+    escribir: una carpeta donde la IA puede EDITAR archivos (solo ahí, sin terminal). Antes, `puede_escribir()`.
     """
     ia = ia or elegida()
     with tempfile.TemporaryDirectory(prefix=f"{nucleo.app()['id']}-ia-") as tmp:
-        c = _armar(prompt, ia, tmp, archivos=archivos, leer=leer, no_leer=no_leer, modelo=modelo)
+        c = _armar(prompt, ia, tmp, archivos=archivos, leer=leer, no_leer=no_leer, modelo=modelo, escribir=escribir)
         r = subprocess.run(c["cmd"], input=c["entrada"], stdin=subprocess.DEVNULL if c["entrada"] is None else None, text=True,
                            encoding="utf-8", capture_output=True, timeout=timeout, cwd=tmp, env=c["env"])
         if ia == "claude":
