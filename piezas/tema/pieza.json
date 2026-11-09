@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "tema",
- "version": "0.3.0",
+ "version": "0.4.0",
  "estado": "lista",
  "nombre": "Temas: claro, oscuro y vidrio",
  "icono": "icono.svg",
@@ -55,6 +55,14 @@
  "permisos": {},
  "red": [],
  "cambios": [
+  {
+   "version": "0.4.0",
+   "tipo": "mejora",
+   "resumen": "El estilo nuevo de la familia (el de Pieza): neutros cálidos (fondo #f6f5f2 / #0f1115), radios más amplios (--radio 14 px, --radio-grande 18 px nuevo), títulos h1/h2 firmes y apretados (con :where) y los tokens de la barra lateral oscura, iguales en los dos modos: --barra-lateral, --barra-lateral-2, --barra-lateral-texto, --barra-lateral-suave, --barra-lateral-acento (= --acento-oscuro de la app) y --sobre-barra-lateral-acento. Una app que redefine sus neutros los sigue teniendo.",
+   "migrar": [
+    "Para tomar el estilo nuevo, borra de tu app.css los pares de neutros (--fondo-*, --panel-*, --panel-2-*, --linea-*, --texto-*, --texto-suave-*) y deja solo tu acento. Si no, nada cambia."
+   ]
+  },
   {
    "version": "0.3.0",
    "tipo": "mejora",

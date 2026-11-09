@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "componentes",
- "version": "0.3.1",
+ "version": "0.4.0",
  "estado": "lista",
  "nombre": "Componentes",
  "icono": "icono.svg",
@@ -111,6 +111,14 @@
   "tema": ">=0.2.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.4.0",
+   "tipo": "mejora",
+   "resumen": "El marco de la app con el estilo de Pieza: .pz-marco, .pz-lateral (barra lateral oscura con .pz-marca, .pz-lateral-titulo, .pz-lateral-enlace con aria-current y .pz-lateral-pie; en el celular queda arriba en una fila y .pz-solo-ancho se oculta) y .pz-contenido. Superficies: .pz-tarjeta, .pz-tarjetas, .pz-cifras/.pz-cifra, .pz-oscuro y .pz-zona-oscura (color-scheme oscuro: todos los tokens de adentro se resuelven en oscuro, para la barra propia de una app); .pz-etapas (pasos con .pz-hecha y .pz-actual) y .pz-dos-columnas/.pz-columna-lado. Botones con peso 500 y transición suave. Necesita tema 0.4.0 (tokens --barra-lateral*).",
+   "migrar": [
+    "Opcional: cambia tu barra lateral por .pz-lateral y tus tarjetas por .pz-tarjeta/.pz-cifra para tomar el estilo nuevo."
+   ]
+  },
   {
    "version": "0.3.1",
    "tipo": "arreglo",

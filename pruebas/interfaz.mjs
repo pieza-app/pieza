@@ -117,7 +117,7 @@ const URL_BASE = `http://127.0.0.1:${servidor.address().port}/index.html`;
 const lum = ([r, g, b]) => { const f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
 const contraste = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
 const PARES = [["sobre-rojo", "rojo"], ["sobre-texto", "texto"], ["texto", "fondo"], ["texto", "panel"], ["texto", "panel-2"], ["texto-suave", "fondo"], ["texto-suave", "panel"], ["texto-suave", "panel-2"],
-  ["acento", "panel"], ["acento", "fondo"], ["sobre-acento", "acento"], ["rojo", "fondo"], ["rojo", "panel"], ["verde", "fondo"], ["verde", "panel"], ["fondo", "texto"]];
+  ["acento", "panel"], ["acento", "fondo"], ["barra-lateral-texto", "barra-lateral"], ["barra-lateral-suave", "barra-lateral"], ["barra-lateral-texto", "barra-lateral-2"], ["sobre-barra-lateral-acento", "barra-lateral-acento"], ["sobre-acento", "acento"], ["rojo", "fondo"], ["rojo", "panel"], ["verde", "fondo"], ["verde", "panel"], ["fondo", "texto"]];
 async function colores(page) {
   return page.evaluate((tokens) => {
     const el = document.createElement("i");
@@ -129,7 +129,7 @@ async function colores(page) {
     }
     el.remove();
     return r;
-  }, ["fondo", "panel", "panel-2", "texto", "texto-suave", "acento", "sobre-acento", "rojo", "verde", "sobre-rojo", "sobre-texto"]);
+  }, ["fondo", "panel", "panel-2", "texto", "texto-suave", "acento", "sobre-acento", "rojo", "verde", "sobre-rojo", "sobre-texto", "barra-lateral", "barra-lateral-2", "barra-lateral-texto", "barra-lateral-suave", "barra-lateral-acento", "sobre-barra-lateral-acento"]);
 }
 async function revisarContraste(page, donde) {
   const malos = [];
@@ -262,17 +262,17 @@ await caso("tema: elegido gana al sistema; «sistema» sigue al sistema; ?tema= 
   await page.emulateMedia({ colorScheme: "dark" });
   await abrir(page);
   const fondo = () => page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-  assert.equal(await fondo(), "rgb(16, 20, 27)", "sistema oscuro");
+  assert.equal(await fondo(), "rgb(15, 17, 21)", "sistema oscuro");
   await page.click("#abrir");
   await page.click('[data-pz-tema="claro"]');
   assert.equal(await page.evaluate(() => document.documentElement.dataset.pzModo), "claro");
   assert.equal(await page.evaluate(() => "tema" in document.documentElement.dataset), false, "data-tema queda para la app");
-  assert.equal(await fondo(), "rgb(246, 247, 249)");
+  assert.equal(await fondo(), "rgb(246, 245, 242)");
   assert.equal(await page.locator('[data-pz-tema="claro"]').getAttribute("aria-pressed"), "true");
   await page.click('[data-pz-tema="sistema"]');
   assert.equal(await page.evaluate(() => "pzModo" in document.documentElement.dataset), false);
   await page.emulateMedia({ colorScheme: "light" });
-  assert.equal(await fondo(), "rgb(246, 247, 249)", "sigue al sistema cuando cambia");
+  assert.equal(await fondo(), "rgb(246, 245, 242)", "sigue al sistema cuando cambia");
   const otra = await contexto.newPage();
   await otra.goto(URL_BASE + "?tema=oscuro");
   await otra.waitForFunction(() => window.listo === true);

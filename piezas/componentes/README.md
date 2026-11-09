@@ -81,6 +81,34 @@ los pone al crearse): sin la clase se ve una caja vacía hasta el primer aviso, 
 traducir. Sin `#toast`, la pieza crea `#pz-toast`. Usan `--texto`/`--sobre-texto` y `--rojo`/`--sobre-rojo`: se leen aunque tu
 `--fondo` o `--panel` sean transparentes.
 
+## El marco y las superficies (0.4.0)
+
+El estilo de Pieza para cualquier app: una barra lateral oscura y el contenido al lado. Necesita `tema` 0.4.0.
+
+```html
+<div class="pz-marco">
+  <nav class="pz-lateral" aria-label="Principal">
+    <button class="pz-marca"><img src="logo.svg" alt="">Mi app</button>
+    <button class="pz-boton pz-principal">+ Nueva</button>
+    <p class="pz-lateral-titulo">Tus cosas</p>
+    <button class="pz-lateral-enlace pz-solo-ancho" aria-current="page">Inicio <small>3</small></button>
+    <div class="pz-lateral-pie"><button class="pz-lateral-enlace">Ajustes</button></div>
+  </nav>
+  <main class="pz-contenido"><h1>Título</h1>…</main>
+</div>
+```
+
+| Clase | Qué es |
+|---|---|
+| `.pz-marco`, `.pz-lateral`, `.pz-contenido` | El marco. A 760 px o menos la barra queda arriba en una fila; lo marcado `.pz-solo-ancho` y los `.pz-lateral-titulo` se ocultan. `--pz-lateral-ancho` (240 px) la ensancha. |
+| `.pz-marca`, `.pz-lateral-titulo`, `.pz-lateral-enlace`, `.pz-lateral-pie` | Logo y nombre, títulos de grupo, enlaces (la sección actual con `aria-current`, con su número en `<small>`) y lo de abajo (Tu IA, Ajustes). |
+| `.pz-tarjeta`, `.pz-tarjetas` | Una superficie con borde y su grilla (`ul`). |
+| `.pz-cifras`, `.pz-cifra` | Cifras grandes con su etiqueta: `<p class="pz-cifra"><b>12</b><small>pasos</small></p>`. |
+| `.pz-oscuro` | Un panel oscuro para lo que pasa en vivo o lo que destaca (su `<b>` va en el acento). |
+| `.pz-zona-oscura` | Para la barra propia de una app: oscura en los dos modos. Con `color-scheme: dark`, los tokens de adentro se resuelven en oscuro y `--fondo`/`--panel` pasan a los de la barra lateral: lo de adentro se ve bien sin reglas propias. |
+| `.pz-etapas` | Los pasos de un proceso: `li.pz-hecha`, `li.pz-actual` (con `aria-current="step"`), cada uno con su número en un `<span>`. |
+| `.pz-dos-columnas`, `.pz-columna-lado` | Lo principal y un panel al lado; abajo cuando no cabe. |
+
 ## Pasar una app a esta pieza
 
 En todas: `pieza.py agregar componentes <app>` (trae `i18n` y `tema`), los `<link>`/`<script>` de arriba, y cambiar:
