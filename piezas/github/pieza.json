@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "github",
- "version": "0.2.1",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "Repo listo para la comunidad",
  "icono": "icono.svg",
@@ -36,6 +36,27 @@
   "plantillas/github/dependabot.yml": ".github/dependabot.yml",
   "plantillas/github/workflows/revisar.yml": ".github/workflows/revisar.yml",
   "plantillas/github/workflows/pieza-al-dia.yml": ".github/workflows/pieza-al-dia.yml",
+  "plantillas/github/workflows/wiki.yml": ".github/workflows/wiki.yml",
+  "plantillas/wiki/Home.md": {
+   "destino": "docs/wiki/Home.md",
+   "una_vez": true
+  },
+  "plantillas/wiki/_Sidebar.md": {
+   "destino": "docs/wiki/_Sidebar.md",
+   "una_vez": true
+  },
+  "plantillas/wiki/Instalar.md": {
+   "destino": "docs/wiki/Instalar.md",
+   "una_vez": true
+  },
+  "plantillas/wiki/Primeros-pasos.md": {
+   "destino": "docs/wiki/Primeros-pasos.md",
+   "una_vez": true
+  },
+  "plantillas/wiki/Preguntas-frecuentes.md": {
+   "destino": "docs/wiki/Preguntas-frecuentes.md",
+   "una_vez": true
+  },
   "plantillas/claude/settings.json": ".claude/settings.json",
   "plantillas/claude/agents/revisor.md": {
    "destino": ".claude/agents/{{id}}-revisor.md",
@@ -85,9 +106,19 @@
  },
  "tareas_persona": [
   "Crear la organización <app>-app en GitHub",
-  "Correr pieza.py repo configurar . --aplicar con gh y permisos de admin del repo (topics, Discussions, reporte privado de fallas, aprobar las pruebas de quien aporta, proteger la rama principal, etiquetas)"
+  "Correr pieza.py repo configurar . --aplicar con gh y permisos de admin del repo (topics, Discussions, reporte privado de fallas, aprobar las pruebas de quien aporta, proteger la rama principal, etiquetas)",
+  "Crear la wiki una vez: pestaña «Wiki» → «Create the first page» → «Save» (después se publica sola desde docs/wiki/)"
  ],
  "cambios": [
+  {
+   "version": "0.3.0",
+   "tipo": "mejora",
+   "resumen": "Wiki desde el repo: wiki.yml publica docs/wiki/*.md en la wiki de GitHub en cada cambio (Home.md es la portada, _Sidebar.md el menú). La primera vez llegan cinco páginas de partida (Inicio, Instalar, Primeros pasos, Preguntas frecuentes y el menú) que después son de la app. La wiki se escribe y se revisa por pull request como todo lo demás.",
+   "migrar": [
+    "Crea la wiki una vez: pestaña «Wiki» → «Create the first page» → «Save». Hasta entonces, wiki.yml avisa y no falla.",
+    "Completa docs/wiki/Primeros-pasos.md con los pasos propios de la app."
+   ]
+  },
   {
    "version": "0.2.1",
    "tipo": "arreglo",
