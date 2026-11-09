@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "pagina",
- "version": "0.1.3",
+ "version": "0.1.4",
  "estado": "lista",
  "nombre": "Página pública",
  "icono": "icono.svg",
@@ -88,6 +88,11 @@
   "Mirar docs/img/compartir.png y las capturas antes de subirlas (datos ficticios)"
  ],
  "cambios": [
+  {
+   "version": "0.1.4",
+   "tipo": "mejora",
+   "resumen": "docs/tema.css al día con tema 0.4.0 (neutros cálidos, radios y tokens de la barra lateral)."
+  },
   {
    "version": "0.1.3",
    "tipo": "mejora",

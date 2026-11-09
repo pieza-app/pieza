@@ -51,7 +51,9 @@ document.addEventListener("click", (ev) => { if (tema.manejarClic(ev)) return pi
 | `--sombra` | sombra de lo que flota. **No** va con `light-dark()` (solo acepta colores: con una sombra entera queda en `none`); la pieza la elige por modo con selectores | `--sombra-claro/-oscuro` (sombras enteras; `none` vale) |
 | `--hover`, `--acento-suave`, `--rojo-suave`, `--verde-suave`, `--velo` | derivados con `color-mix()`: **no se redefinen** | — |
 | `--foco` | contorno de `:focus-visible` (= `--acento`) | — |
-| `--radio`, `--radio-chico`, `--fuente`, `--mono` | forma y letra | se redefinen directo |
+| `--barra-lateral`, `--barra-lateral-2`, `--barra-lateral-texto`, `--barra-lateral-suave` | la barra lateral oscura (`.pz-lateral` de «componentes»): iguales en claro y oscuro | se redefinen directo |
+| `--barra-lateral-acento`, `--sobre-barra-lateral-acento` | el acento sobre la barra lateral (= `--acento-oscuro`, que se lee sobre fondo oscuro) | — |
+| `--radio`, `--radio-chico`, `--radio-grande`, `--fuente`, `--mono` | forma y letra (14, 8 y 18 px) | se redefinen directo |
 
 Además conecta las variables de la pieza `bienvenida` (`--bv-acento`, `--bv-linea`, `--bv-panel`, `--bv-texto-suave`): con `tema`
 no hay que definirlas. En navegadores sin `light-dark()` (Safari < 17.5, Chrome < 123) un bloque `@supports not` elige los
@@ -64,6 +66,13 @@ que no sea un color (sombras, tamaños): para eso, los mismos selectores.
 **La ventana nativa** (barra de título, menús, el fondo mientras carga) sigue al sistema aunque se elija claro u oscuro: que la
 siga a la apariencia elegida (`NSWindow.appearance` en Mac, `nativeTheme.themeSource` en Electron) queda para las piezas
 `host-mac` y `host-escritorio` (ver `docs/catalogo.md`). Mientras, la app puede hacerlo con `alCambiar`.
+
+## El estilo de la familia (0.4.0)
+
+Desde 0.4.0 los neutros son los de Pieza: fondo cálido (`#f6f5f2` / `#0f1115`), paneles blancos o grafito, bordes suaves, radios
+de 14 px y títulos firmes. La barra lateral es oscura en los dos modos. Cada app pone **solo su acento**: para tomar el estilo,
+borra de `app.css` los pares de neutros (`--fondo-*`, `--panel-*`, `--panel-2-*`, `--linea-*`, `--texto-*`, `--texto-suave-*`).
+Una app que los deja sigue igual que antes.
 
 ## Nombre viejo en cada app → token nuevo
 

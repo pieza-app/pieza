@@ -1,6 +1,10 @@
 # Cambios
 
 ## Sin publicar
+- **`tema` 0.4.0 y `componentes` 0.4.0 (mejora): el estilo de Pieza para toda la familia.** Neutros cálidos, radios de 14 px,
+  títulos firmes y una barra lateral oscura (tokens `--barra-lateral*`). `componentes` suma el marco (`.pz-marco`, `.pz-lateral`,
+  `.pz-contenido`), `.pz-tarjeta`, `.pz-cifras`, `.pz-oscuro`, `.pz-etapas` y `.pz-dos-columnas`. Cada app pone solo su acento.
+  **`pagina` 0.1.4** copia el `tema.css` nuevo.
 - **`componentes` 0.3.1 (arreglo):** la ventana ya no parpadea mientras se descarga una actualización.
 - **`actualizaciones` 0.5.2 (arreglo):** en Mac, si la app se abrió desde Descargas sin moverla, pide moverla a Aplicaciones en vez de fallar al actualizar.
 - **`ia` 0.7.2 (mejora):** `preguntar_vivo` cuenta los tokens reales que la IA dice haber usado (`{"t": "uso", "entrada", "cache", "salida"}`).
