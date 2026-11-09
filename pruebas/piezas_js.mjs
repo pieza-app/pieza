@@ -1235,6 +1235,8 @@ test("universos: valida igual que Python, registra su tema y da textos con respa
   u.dejar();
   assert.equal(tema.valor, "sistema", "dejar vuelve al tema de antes");
   assert.equal(html.style.p["--acento-claro"], undefined);
+});
+
 // ───────────── mcp (Conectar a tu IA) ─────────────
 const PiezaMCP = require(path.join(BASE, "piezas/mcp/ui/mcp.js"));
 function seccionMCP() {
