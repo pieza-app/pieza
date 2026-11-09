@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "componentes",
- "version": "0.3.0",
+ "version": "0.3.1",
  "estado": "lista",
  "nombre": "Componentes",
  "icono": "icono.svg",
@@ -111,6 +111,11 @@
   "tema": ">=0.2.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.3.1",
+   "tipo": "arreglo",
+   "resumen": "El avance de una actualización cambia solo su fila (texto y barra), sin volver a pintar la ventana: antes parpadeaba cada medio segundo."
+  },
   {
    "version": "0.3.0",
    "tipo": "rompe",

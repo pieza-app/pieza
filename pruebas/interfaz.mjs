@@ -233,6 +233,18 @@ await caso("crearHost en el navegador: probar la IA con la simulación, todo en 
   assert.match(await page.locator(".pz-filas").innerText(), /Codex <i>[\s\S]*Not installed · How to install it/);
   await page.click('[data-pz-act="buscar"]');
   await page.waitForFunction(() => /latest version/.test(document.querySelector(".pz-act").textContent));
+  // El avance de la descarga cambia solo la fila: la ventana no se vuelve a pintar (antes parpadeaba cada medio segundo).
+  const sinParpadeo = await page.evaluate(() => {
+    const u = window.prueba.ui, avance = (pct) => u.actualizacionProgreso({ paso: "1", texto: "Descargando la versión nueva…", valores: {}, total: 3, pct });
+    avance(10);
+    const ventana = document.getElementById("t-aj");
+    avance(55);
+    const r = { misma: ventana === document.getElementById("t-aj"), valor: document.querySelector(".pz-act progress").value };
+    u.actualizacionRevisada({});
+    return r;
+  });
+  assert.ok(sinParpadeo.misma, "el avance no repinta la ventana");
+  assert.equal(sinParpadeo.valor, 55);
   await page.click('[data-pz-comentarios]');
   assert.equal(await page.locator("#pz-t-coment").innerText(), "Send feedback");
   await page.click("[data-pz-coment-enviar]");
