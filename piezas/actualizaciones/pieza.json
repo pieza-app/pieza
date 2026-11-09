@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "actualizaciones",
- "version": "0.5.0",
+ "version": "0.5.1",
  "estado": "lista",
  "nombre": "Actualizaciones",
  "icono": "icono.svg",
@@ -58,6 +58,11 @@
  "permisos": {},
  "red_nota": "Solo pregunta a GitHub por la última versión del repo de la app (al abrir y cada 6 horas) y baja de sus Releases; GitHub redirige la descarga a su almacenamiento. Sin datos de la persona.",
  "cambios": [
+  {
+   "version": "0.5.1",
+   "tipo": "arreglo",
+   "resumen": "Rust: ureq 3 (Agent::config_builder, header, StatusCode, get_uri, into_body). Sin cambios para la persona (#27)."
+  },
   {
    "version": "0.5.0",
    "tipo": "mejora",

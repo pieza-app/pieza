@@ -1,6 +1,7 @@
 # Cambios
 
 ## Sin publicar
+- **`host-tauri` 0.1.3, `actualizaciones` 0.5.1 y `catalogo` 0.3.1 (arreglo):** ureq 3, sha2 0.11 y opener 0.9 (#27). `rfd` queda en 0.15.
 - **`actualizaciones` 0.5.0 (mejora): versiones firmadas con Ed25519 en Rust** (rehace #13). Con llaves en `app.json`, la
   app no instala nada sin una firma válida de la llave privada, que vive fuera de GitHub. `llave.sh` crea las llaves.
   **`host-tauri` 0.1.2** suma las dependencias para verificar y **`empaquetado` 0.2.2** firma en `publicar.yml`.
