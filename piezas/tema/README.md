@@ -1,4 +1,4 @@
-# Pieza «tema» — sistema, claro u oscuro, con un solo juego de tokens
+# Pieza «tema» — sistema, claro, oscuro o vidrio, con un solo juego de tokens
 
 `ui/tema.css` define los colores de toda la interfaz como **tokens** en `:root`. Cada color se escribe una vez, como par
 (`--fondo-claro`, `--fondo-oscuro`), y el token (`--fondo`) lo elige con `light-dark()` según `color-scheme`. `ui/tema.js` pone
@@ -172,3 +172,29 @@ color}`, `:focus-visible` y `color-scheme`, que ya trae la pieza.
 | Tokens nuevos `--sobre-rojo`, `--sobre-texto` | Nada: los usa `componentes` 0.2.0. Si tu app pinta texto sobre `--rojo` o `--texto`, úsalos en vez de `--panel`/`--fondo`. |
 | El anillo de foco no rodea la caja de un diálogo enfocado | Borra tu regla `[aria-modal]:focus-visible { outline: none }` si la tenías. |
 | `pieza.py agregar … --sin-config=tema` | Si tu app no ofrece «Apariencia» (Minuta), saca `tema` de `app.json` → `config`; `actualizar` no lo vuelve a sumar si la agregaste con el flag (o anota `"sin_config": ["tema"]` en `piezas.json` → `tema`). |
+
+## Vidrio (0.3.0)
+
+1. «Vidrio» sigue al sistema: claro u oscuro.
+2. `tema.js` pone `<html data-pz-estilo="vidrio">`.
+3. `tema.css` pone luces de color detrás (`body`) y hace translúcidos `--panel`, `--panel-2` y `--linea`.
+4. Lo que flota se esmerila solo: diálogos y avisos de «componentes», `[role=dialog]`, `header`, `nav`, `aside` y `fieldset`.
+   Usa la clase `.pz-vidrio` para esmerilar algo propio.
+5. Con «reducir transparencia» del sistema, los paneles quedan sólidos.
+
+`tema.estilo` dice `"vidrio"` o `"plano"`. `tema.resuelto()` sigue diciendo el modo (`"claro"` u `"oscuro"`).
+
+## Temas de afuera
+
+Un universo o la comunidad suman temas con `tema.registrar()`:
+
+```js
+tema.registrar({ id: "mar", nombre: "Mar", base: "oscuro", colores: { acento: "#33aaff", fondo: "#001122" } });
+```
+
+- `id`: minúsculas, números y guion. No puede ser `sistema`, `claro`, `oscuro` ni `vidrio`.
+- `base`: `claro`, `oscuro` o `vidrio`.
+- `colores`: solo los tokens de `PiezaTema.TOKENS`, en `#rrggbb`. Lo demás se descarta.
+- Los colores se ponen con CSSOM (`style.setProperty`) en los dos pares del token. Nunca como CSS escrito.
+- El selector «Apariencia» suma el tema con su nombre escapado. Guardarlo es de la app: `config.tema` solo acepta los cuatro de
+  la pieza. Un universo guarda el suyo en su propia clave.

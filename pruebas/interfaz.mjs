@@ -295,6 +295,31 @@ await caso("tema 0.2: la sombra es válida en claro y oscuro, y un closest(\"[da
   assert.equal(await page.evaluate(() => window.prueba.E.temaApp), null, "fuera de él, no encuentra <html>");
 });
 
+await caso("tema 0.3: vidrio sigue al sistema y esmerila; un tema registrado solo cambia colores válidos", async (page) => {
+  await page.emulateMedia({ colorScheme: "dark" });
+  await abrir(page, "?tema=vidrio");
+  const r = await page.evaluate(() => {
+    const t = window.prueba.tema, h = document.documentElement;
+    const antes = [t.valor, t.resuelto(), t.estilo, h.dataset.pzEstilo, h.dataset.pzModo ?? null];
+    const malo = t.registrar({ id: "malo", nombre: "Malo", colores: { fondo: "red;}body{x:y", texto: "url(x)" } });
+    const bueno = t.registrar({ id: "mar", nombre: "Mar <b>", base: "oscuro", colores: { acento: "#33AAFF", fondo: "#001122", otro: "#ffffff" } });
+    t.aplicar("mar");
+    const despues = [t.valor, t.resuelto(), t.estilo, h.dataset.pzEstilo ?? null, h.style.getPropertyValue("--acento-oscuro"), h.style.getPropertyValue("--otro-oscuro")];
+    t.aplicar("claro");
+    return { antes, malo, bueno: Object.keys(bueno.colores).sort(), despues, limpio: h.style.getPropertyValue("--acento-oscuro"), html: t.selectorHTML() };
+  });
+  assert.deepEqual(r.antes, ["vidrio", "oscuro", "vidrio", "vidrio", null], "vidrio: modo del sistema + data-pz-estilo");
+  assert.equal(r.malo, null, "un tema sin colores válidos no entra");
+  assert.deepEqual(r.bueno, ["acento", "fondo"], "solo tokens conocidos en #rrggbb");
+  assert.deepEqual(r.despues, ["mar", "oscuro", "plano", null, "#33aaff", ""]);
+  assert.equal(r.limpio, "", "al volver a un tema de la pieza, se quitan los colores del registrado");
+  assert.ok(r.html.includes("Mar &#60;b&#62;") && r.html.includes('data-pz-tema="vidrio"'), "el selector escapa el nombre y trae Vidrio");
+  await page.evaluate(() => window.prueba.tema.aplicar("vidrio"));
+  await page.click("#abrir");
+  const filtro = await page.evaluate(() => getComputedStyle(document.querySelector(".pz-dialogo")).backdropFilter);
+  assert.ok(/blur/.test(filtro), `el diálogo se esmerila en vidrio (${filtro})`);
+});
+
 await caso("componentes 0.2: envolver: foco al título, se queda en el campo al repintar, el paso nuevo lo lleva al título; error rojo; sin anillo en la caja", async (page) => {
   await abrir(page);
   await page.click("#abrir-propio");

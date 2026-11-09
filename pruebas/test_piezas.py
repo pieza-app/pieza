@@ -691,7 +691,7 @@ class PiezasDeInterfaz(unittest.TestCase):
         lock = json.load(open(os.path.join(self.app, "piezas.json")))["piezas"]
         self.assertEqual(sorted(lock), ["componentes", "i18n", "tema"])
         config = json.load(open(os.path.join(self.app, "app.json")))["config"]
-        self.assertEqual(config["tema"], ["sistema", "claro", "oscuro"])
+        self.assertEqual(config["tema"], ["sistema", "claro", "oscuro", "vidrio"])
         self.assertIn("--sin-config=tema", r.stdout, "avisa cuándo no hace falta «tema»")
         en = json.load(open(os.path.join(self.app, "ui", "idiomas", "en.json")))["textos"]
         self.assertEqual(en["Usar y probar"], "Use and test")
@@ -787,7 +787,7 @@ class PiezasDeInterfaz(unittest.TestCase):
 
     def test_sin_config_al_actualizar_y_sobre_una_pieza_ya_instalada(self):
         self.assertEqual(correr(PIEZA, "agregar", "componentes", self.app).returncode, 0)
-        self.assertEqual(json.load(open(os.path.join(self.app, "app.json")))["config"]["tema"], ["sistema", "claro", "oscuro"])
+        self.assertEqual(json.load(open(os.path.join(self.app, "app.json")))["config"]["tema"], ["sistema", "claro", "oscuro", "vidrio"])
         r = correr(PIEZA, "agregar", "tema", self.app, "--sin-config=tema")
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("ya estaba", r.stdout)

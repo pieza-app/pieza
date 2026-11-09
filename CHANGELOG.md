@@ -1,6 +1,11 @@
 # Cambios
 
 ## Sin publicar
+- **`tema` 0.3.0 (mejora): tema «Vidrio».** Sigue al sistema (claro u oscuro), con luces de color detrás y paneles
+  esmerilados. Con «reducir transparencia», los paneles quedan sólidos. Nuevo `tema.registrar({id, nombre, base, colores})`
+  para temas de afuera (universos, comunidad): solo `#rrggbb` de los tokens conocidos. `config.tema` suma `vidrio`.
+- **`pagina` 0.1.3 (mejora):** `docs/tema.css` al día con `tema` 0.3.0.
+- **Página de Pieza en vidrio:** tarjetas esmeriladas, luces de color y barra flotante. El programa ya crea apps.
 - **`github` 0.3.1 y `esqueleto` 0.2.1 (arreglo):** el `AGENTS.md` y `ui/app.js` que genera `pieza.py crear` describen la app de
   `host-tauri`. Antes hablaban de `app/` (Swift) y de Electron. `crear` ya no pide un ícono `.icns` en `app/`.
 - **El programa Pieza:** el plan está en `docs/programa.md`. La app vive en `pieza-app/estudio`.
