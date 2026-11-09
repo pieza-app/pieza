@@ -1,4 +1,4 @@
-// {{nombre}}: la interfaz. La misma en Mac (WKWebView), Windows y Linux (Electron) y en el navegador (vista previa con demo.json).
+// {{nombre}}: la interfaz. La misma en Mac, Windows y Linux (host-tauri, con el WebView del sistema) y en el navegador (vista previa con demo.json).
 // La app manda el estado con window.{{nombre_ascii}}.estado(json); la interfaz pide cosas con host.enviar(accion, datos).
 // Empezó con «pieza.py crear» (pieza «esqueleto» de Pieza): desde ahí es de la app. Lo marcado «La app:» es lo que falta escribir.
 // Las piezas de interfaz (host.js, i18n.js, tema.*, componentes.*, bienvenida.*) no se editan aquí: ver AGENTS.md → «Piezas».

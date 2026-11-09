@@ -954,8 +954,7 @@ def crear(app, aid, nombre, plataformas, extra=(), repo=None, datos="sistema"):
     print("  2. Lo propio: reemplazar el ejemplo (ui/app.js, bin/ejemplo.py, la acción «ejemplo» de app.json, ui/demo.json,"
           " pruebas/test_app.py e interfaz.mjs) por la app; cada texto nuevo con su inglés en ui/idiomas/en.json.")
     print("  3. app.json → empaquetado (descripcion, categoria) y los íconos (docs/favicon.svg"
-          + (f", app/{plantillas._ascii(nombre)}.icns" if "mac" in plataformas else "")
-          + (", escritorio/iconos/" if set(plataformas) & {"windows", "linux"} else "") + ").")
+          + (", escritorio/iconos/" if set(plataformas) & {"mac", "windows", "linux"} else "") + ").")
     print("  4. docs/pagina.json completo → pieza.py generar . pagina; después bash pruebas/correr.sh en verde.")
     print("\nLE TOCA A LA PERSONA:")
     for t in f["tareas_persona"]:

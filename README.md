@@ -63,6 +63,7 @@ python3 herramientas/pieza.py actualizar ~/MiApp           # trae lo nuevo sin p
 ## Más información
 
 - [Wiki](https://github.com/pieza-app/pieza/wiki): guías paso a paso.
+- [El programa Pieza](docs/programa.md): el plan de la app de escritorio que crea apps paso a paso.
 - [El enchufe](docs/enchufe.md): cómo se conecta una pieza (contrato y reglas de seguridad).
 - [Catálogo y plan](docs/catalogo.md): qué hay y qué viene.
 - [Crear una app nueva](skills/lanzar-proyecto-open-source/SKILL.md): el flujo completo, con entrevista y ficha.
