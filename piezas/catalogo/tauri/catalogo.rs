@@ -16,6 +16,7 @@ use regex::Regex;
 use serde_json::{json, Map, Value};
 use sha2::{Digest, Sha256};
 use std::collections::HashMap;
+use ureq::ResponseExt;
 use std::io::Read;
 use std::sync::Mutex;
 use std::time::Duration;
@@ -126,17 +127,23 @@ impl Catalogo {
         if u.scheme() != "https" || u.host_str() != Some(HOST) || !u.path().starts_with(&format!("/{}/{}/", self.repo, self.rama)) || u.query().is_some() || u.fragment().is_some() {
             return Err(false);
         }
-        let agente = ureq::AgentBuilder::new().redirects(0).https_only(true).timeout_connect(Duration::from_secs(15)).timeout_read(Duration::from_secs(60)).build();
-        let r = agente.get(u.as_str()).set("User-Agent", &self.agente).set("Cache-Control", "no-store").call().map_err(|_| false)?;
-        if r.status() != 200 || url::Url::parse(r.get_url()).ok().and_then(|x| x.host_str().map(String::from)).as_deref() != Some(HOST) {
+        let agente: ureq::Agent = ureq::Agent::config_builder()
+            .max_redirects(0)
+            .https_only(true)
+            .timeout_connect(Some(Duration::from_secs(15)))
+            .timeout_recv_response(Some(Duration::from_secs(60)))
+            .build()
+            .into();
+        let r = agente.get(u.as_str()).header("User-Agent", &self.agente).header("Cache-Control", "no-store").call().map_err(|_| false)?;
+        if r.status().as_u16() != 200 || r.get_uri().host() != Some(HOST) {
             return Err(false);
         }
-        if r.header("content-length").and_then(|x| x.parse::<u64>().ok()).is_some_and(|n| n > maximo) {
+        if r.headers().get("content-length").and_then(|x| x.to_str().ok()).and_then(|x| x.parse::<u64>().ok()).is_some_and(|n| n > maximo) {
             return Err(true);
         }
         // Se lee de a pedazos y se corta apenas pasa del máximo (un archivo enorme nunca llega entero a la memoria).
         let mut b = Vec::new();
-        r.into_reader().take(maximo + 1).read_to_end(&mut b).map_err(|_| false)?;
+        r.into_body().into_reader().take(maximo + 1).read_to_end(&mut b).map_err(|_| false)?;
         if b.len() as u64 > maximo {
             return Err(true);
         }

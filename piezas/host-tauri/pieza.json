@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "host-tauri",
- "version": "0.1.2",
+ "version": "0.1.3",
  "estado": "lista",
  "nombre": "App de Mac, Windows y Linux",
  "icono": "icono.svg",
@@ -142,6 +142,11 @@
   "Opcional: Apple Developer (USD 99/año) para firmar y que macOS no advierta"
  ],
  "cambios": [
+  {
+   "version": "0.1.3",
+   "tipo": "arreglo",
+   "resumen": "Cargo.toml con ureq 3, sha2 0.11 y opener 0.9 (#27)."
+  },
   {
    "version": "0.1.2",
    "tipo": "mejora",

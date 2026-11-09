@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "catalogo",
- "version": "0.3.0",
+ "version": "0.3.1",
  "estado": "lista",
  "nombre": "Catálogo de la comunidad",
  "icono": "icono.svg",
@@ -130,6 +130,11 @@
   "nucleo": ">=0.7.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.3.1",
+   "tipo": "arreglo",
+   "resumen": "Rust: ureq 3 (sin redirecciones, solo https y el mismo dominio, igual que antes) (#27)."
+  },
   {
    "version": "0.3.0",
    "tipo": "mejora",
