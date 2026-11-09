@@ -12,7 +12,7 @@ dónde se toma la pieza (la mejor versión) y qué se le suma de las otras.
 | Pieza | Versión | Qué es | Tomada de |
 |---|---|---|---|
 | `nucleo` | 0.7.1 | `app.json`, carpeta de datos, config validada, escritura atómica, `ruta_en`, contrato de scripts | Esquema `bin/comun.py` + Alcancía/Repasa |
-| `ia` | 0.7.0 | La IA de la persona con su cuenta, segura; en vivo (lo que lee y «Detener») | Esquema `bin/ia.py` + `ia_vivo.py` + Alcancía (pedido en archivo) + Repasa (material) |
+| `ia` | 0.7.1 | La IA de la persona con su cuenta, segura; en vivo (lo que lee y «Detener») | Esquema `bin/ia.py` + `ia_vivo.py` + Alcancía (pedido en archivo) + Repasa (material) |
 | `i18n` | 0.3.1 | `T`/`Tp`/`Thtml`/`tr`/`traducirDOM`, paquetes de idioma validados | Minuta (`tr`) + Esquema (`T` que escapa, `traducirDOM`) + Alcancía (`Thtml`) + Graba (prioridad) |
 | `bienvenida` | 0.4.1 | Primer uso por pasos, el idioma siempre primero; cada pieza suma su paso | Repasa (teclas 1/2) + Esquema (avisos que esperan) + Graba (flechas) + Alcancía |
 | `actualizaciones` | 0.5.1 | Releases del propio repo, `.sha256` obligatorio, Mac (target propio) y Electron | Esquema + Repasa (URL sin puerto ni `..`, PATH fijo, textos que traduce la interfaz) |
