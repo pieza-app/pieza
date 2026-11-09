@@ -1,5 +1,7 @@
 # Dependabot: avisa cuando hay versiones nuevas de las actions (fijadas por SHA) y abre un pull request para revisarlas.
-# Pieza no tiene paquetes de npm ni de pip: solo biblioteca estándar.
+# Pieza no tiene paquetes de npm ni de pip: solo biblioteca estándar. Sí tiene crates: los de «host-tauri» (pruebas/tauri).
+# Al juntar un PR de crates, sube las mismas versiones en piezas/host-tauri/plantillas/tauri/Cargo.toml: las apps las
+# reciben de ahí con «Pieza al día» (en las apps, Dependabot solo abre PR de seguridad).
 # `cooldown`: espera unos días antes de proponer una versión recién publicada; si una action fue secuestrada, casi siempre se
 # descubre y se retira en ese plazo. Las alertas de seguridad no esperan. Nada se junta solo: cada PR se revisa como cualquier aporte.
 # plantillas/pieza-al-dia.yml no está en .github/workflows, así que Dependabot no lo ve: pruebas/correr.sh exige que use las
@@ -13,3 +15,14 @@ updates:
     groups:
       actions: { patterns: ["*"] }
     commit-message: { prefix: "Actions" }
+  - package-ecosystem: cargo
+    directory: /pruebas/tauri
+    schedule: { interval: weekly }
+    cooldown: { default-days: 7, semver-major-days: 30 }
+    open-pull-requests-limit: 5
+    ignore:
+      # glib 0.18 llega con Tauri en Linux (gtk3). La versión arreglada (0.20) necesita gtk4: llega cuando Tauri cambie.
+      - dependency-name: glib
+    groups:
+      crates: { patterns: ["*"] }
+    commit-message: { prefix: "Crates" }

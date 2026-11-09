@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "github",
- "version": "0.2.0",
+ "version": "0.2.1",
  "estado": "lista",
  "nombre": "Repo listo para la comunidad",
  "icono": "icono.svg",
@@ -88,6 +88,11 @@
   "Correr pieza.py repo configurar . --aplicar con gh y permisos de admin del repo (topics, Discussions, reporte privado de fallas, aprobar las pruebas de quien aporta, proteger la rama principal, etiquetas)"
  ],
  "cambios": [
+  {
+   "version": "0.2.1",
+   "tipo": "arreglo",
+   "resumen": "dependabot.yml: en las apps, Dependabot ya no abre PR de versiones nuevas de los crates (open-pull-requests-limit: 0); solo los de seguridad. Los crates son de «host-tauri»: suben en Pieza, con sus pruebas, y llegan con «Pieza al día». Ignora glib: la versión arreglada necesita gtk4, que Tauri todavía no usa. Antes, los PR agrupados (ureq 3, sha2 0.11, rfd 0.17, opener 0.9) rompían la compilación."
+  },
   {
    "version": "0.2.0",
    "tipo": "mejora",
