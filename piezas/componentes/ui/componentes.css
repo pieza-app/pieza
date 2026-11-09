@@ -97,8 +97,13 @@
      <div class="pz-lateral-pie">…</div></nav>
    <main class="pz-contenido">…</main></div> */
 .pz-marco { display: flex; min-height: 100vh; min-height: 100dvh; }
-.pz-lateral { flex: none; width: var(--pz-lateral-ancho, 240px); display: flex; flex-direction: column; gap: 4px; padding: 18px 12px;
-  background: var(--barra-lateral); color: var(--barra-lateral-texto); color-scheme: dark; overflow-y: auto; }
+/* Una zona oscura en los dos modos (la barra lateral, el panel oscuro, o la barra propia de una app con .pz-zona-oscura): con
+   color-scheme: dark, todos los tokens de «tema» de adentro se resuelven en oscuro (texto, líneas, acento, campos, botones), y
+   fondo y paneles pasan a los de la barra lateral. Lo de la app que va adentro se ve bien sin reglas propias. */
+.pz-lateral, .pz-oscuro, .pz-zona-oscura { color-scheme: dark; --fondo: var(--barra-lateral); --panel: var(--barra-lateral-2);
+  --panel-2: var(--barra-lateral); --texto: var(--barra-lateral-texto); --texto-suave: var(--barra-lateral-suave);
+  --hover: color-mix(in srgb, var(--barra-lateral-texto) 9%, transparent); background: var(--barra-lateral); color: var(--texto); }
+.pz-lateral { flex: none; width: var(--pz-lateral-ancho, 240px); display: flex; flex-direction: column; gap: 4px; padding: 18px 12px; overflow-y: auto; }
 .pz-lateral :focus-visible { outline-color: var(--barra-lateral-acento); }
 .pz-lateral .pz-boton:not(.pz-principal) { background: var(--barra-lateral-2); border-color: transparent; color: var(--barra-lateral-texto); }
 .pz-lateral .pz-boton.pz-principal { background: var(--barra-lateral-acento); border-color: var(--barra-lateral-acento); color: var(--sobre-barra-lateral-acento); }
@@ -132,7 +137,7 @@
 .pz-cifra { display: grid; gap: 2px; padding: 14px 16px; background: var(--panel); border: 1px solid var(--linea); border-radius: var(--radio); }
 .pz-cifra b { font-size: 26px; line-height: 1.15; font-weight: 700; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 .pz-cifra small { color: var(--texto-suave); font-size: 13px; }
-.pz-oscuro { padding: 16px 18px; border-radius: var(--radio-grande); background: var(--barra-lateral); color: var(--barra-lateral-texto); color-scheme: dark; }
+.pz-oscuro { padding: 16px 18px; border-radius: var(--radio-grande); }
 .pz-oscuro small, .pz-oscuro .pz-ayuda { color: var(--barra-lateral-suave); }
 .pz-oscuro b { color: var(--barra-lateral-acento); }
 

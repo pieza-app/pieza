@@ -105,6 +105,7 @@ El estilo de Pieza para cualquier app: una barra lateral oscura y el contenido a
 | `.pz-tarjeta`, `.pz-tarjetas` | Una superficie con borde y su grilla (`ul`). |
 | `.pz-cifras`, `.pz-cifra` | Cifras grandes con su etiqueta: `<p class="pz-cifra"><b>12</b><small>pasos</small></p>`. |
 | `.pz-oscuro` | Un panel oscuro para lo que pasa en vivo o lo que destaca (su `<b>` va en el acento). |
+| `.pz-zona-oscura` | Para la barra propia de una app: oscura en los dos modos. Con `color-scheme: dark`, los tokens de adentro se resuelven en oscuro y `--fondo`/`--panel` pasan a los de la barra lateral: lo de adentro se ve bien sin reglas propias. |
 | `.pz-etapas` | Los pasos de un proceso: `li.pz-hecha`, `li.pz-actual` (con `aria-current="step"`), cada uno con su número en un `<span>`. |
 | `.pz-dos-columnas`, `.pz-columna-lado` | Lo principal y un panel al lado; abajo cuando no cabe. |
 
