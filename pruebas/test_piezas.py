@@ -401,7 +401,7 @@ class MCP(AppDePrueba):
         d = json.load(open(ruta))
         self.assertEqual(d["mcpServers"]["otro"], original["mcpServers"]["otro"])
         self.assertEqual(d["preferencia"], 1)
-        self.assertEqual(d["mcpServers"]["prueba"]["args"], [os.path.join(self.app, "bin", "mcp_servidor.py")])
+        self.assertEqual([os.path.realpath(x) for x in d["mcpServers"]["prueba"]["args"]], [os.path.realpath(os.path.join(self.app, "bin", "mcp_servidor.py"))])
         self.assertEqual(json.load(open(ruta + ".antes-de-prueba")), original)
         c = {x["id"]: x for x in r["clientes"]}["claude_desktop"]
         self.assertEqual((c["instalado"], c["conectado"], c["al_dia"]), (True, True, True))
@@ -411,7 +411,8 @@ class MCP(AppDePrueba):
         d["mcpServers"]["prueba"]["args"] = ["/ruta/vieja/mcp_servidor.py"]
         json.dump(d, open(ruta, "w"))
         self.assertEqual(self.conectar("reparar")["arreglados"], ["claude_desktop"])
-        self.assertEqual(json.load(open(ruta))["mcpServers"]["prueba"]["args"], [os.path.join(self.app, "bin", "mcp_servidor.py")])
+        self.assertEqual([os.path.realpath(x) for x in json.load(open(ruta))["mcpServers"]["prueba"]["args"]],
+                         [os.path.realpath(os.path.join(self.app, "bin", "mcp_servidor.py"))])
         r = self.conectar("quitar", "claude_desktop")
         self.assertTrue(r["ok"])
         self.assertEqual(json.load(open(ruta))["mcpServers"], original["mcpServers"])
