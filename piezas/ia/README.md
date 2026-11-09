@@ -18,7 +18,7 @@ if error:
 | `elegida()` / `nombre(ia)` | La IA de la config / su nombre visible |
 | `preguntar(prompt, *, ia, timeout, archivos, leer, no_leer, modelo)` | `(texto, None)` o `("", {codigo, valores})` |
 | `ejecutar(...)` | El `CompletedProcess`, para quien necesite más control |
-| `preguntar_vivo(prompt, *, ia, timeout, archivos, leer, no_leer, modelo, al_evento, detener)` | Como `preguntar`, contando en vivo lo que lee (`al_evento({"t": "lee", "ruta"})`, `{"t": "busca", "patron"}`) y cortando si `detener()` da True (código `detenido`) |
+| `preguntar_vivo(prompt, *, ia, timeout, archivos, leer, no_leer, modelo, al_evento, detener, escribir)` | Como `preguntar`, contando en vivo lo que lee (`al_evento({"t": "lee", "ruta"})`, `{"t": "busca", "patron"}`, con `escribir` también `{"t": "escribe", "ruta"}`, y al final `{"t": "uso", "entrada", "cache", "salida"}` con los tokens reales) y cortando si `detener()` da True (código `detenido`) |
 | `detenido(error)` | Si el error es que la persona detuvo la IA (no es una falla) |
 | `probar(ia)` | `{ia, ok, codigo?, error?}` |
 

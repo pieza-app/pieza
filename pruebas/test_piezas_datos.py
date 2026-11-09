@@ -865,6 +865,23 @@ class IAVivo(App):
         self.assertEqual(ev, [{"t": "escribe", "ruta": "/app/bin/recetas.py"}, {"t": "escribe", "ruta": "/app/ui/app.js"},
                               {"t": "escribe", "ruta": "/app/README.md"}])
 
+    def test_eventos_de_uso(self):
+        ev = self.py("""
+            import json, ia
+            ev = []
+            r = ia._evento_claude(json.dumps({"type": "result", "result": "listo", "usage": {
+                "input_tokens": 120, "cache_creation_input_tokens": 3000, "cache_read_input_tokens": 45000,
+                "output_tokens": 900}}), ev.append)
+            ia._evento_codex(json.dumps({"type": "turn.completed", "usage": {
+                "input_tokens": 5000, "cached_input_tokens": 4000, "output_tokens": 300}}), ev.append)
+            ia._evento_claude(json.dumps({"type": "result", "result": "", "usage": {"input_tokens": "mucho", "output_tokens": -3}}),
+                              ev.append)
+            print(json.dumps([r, ev]))
+            """)
+        self.assertEqual(ev[0], ["listo", False])
+        self.assertEqual(ev[1], [{"t": "uso", "entrada": 3120, "cache": 45000, "salida": 900},
+                                 {"t": "uso", "entrada": 1000, "cache": 4000, "salida": 300}])
+
     def test_sin_aviso_de_multiedit_y_sin_dejar_de_prohibir(self):
         material = os.path.join(self.tmp.name, "foto.png")
         open(material, "wb").write(b"x")
