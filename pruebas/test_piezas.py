@@ -389,7 +389,9 @@ class MCP(AppDePrueba):
         self.assertEqual(r[2]["result"]["structuredContent"], {"n": 1})
 
     def test_conectar_claude_de_escritorio_sin_romper_su_configuracion(self):
-        carpeta = os.path.join(self.tmp.name, ".config", "Claude")
+        # Donde la busca mcp_conectar.py en cada sistema (en el Mac, Library/Application Support).
+        partes = ("Library", "Application Support", "Claude") if sys.platform == "darwin" else (".config", "Claude")
+        carpeta = os.path.join(self.tmp.name, *partes)
         os.makedirs(carpeta)
         ruta = os.path.join(carpeta, "claude_desktop_config.json")
         original = {"mcpServers": {"otro": {"command": "node", "args": ["x.js"]}}, "preferencia": 1}
@@ -434,8 +436,9 @@ class MCP(AppDePrueba):
         self.assertTrue(r["ok"], r)
         argv = self.registro_ia()["argv"]
         self.assertEqual(argv[1:6], ["mcp", "add", "--scope", "user", "prueba"])
-        self.assertEqual(argv[-1], os.path.join(self.app, "bin", "mcp_servidor.py"))
-        self.assertEqual(self.registro_ia()["cwd"], self.tmp.name)
+        real = os.path.realpath  # en el Mac, /var es /private/var
+        self.assertEqual(real(argv[-1]), real(os.path.join(self.app, "bin", "mcp_servidor.py")))
+        self.assertEqual(real(self.registro_ia()["cwd"]), real(self.tmp.name))
         r = self.conectar("conectar", "codex")
         self.assertEqual(self.registro_ia()["argv"][1:4], ["mcp", "add", "prueba"])
         salida = os.path.join(self.tmp.name, "s.json")
