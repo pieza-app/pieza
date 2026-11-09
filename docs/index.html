@@ -65,7 +65,7 @@
       <h1 data-t="h1">Arma tu app por módulos, como un rompecabezas.</h1>
       <p class="bajada" data-t="bajada2">Eliges para qué sistemas es tu app, cuentas tu idea y Pieza te guía paso a paso. Cada pieza es un módulo ya probado: idiomas, tu IA, actualizaciones seguras… Lo ya hecho no gasta tokens de tu IA, y cada app nueva deja piezas para la siguiente.</p>
       <div class="acciones">
-        <a class="boton" href="#empezar" data-t="b_bajar">Descargar Pieza</a>
+        <a class="boton" id="bajar-arriba" href="#empezar" data-t="b_bajar">Descargar Pieza</a>
         <a class="boton secundario" href="app/" data-t="b_probar">Probar en el navegador</a>
       </div>
       <div class="cifras" aria-live="polite">
@@ -163,7 +163,11 @@
       <div>
         <h3 data-t="prog_t">Descarga el programa Pieza</h3>
         <p data-t="prog_p">Para Mac, Windows y Linux. Te guía paso a paso: los sistemas, tu idea, las piezas, la ficha, el plan y tu app creada.</p>
-        <p class="descargas"><a class="boton" href="https://github.com/pieza-app/estudio/releases/latest" data-t="prog_bajar">Descargar</a><a class="boton secundario" href="app/" data-t="b_probar">Probar en el navegador</a></p>
+        <p class="descargas"><a class="boton" id="bajar-programa" href="#sistemas-pieza" data-t="prog_bajar">Descargar</a><a class="boton secundario" href="app/" data-t="b_probar">Probar en el navegador</a></p>
+        <p class="sistemas-pieza" id="sistemas-pieza"><span data-t="prog_para">Para:</span>
+          <a data-so="mac" href="https://github.com/pieza-app/estudio/releases/latest/download/Pieza-macOS.zip">Mac <small data-t="so_mac">(Apple Silicon, macOS 15 o posterior)</small></a>
+          <a data-so="windows" href="https://github.com/pieza-app/estudio/releases/latest/download/Pieza-Windows.exe">Windows <small data-t="so_win">(Windows 10 u 11, 64 bits)</small></a>
+          <a data-so="linux" href="https://github.com/pieza-app/estudio/releases/latest/download/Pieza-Linux.AppImage">Linux <small data-t="so_linux">(AppImage para x86_64)</small></a></p>
         <p class="nota" data-t="prog_nota">Tu IA arma el plan y hace lo propio de tu app, paso a paso o todo automático. Ves los tokens que gasta en cada paso.</p>
       </div>
     </div>
