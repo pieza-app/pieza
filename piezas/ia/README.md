@@ -74,3 +74,19 @@ con «Permission deny rule … matches no known tool», que se recuerdan en `<da
 `ia.preguntar_vivo(prompt, timeout=…, ia=…, leer=…, no_leer=…, al_evento=…, detener=…)` (todo con nombre; `ia_` pasa a `ia`),
 `ia_vivo.detenido` → `ia.detenido`, `ia_vivo.frase` → `ia.frase` (ahora suma la `ayuda` de `app.json` si la hay) y
 `ia_vivo.ERRORES` → `ia.ERRORES` (trae `detenido`). Las IA falsas de sus pruebas siguen sirviendo: con `--version` o sin él.
+
+## Escribir en una carpeta (0.7.0)
+
+Para que la IA cree o cambie archivos de un proyecto (el programa Pieza lo usa en cada paso):
+
+```python
+if ia.puede_escribir():
+    texto, error = ia.preguntar(pedido, escribir="/ruta/de/la/app", timeout=1800)
+```
+
+- La IA lee y edita archivos **solo** en esa carpeta. No tiene terminal, internet ni subagentes.
+- Claude: `Read`, `Glob`, `Grep`, `Edit` y `Write`, con `--permission-mode acceptEdits` y `--add-dir`. Lo demás va prohibido.
+- Codex: su sandbox `workspace-write` en esa carpeta (sin red).
+- Gemini no lo ofrece: `puede_escribir()` devuelve `False`. Pide los archivos en la respuesta.
+- La IA sigue corriendo en una carpeta temporal: no carga la configuración ni los hooks del proyecto (Claude).
+- **Revisa lo que cambió** antes de confiar en el resultado. Pieza revierte los archivos de piezas y corre las pruebas.
