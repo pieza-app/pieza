@@ -12,6 +12,7 @@
     construccion: "Under construction: we're still extracting the pieces from the family apps.", construccion_a: "Help extract the missing ones",
     c_apps: "apps made with Pieza", c_piezas: "pieces in the catalog", c_listas: "ready to use",
     b_emp: "Get started", b_cod: "See the code", b_bajar: "Download Pieza", b_probar: "Try it in your browser",
+    prog_para: "For:", so_mac: "(Apple Silicon, macOS 15 or later)", so_win: "(Windows 10 or 11, 64-bit)", so_linux: "(AppImage for x86_64)",
     prog_t: "Download the Pieza program", prog_p: "For Mac, Windows and Linux. It guides you step by step: the systems, your idea, the pieces, the spec, the plan and your finished app.", prog_bajar: "Download",
     prog_nota: "Your AI makes the plan and builds what is unique to your app, step by step or fully automatic. You see the tokens it spends on each step.", h_como: "How it works",
     r0: "AI", r1: "Languages", r2: "Up to date", r3: "Welcome", r4: "Your app", r5: "Settings", r6: "Catalog", r7: "Data", r8: "Security",
@@ -456,4 +457,27 @@
       pintar();
     });
   });
+})();
+
+// Descarga directa del programa según el sistema: los botones apuntan al archivo de este computador y dicen para cuál es.
+(function () {
+  const p = `${navigator.userAgentData?.platform || ""} ${navigator.platform || ""} ${navigator.userAgent || ""}`.toLowerCase();
+  const so = /android|iphone|ipad|ipod/.test(p) || (/mac/.test(p) && navigator.maxTouchPoints > 1) ? ""
+    : /mac/.test(p) ? "mac" : /win/.test(p) ? "windows" : /linux|x11|cros/.test(p) ? "linux" : "";
+  const enlace = so && document.querySelector(`.sistemas-pieza a[data-so="${so}"]`);
+  if (!enlace) return;
+  enlace.classList.add("tuyo");
+  const nombre = { mac: "Mac", windows: "Windows", linux: "Linux" }[so];
+  const poner = () => {
+    const en = document.documentElement.lang === "en";
+    for (const id of ["bajar-arriba", "bajar-programa"]) {
+      const b = document.getElementById(id);
+      if (!b) continue;
+      b.href = enlace.href;
+      b.removeAttribute("data-t");
+      b.textContent = en ? `Download for ${nombre}` : `Descargar para ${nombre}`;
+    }
+  };
+  poner();
+  new MutationObserver(poner).observe(document.documentElement, { attributes: true, attributeFilter: ["lang"] });
 })();

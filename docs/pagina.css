@@ -424,3 +424,7 @@ nav a{opacity:.85;transition:opacity .2s}nav a:hover{opacity:1}
   backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
 .cifras{padding:16px 18px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
   backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+
+.sistemas-pieza{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:baseline;font-size:15px;color:var(--suave,inherit)}
+.sistemas-pieza a{font-weight:600}.sistemas-pieza a small{font-weight:400;opacity:.75}
+.sistemas-pieza a.tuyo{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:4px}
