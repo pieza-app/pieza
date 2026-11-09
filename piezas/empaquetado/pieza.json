@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "empaquetado",
- "version": "0.2.0",
+ "version": "0.2.1",
  "estado": "lista",
  "nombre": "Empaquetado",
  "icono": "icono.svg",
@@ -62,6 +62,11 @@
   "Un Mac con Apple Silicon y Xcode para compilar la app de Mac la primera vez (después la arma GitHub en cada versión)"
  ],
  "cambios": [
+  {
+   "version": "0.2.1",
+   "tipo": "arreglo",
+   "resumen": "publicar.yml instala Playwright (1.56.1, como revisar.yml) antes de las pruebas rápidas: correr.sh también prueba la interfaz y, sin Playwright, la versión no se publicaba («Cannot find module 'playwright'»)."
+  },
   {
    "version": "0.2.0",
    "tipo": "rompe",
