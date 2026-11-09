@@ -6,7 +6,7 @@ Una app de la familia (Minuta, Graba, Corta, Alcancía, Repasa, Esquema y las qu
 ui/            interfaz web única (la misma en Mac, Windows, Linux, iPhone y Android)
    │  host.enviar(accion, datos)            ▲ window.<App>.<respuesta>(json)
    ▼                                        │
-host           Mac: Swift + WKWebView · Windows/Linux: Electron · móvil: Capacitor
+host           Mac, Windows y Linux: host-tauri (Rust + WebView del sistema) · iPhone: host-ios · Android: Capacitor
    │  correr bin/<script>.py <args…> [entrada.json] <salida.json>
    ▼
 bin/           scripts Python, solo biblioteca estándar (en el móvil: motor JS)
@@ -23,7 +23,7 @@ enruten solos.
 |---|---|---|---|
 | **(a) Script** | Validar datos → correr un `.py` → devolver su JSON | 26 % (43) | Se **declara** en `pieza.json`. Cero código nativo. |
 | **(b) Capacidad común** | Diálogo de carpeta, portapapeles, enlace, exportar, actualizaciones, catálogo, notificaciones… | 44 % (74) | La **base** las trae una sola vez, iguales en los tres hosts. La UI las llama por nombre. |
-| **(c) Nativo propio** | Grabar pantalla, micrófono, calendario, llavero… | 30 % (49) | **Pieza nativa**: un archivo Swift y uno JS que registran `acciones[nombre] = handler` con el mismo contexto. |
+| **(c) Nativo propio** | Grabar pantalla, micrófono, calendario, llavero… | 30 % (49) | **Pieza nativa**: su parte en Rust registra `host.registrar(nombre, …)` en `host-tauri`. Lo que solo existe en Apple va en un ayudante en Swift que se corre como un script. |
 
 ## `pieza.json`
 
@@ -241,7 +241,11 @@ Con eso `pieza.py estado` sabe qué cambió la app (huella distinta) y qué trae
 con las versiones que quedan **después** de la pasada: si `componentes` nueva necesita `tema` nueva, se actualizan las dos juntas
 (aunque se pida solo `componentes`); si no hay una versión que sirva, esa pieza no se toca y se dice por qué.
 
-## El host genérico (`host-mac` y `host-escritorio`)
+## El host genérico (`host-tauri`)
+
+Desde nov 2026 el host es **`host-tauri`**: uno solo para Mac, Windows y Linux, con la misma API que los dos de antes
+(`piezas/host-tauri/README.md`). `host-mac` (Swift) y `host-escritorio` (Electron) están **retirados**: solo los usan Graba y
+Minuta mientras se arma el ayudante de Swift. Lo de abajo vale para los tres.
 
 `pieza.py agregar`/`actualizar` arman **`acciones.json`** en la raíz de la app (si tiene un host; o a mano con `pieza.py acciones
 <app>`): las `acciones` de cada pieza instalada (las de la versión copiada, guardadas en `piezas.json`) más las de `app.json` →
@@ -258,7 +262,7 @@ dice qué `pieza.py actualizar` correr. Va dentro de la app junto a `app.json` (
 Cada host, al arrancar y en cada mensaje, sin código por acción:
 
 1. Lee `app.json` y `acciones.json` de **dentro del paquete** de la app (nunca de afuera) y vuelve a revisar cada acción con las
-   mismas reglas que `pieza.py` (`errores_accion`, `enchufe.js`, `Enchufe.swift`: una prueba compara los tres). Lo que no pasa no
+   mismas reglas que `pieza.py` (`errores_accion`, `enchufe.rs` y, mientras existan, `enchufe.js` y `Enchufe.swift`: una prueba los compara). Lo que no pasa no
    se carga.
 2. Llega `{accion, datos}` del marco principal con la página propia (si no, se ignora).
 3. Primero lo que **registró la app** (`Puente.registrar` / `host.acciones.registrar`: lo nativo propio, y lo que todavía no se
@@ -283,7 +287,8 @@ la interfaz, la vista previa y el código de cada host, y revisa que digan lo mi
 `notificaciones` · `actualizaciones.revisar/instalar` · `catalogo.listar/descargar` · `descarga.verificada` (url + sha256) ·
 `ventana` (menú, cerrar, minimizar, zoom) · `soltar` · `secretos` (llavero / safeStorage).
 
-Ya en los hosts (0.2.0), con la misma API en los dos:
+En los hosts retirados (0.3), con la misma API en los dos. `host-tauri` trae todo esto (también `soltar`) con una sola API: su README tiene la tabla.
+
 
 | Capacidad | Mac (`host-mac`) | Windows y Linux (`host-escritorio`) |
 |---|---|---|
