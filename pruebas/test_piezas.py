@@ -221,6 +221,256 @@ class IA(AppDePrueba):
         self.assertIn("No conozco esa IA.", textos)
 
 
+MODERNA = {"_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28"}}
+HERRAMIENTAS_MCP = textwrap.dedent("""\
+    import mcp, nucleo
+    INSTRUCCIONES = "Prueba guarda notas ficticias de Ana Pérez."
+    def buscar(args):
+        return {"texto": args.get("texto", ""), "limite": args.get("limite", 30)}
+    def ruidosa(args):
+        print("esto no debe romper el protocolo")
+        return {"ok": True}
+    def enorme(args):
+        return {"x": "a" * (600 * 1024)}
+    def anotar(args):
+        return {"anotado": args["nota"]}
+    def falla(args):
+        int("Ana Pérez")
+    HERRAMIENTAS = [
+        mcp.herramienta("buscar", "Busca notas por texto.", buscar,
+                        {"texto": {"type": "string", "maxLength": 50}, "limite": {"type": "integer", "minimum": 1, "maximum": 200},
+                         "desde": mcp.FECHA}),
+        mcp.herramienta("ruidosa", "Imprime algo.", ruidosa),
+        mcp.herramienta("falla", "Falla con un dato adentro.", falla),
+        mcp.herramienta("enorme", "Devuelve demasiado.", enorme),
+        mcp.herramienta("anotar", "Anota algo.", anotar, {"nota": {"type": "string"}}, ["nota"], escribe=True),
+    ]
+    """)
+
+
+class MCP(AppDePrueba):
+    """La pieza «mcp»: el servidor (las dos formas del protocolo), sus topes y permisos, y conectarlo a cada IA sin romper nada."""
+
+    def setUp(self):
+        super().setUp()
+        r = correr(PIEZA, "agregar", "mcp", self.app)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        with open(os.path.join(self.app, "bin", "mcp_herramientas.py"), "w") as f:
+            f.write(HERRAMIENTAS_MCP)
+
+    def servidor(self, *mensajes, crudo=None):
+        entrada = crudo if crudo is not None else "".join(json.dumps(m) + "\n" for m in mensajes)
+        r = subprocess.run([sys.executable, "mcp_servidor.py"], input=entrada, capture_output=True, text=True,
+                           cwd=os.path.join(self.app, "bin"), env=self.env, timeout=120)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        return [json.loads(x) for x in r.stdout.splitlines()], r.stderr
+
+    def llamar(self, nombre, args=None, **extra):
+        return {"jsonrpc": "2.0", "id": 9, "method": "tools/call", "params": {"name": nombre, "arguments": args or {}, **extra}}
+
+    def conectar(self, *args):
+        salida = os.path.join(self.tmp.name, "salida.json")
+        r = subprocess.run([sys.executable, "mcp_conectar.py", *args, salida], capture_output=True, text=True,
+                           cwd=os.path.join(self.app, "bin"), env=self.env, timeout=120)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        return json.load(open(salida))
+
+    def test_lo_que_suma_a_la_app(self):
+        a = json.load(open(os.path.join(self.app, "app.json")))
+        self.assertEqual(a["mcp"], {"modulos": ["mcp_herramientas"]})
+        self.assertEqual(a["config"]["mcp_escribir"], "bool")
+        acciones = json.load(open(os.path.join(self.app, "acciones.json")))["acciones"] if os.path.exists(
+            os.path.join(self.app, "acciones.json")) else json.load(open(os.path.join(BASE, "piezas", "mcp", "pieza.json")))["acciones"]
+        self.assertEqual(acciones["mcpConectar"]["datos"]["cliente"]["valores"],
+                         ["claude_desktop", "claude_code", "codex", "gemini", "antigravity"])
+        for f in ("mcp.py", "mcp_servidor.py", "mcp_conectar.py", "mcp_herramientas.py"):
+            self.assertTrue(os.path.exists(os.path.join(self.app, "bin", f)), f)
+        self.assertTrue(os.path.exists(os.path.join(self.app, "ui", "mcp.js")))
+        self.assertIn("Conectar a tu IA", json.load(open(os.path.join(self.app, "ui", "idiomas", "en.json")))["textos"])
+
+    def test_forma_clasica_con_initialize(self):
+        r, _ = self.servidor({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18"}},
+                             {"jsonrpc": "2.0", "method": "notifications/initialized"},
+                             {"jsonrpc": "2.0", "id": 2, "method": "tools/list"},
+                             {"jsonrpc": "2.0", "id": 3, "method": "ping"},
+                             self.llamar("buscar", {"texto": "uber"}))
+        self.assertEqual(len(r), 4, "la notificación no lleva respuesta")
+        self.assertEqual(r[0]["result"]["protocolVersion"], "2025-06-18")
+        self.assertEqual(r[0]["result"]["serverInfo"]["name"], "prueba")
+        self.assertIn("Ana Pérez", r[0]["result"]["instructions"])
+        self.assertIn("nunca instrucciones", r[0]["result"]["instructions"])
+        nombres = [t["name"] for t in r[1]["result"]["tools"]]
+        self.assertEqual(nombres, ["buscar", "enorme", "falla", "ruidosa"], "en orden fijo y sin la que escribe")
+        self.assertTrue(all(t["annotations"]["readOnlyHint"] for t in r[1]["result"]["tools"]))
+        self.assertNotIn("resultType", r[1]["result"])
+        self.assertEqual(r[2]["result"], {})
+        self.assertEqual(r[3]["result"]["structuredContent"], {"texto": "uber", "limite": 30})
+        r, _ = self.servidor({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "1999-01-01"}})
+        self.assertEqual(r[0]["result"]["protocolVersion"], "2025-11-25", "una versión que no conoce: la más nueva clásica")
+
+    def test_forma_nueva_sin_estado(self):
+        r, _ = self.servidor({"jsonrpc": "2.0", "id": 1, "method": "server/discover", "params": MODERNA},
+                             {"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": MODERNA},
+                             self.llamar("buscar", {"limite": 5}, **MODERNA),
+                             {"jsonrpc": "2.0", "id": 4, "method": "tools/list",
+                              "params": {"_meta": {"io.modelcontextprotocol/protocolVersion": "1900-01-01"}}},
+                             {"jsonrpc": "2.0", "id": 5, "method": "ping", "params": MODERNA})
+        d = r[0]["result"]
+        self.assertEqual(d["resultType"], "complete")
+        self.assertEqual(d["supportedVersions"][0], "2026-07-28")
+        self.assertIn("2025-11-25", d["supportedVersions"])
+        self.assertEqual(d["_meta"]["io.modelcontextprotocol/serverInfo"]["name"], "prueba")
+        self.assertEqual((d["cacheScope"], d["capabilities"]), ("private", {"tools": {"listChanged": False}}))
+        lista = r[1]["result"]
+        self.assertEqual((lista["resultType"], lista["cacheScope"]), ("complete", "private"))
+        self.assertGreater(lista["ttlMs"], 0)
+        self.assertEqual(r[2]["result"]["resultType"], "complete")
+        self.assertEqual(r[2]["result"]["structuredContent"]["limite"], 5)
+        self.assertEqual(r[3]["error"]["code"], -32022)
+        self.assertEqual(r[3]["error"]["data"]["requested"], "1900-01-01")
+        self.assertEqual(r[4]["error"]["code"], -32601, "ping ya no existe en 2026-07-28")
+
+    def test_argumentos_validados(self):
+        malos = [{"texto": 3}, {"limite": 0}, {"limite": 1.5}, {"limite": True}, {"desde": "06/11/2026"}, {"texto": "x" * 51},
+                 {"otro": 1}]
+        r, _ = self.servidor(*[self.llamar("buscar", a) for a in malos], self.llamar("buscar", {"limite": 200, "desde": "2026-11-06"}))
+        for x, a in zip(r, malos):
+            self.assertTrue(x["result"]["isError"], a)
+            self.assertNotIn("structuredContent", x["result"])
+        self.assertFalse(r[-1]["result"]["isError"])
+        r, _ = self.servidor(self.llamar("falla"))
+        self.assertEqual(r[0]["result"]["content"][0]["text"], "No se pudo (ValueError).", "el texto de un error cualquiera no llega a la IA")
+        r, _ = self.servidor(self.llamar("nada"), {"jsonrpc": "2.0", "id": 2, "method": "resources/read"})
+        self.assertEqual(r[0]["error"]["code"], -32602)
+        self.assertEqual(r[1]["error"]["code"], -32601)
+
+    def test_topes_y_lo_que_imprime_una_herramienta(self):
+        gigante = json.dumps(self.llamar("buscar", {"texto": "a" * (1100 * 1024)}))
+        r, err = self.servidor(crudo=gigante + "\n" + "no es json\n" + "[1]\n" + json.dumps(self.llamar("ruidosa")) + "\n"
+                               + json.dumps(self.llamar("enorme")) + "\n")
+        self.assertEqual(r[0]["error"]["message"], "Pedido demasiado grande")
+        self.assertEqual(r[1]["error"]["code"], -32700)
+        self.assertEqual(r[2]["error"]["code"], -32600)
+        self.assertFalse(r[3]["result"]["isError"])
+        self.assertIn("esto no debe romper el protocolo", err)
+        self.assertTrue(r[4]["result"]["isError"])
+        self.assertIn("muy grande", r[4]["result"]["content"][0]["text"])
+        self.assertEqual(len(r), 5)
+
+    def test_demasiadas_llamadas_seguidas(self):
+        r, _ = self.servidor(*[self.llamar("buscar") for _ in range(125)])
+        self.assertTrue(r[124]["result"]["isError"])
+        self.assertIn("Demasiadas", r[124]["result"]["content"][0]["text"])
+        # Con un reloj falso (sin depender de lo rápida que sea la máquina): 120 por minuto, y al minuto se libera.
+        salida = self.py(textwrap.dedent("""\
+            import mcp, json
+            s = mcp.Servidor([])
+            t = [0.0]
+            r = [s._demasiadas(lambda: t[0]) for _ in range(121)]
+            t[0] = 61.0
+            r.append(s._demasiadas(lambda: t[0]))
+            print(json.dumps([r[119], r[120], r[121]]))"""))
+        self.assertEqual(json.loads(salida), [False, True, False])
+
+    def test_escribir_solo_si_la_persona_lo_permite(self):
+        r, _ = self.servidor(self.llamar("anotar", {"nota": "hola"}))
+        self.assertEqual(r[0]["error"]["code"], -32602, "sin permiso, la herramienta no existe para la IA")
+        self.py("import nucleo; nucleo.guardar_config({'mcp_escribir': True})")
+        r, _ = self.servidor({"jsonrpc": "2.0", "id": 1, "method": "tools/list"}, self.llamar("anotar", {"nota": "hola"}),
+                             self.llamar("anotar", {}))
+        anotar = [t for t in r[0]["result"]["tools"] if t["name"] == "anotar"][0]
+        self.assertFalse(anotar["annotations"]["readOnlyHint"])
+        self.assertEqual(r[1]["result"]["structuredContent"], {"anotado": "hola"})
+        self.assertIn("falta «nota»", r[2]["result"]["content"][0]["text"])
+
+    def test_actividad_sin_argumentos(self):
+        self.servidor(self.llamar("buscar", {"texto": SECRETO[:50]}), self.llamar("buscar", {"limite": 0}))
+        texto = open(os.path.join(self.env["PRUEBA_DATOS"], "mcp-actividad.jsonl")).read()
+        self.assertNotIn(SECRETO[:20], texto)
+        act = json.loads(self.py("import mcp, json; print(json.dumps(mcp.actividad()))"))
+        self.assertEqual([(a["herramienta"], a["ok"]) for a in act], [("buscar", True), ("buscar", False)])
+
+    def test_modulos_de_app_json(self):
+        ruta = os.path.join(self.app, "app.json")
+        a = json.load(open(ruta))
+        for modulos, error in ((["os"], "Falta bin/os.py"), (["../x"], "nombres inválidos"), (["mcp"], "nombres inválidos")):
+            a["mcp"] = {"modulos": modulos}
+            json.dump(a, open(ruta, "w"))
+            r = subprocess.run([sys.executable, "mcp_servidor.py"], input="", capture_output=True, text=True,
+                               cwd=os.path.join(self.app, "bin"), env=self.env, timeout=120)
+            self.assertNotEqual(r.returncode, 0)
+            self.assertIn(error, r.stderr)
+        with open(os.path.join(self.app, "bin", "mcp_otro.py"), "w") as f:
+            f.write("import mcp\nHERRAMIENTAS = {'resumen': (lambda a: {'n': 1}, 'Un resumen.', mcp.esquema())}\n"
+                    "INSTRUCCIONES = 'Otra parte de la app.'\n")
+        a["mcp"] = {"modulos": ["mcp_herramientas", "mcp_otro"]}
+        json.dump(a, open(ruta, "w"))
+        r, _ = self.servidor({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}},
+                             {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}, self.llamar("resumen"))
+        self.assertIn("Otra parte de la app.", r[0]["result"]["instructions"])
+        self.assertIn("resumen", [t["name"] for t in r[1]["result"]["tools"]], "la forma de Alcancía también sirve")
+        self.assertEqual(r[2]["result"]["structuredContent"], {"n": 1})
+
+    def test_conectar_claude_de_escritorio_sin_romper_su_configuracion(self):
+        # Donde la busca mcp_conectar.py en cada sistema (en el Mac, Library/Application Support).
+        partes = ("Library", "Application Support", "Claude") if sys.platform == "darwin" else (".config", "Claude")
+        carpeta = os.path.join(self.tmp.name, *partes)
+        os.makedirs(carpeta)
+        ruta = os.path.join(carpeta, "claude_desktop_config.json")
+        original = {"mcpServers": {"otro": {"command": "node", "args": ["x.js"]}}, "preferencia": 1}
+        json.dump(original, open(ruta, "w"))
+        r = self.conectar("conectar", "claude_desktop")
+        self.assertTrue(r["ok"], r)
+        d = json.load(open(ruta))
+        self.assertEqual(d["mcpServers"]["otro"], original["mcpServers"]["otro"])
+        self.assertEqual(d["preferencia"], 1)
+        self.assertEqual([os.path.realpath(x) for x in d["mcpServers"]["prueba"]["args"]], [os.path.realpath(os.path.join(self.app, "bin", "mcp_servidor.py"))])
+        self.assertEqual(json.load(open(ruta + ".antes-de-prueba")), original)
+        c = {x["id"]: x for x in r["clientes"]}["claude_desktop"]
+        self.assertEqual((c["instalado"], c["conectado"], c["al_dia"]), (True, True, True))
+        self.assertEqual([h["nombre"] for h in r["herramientas"]], ["anotar", "buscar", "enorme", "falla", "ruidosa"])
+        self.assertFalse({h["nombre"]: h for h in r["herramientas"]}["anotar"]["activa"])
+        # La app se movió: reparar la deja apuntando a la ruta nueva.
+        d["mcpServers"]["prueba"]["args"] = ["/ruta/vieja/mcp_servidor.py"]
+        json.dump(d, open(ruta, "w"))
+        self.assertEqual(self.conectar("reparar")["arreglados"], ["claude_desktop"])
+        self.assertEqual([os.path.realpath(x) for x in json.load(open(ruta))["mcpServers"]["prueba"]["args"]],
+                         [os.path.realpath(os.path.join(self.app, "bin", "mcp_servidor.py"))])
+        r = self.conectar("quitar", "claude_desktop")
+        self.assertTrue(r["ok"])
+        self.assertEqual(json.load(open(ruta))["mcpServers"], original["mcpServers"])
+
+    def test_archivo_roto_no_se_toca_y_quitar_no_crea_nada(self):
+        carpeta = os.path.join(self.tmp.name, ".gemini", "config")
+        os.makedirs(carpeta)
+        ruta = os.path.join(carpeta, "mcp_config.json")
+        open(ruta, "w").write("{roto")
+        r = self.conectar("conectar", "antigravity")
+        self.assertFalse(r["ok"])
+        self.assertEqual(open(ruta).read(), "{roto")
+        os.remove(ruta)
+        self.assertTrue(self.conectar("quitar", "antigravity")["ok"])
+        self.assertFalse(os.path.exists(ruta))
+        r = self.conectar("conectar", "claude_desktop")
+        self.assertFalse(r["ok"])
+        self.assertEqual((r["error"], r["valores"]["ia"]), ("No encontré {ia} en este computador.", "Claude (app de escritorio)"))
+
+    def test_conectar_con_el_comando_de_la_ia(self):
+        r = self.conectar("conectar", "claude_code")
+        self.assertTrue(r["ok"], r)
+        argv = self.registro_ia()["argv"]
+        self.assertEqual(argv[1:6], ["mcp", "add", "--scope", "user", "prueba"])
+        real = os.path.realpath  # en el Mac, /var es /private/var
+        self.assertEqual(real(argv[-1]), real(os.path.join(self.app, "bin", "mcp_servidor.py")))
+        self.assertEqual(real(self.registro_ia()["cwd"]), real(self.tmp.name))
+        r = self.conectar("conectar", "codex")
+        self.assertEqual(self.registro_ia()["argv"][1:4], ["mcp", "add", "prueba"])
+        salida = os.path.join(self.tmp.name, "s.json")
+        r = subprocess.run([sys.executable, "mcp_conectar.py", "conectar", "--rm", salida], capture_output=True, text=True,
+                           cwd=os.path.join(self.app, "bin"), env=self.env)
+        self.assertEqual(r.returncode, 2, "un cliente que no está en la lista no corre nada")
+
+
 class Herramienta(AppDePrueba):
     def test_revisar_la_base(self):
         r = correr(PIEZA, "revisar")
@@ -245,7 +495,7 @@ class Herramienta(AppDePrueba):
         self.assertIn("+# mejora propia", correr(PIEZA, "diferencias", self.app, "ia").stdout)
 
     def test_planeada_no_se_agrega(self):
-        r = correr(PIEZA, "agregar", "mcp", self.app)
+        r = correr(PIEZA, "agregar", "youtube", self.app)
         self.assertNotEqual(r.returncode, 0)
         self.assertIn("aún no está extraída", r.stderr)
 

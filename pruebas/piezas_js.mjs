@@ -1236,3 +1236,64 @@ test("universos: valida igual que Python, registra su tema y da textos con respa
   assert.equal(tema.valor, "sistema", "dejar vuelve al tema de antes");
   assert.equal(html.style.p["--acento-claro"], undefined);
 });
+
+// ───────────── mcp (Conectar a tu IA) ─────────────
+const PiezaMCP = require(path.join(BASE, "piezas/mcp/ui/mcp.js"));
+function seccionMCP() {
+  const i18n = PiezaI18n.crear();
+  const enviados = [], avisos = [];
+  let pintadas = 0;
+  const m = PiezaMCP.crear({ i18n, host: { enviar: (a, d) => enviados.push([a, d]) }, pintar: () => pintadas++, app: "Ana <b>",
+    aviso: (t, o) => avisos.push([t, o]), ejemplo: "¿Qué tengo pendiente?" });
+  return { m, enviados, avisos, pintadas: () => pintadas };
+}
+const clicMCP = (attrs, extra = {}) => ({ preventDefault() {}, target: {
+  closest: (sel) => (Object.keys(attrs).some((a) => sel.includes(`[${a}]`)) ? { hasAttribute: (a) => a in attrs, getAttribute: (a) => attrs[a], ...extra } : null) } });
+
+test("mcp: la sección escapa, conecta y quita solo IA conocidas, y muestra los errores con {ia}", () => {
+  const { m, enviados, avisos } = seccionMCP();
+  assert.throws(() => PiezaMCP.crear({}), /falta «i18n»/);
+  assert.match(m.html(), /Buscando tus IA…/);
+  m.pedirEstado();
+  assert.deepEqual(enviados.at(-1), ["mcpEstado", {}]);
+  m.recibir({ ok: true, escribir: false,
+    clientes: [{ id: "claude_desktop", nombre: "<img src=x onerror=alert(1)>", instalado: true, conectado: false },
+               { id: "codex", nombre: "ChatGPT (app de escritorio y Codex)", instalado: true, conectado: true, al_dia: true },
+               { id: "gemini", nombre: "Gemini CLI", instalado: false, conectado: false },
+               { id: "../mal", nombre: "x", instalado: true }],
+    herramientas: [{ nombre: "buscar", titulo: "Buscar <notas>", escribe: false }, { nombre: "anotar", titulo: "Anotar", escribe: true }, { nombre: "Mal!", titulo: "x" }],
+    actividad: [{ fecha: "2026-11-06T20:00:00+00:00", herramienta: "buscar", ok: true }, { fecha: "x", herramienta: "<script>", ok: true }] });
+  const h = m.html();
+  assert.match(h, /&lt;img src=x onerror=alert\(1\)&gt;/);
+  assert.doesNotMatch(h, /<img|<script>|\.\.\/mal|Mal!/);
+  assert.doesNotMatch(h, /Gemini CLI/, "una IA que no está instalada ni conectada no aparece");
+  assert.match(h, /data-pz-mcp="claude_desktop"/);
+  assert.match(h, /data-pz-mcp-quitar="codex"/);
+  assert.match(h, /Buscar &lt;notas&gt;/);
+  assert.match(h, /data-pz-mcp-escribir/);
+  assert.match(h, /Pruébalo:/);
+  assert.match(h, /Ana &lt;b&gt;/);
+  assert.equal(m.manejarClic(clicMCP({ "data-pz-mcp": "claude_desktop" })), true);
+  assert.deepEqual(enviados.at(-1), ["mcpConectar", { orden: "conectar", cliente: "claude_desktop" }]);
+  assert.match(m.html(), /Conectando…/);
+  assert.equal(m.conectar("claude_desktop"), false, "no se manda dos veces mientras espera");
+  assert.equal(m.conectar("rm -rf"), false);
+  m.recibir({ ok: false, orden: "conectar", cliente: "claude_desktop", error: "No encontré {ia} en este computador.", valores: { ia: "<Claude>" } });
+  assert.match(m.html(), /pz-error-texto" data-sin-traducir>No encontré &lt;Claude&gt; en este computador\.</);
+  m.recibir({ ok: true, orden: "conectar", cliente: "claude_desktop", nota: "Cierra y vuelve a abrir Claude para que aparezca." });
+  assert.deepEqual(avisos.at(-1), ["Cierra y vuelve a abrir Claude para que aparezca.", {}]);
+  m.manejarClic(clicMCP({ "data-pz-mcp-quitar": "codex" }));
+  assert.deepEqual(enviados.at(-1), ["mcpConectar", { orden: "quitar", cliente: "codex" }]);
+  assert.equal(m.manejarClic(clicMCP({ "data-otra": "x" })), false);
+});
+
+test("mcp: permitir cambios guarda mcp_escribir y vuelve a pedir el estado", () => {
+  const { m, enviados } = seccionMCP();
+  m.recibir({ ok: true, clientes: [], herramientas: [{ nombre: "buscar", titulo: "Buscar", escribe: false }], actividad: [] });
+  assert.doesNotMatch(m.html(), /data-pz-mcp-escribir/, "sin herramientas que cambien algo, no hay interruptor");
+  assert.match(m.html(), /No encontré ninguna IA de escritorio/);
+  m.recibir({ ok: true, herramientas: [{ nombre: "anotar", titulo: "Anotar", escribe: true }] });
+  m.manejarClic(clicMCP({ "data-pz-mcp-escribir": "" }, { checked: true }));
+  assert.deepEqual(enviados.slice(-2), [["config", { mcp_escribir: true }], ["mcpEstado", {}]]);
+  assert.match(m.html(), /data-pz-mcp-escribir checked/);
+});
