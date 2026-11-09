@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "interfaz",
  "descripcion": "Sistema, claro, oscuro o vidrio (paneles esmerilados) con un solo juego de tokens CSS y light-dark(). Suma temas de afuera (universos, comunidad) validados: solo colores.",
+ "en": {
+  "nombre": "Themes: light, dark and glass",
+  "descripcion": "System, light, dark or glass (frosted panels) with one set of CSS tokens and light-dark(). Adds outside themes (universes, community), validated: colors only."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre."

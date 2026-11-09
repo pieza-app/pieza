@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "conexiones",
  "descripcion": "Conectar el canal de la persona con OAuth y subir videos directo.",
+ "en": {
+  "nombre": "Upload to YouTube",
+  "descripcion": "Connects the person's channel with OAuth and uploads videos directly."
+ },
  "recomendar": {
   "cuando": "La app produce videos para publicar.",
   "palabras": [

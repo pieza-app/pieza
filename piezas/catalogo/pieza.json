@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "datos",
  "descripcion": "Contenido de la comunidad (plantillas, efectos, temas…) desde un repo de solo datos: dominio fijo, sin redirecciones, tamaño máximo y SHA-256 obligatorio; cada app pone su validador.",
+ "en": {
+  "nombre": "Community catalog",
+  "descripcion": "Community content (templates, effects, themes…) from a data-only repo: fixed domain, no redirects, size limit and required SHA-256; each app sets its validator."
+ },
  "recomendar": {
   "cuando": "La gente puede crear y compartir contenido para la app (plantillas, temas, universos, efectos).",
   "palabras": [

@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "interfaz",
  "descripcion": "Diálogo accesible, confirmar, avisos (toast) en cola, filas de Tu IA, actualizaciones «Paso n de 3», Acerca de y comentarios a GitHub.",
+ "en": {
+  "nombre": "Components",
+  "descripcion": "Accessible dialog, confirm, queued notices (toast), Your AI rows, updates «Step n of 3», About and feedback to GitHub."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre."

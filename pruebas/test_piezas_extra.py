@@ -1,4 +1,4 @@
-"""Pieza «universos»: el formato (Python) acepta los de base y rechaza lo que podría colarse (HTML, CSS, colores raros)."""
+"""Pieza «universos» (el formato acepta los de base y rechaza lo que podría colarse) y el inglés de cada pieza."""
 import glob
 import json
 import os
@@ -39,3 +39,17 @@ class Universos(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Ingles(unittest.TestCase):
+    """Cada pieza (menos las retiradas) trae su nombre y su descripción en inglés: el programa y la página los muestran."""
+
+    def test_cada_pieza_trae_ingles(self):
+        for ruta in glob.glob(os.path.join(BASE, "piezas", "*", "pieza.json")):
+            with open(ruta, encoding="utf-8") as f:
+                p = json.load(f)
+            if p.get("estado") == "retirada":
+                continue
+            en = p.get("en") or {}
+            self.assertTrue(isinstance(en.get("nombre"), str) and en["nombre"].strip(), p["id"])
+            self.assertTrue(isinstance(en.get("descripcion"), str) and 10 < len(en["descripcion"]) <= 400, p["id"])

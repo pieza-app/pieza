@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "plataforma",
  "descripcion": "Capacitor con la misma interfaz; las acciones corren en un motor JS.",
+ "en": {
+  "nombre": "Phone app",
+  "descripcion": "Capacitor with the same interface; actions run in a JS engine."
+ },
  "recomendar": {
   "cuando": "La persona necesita la app en el celular."
  },

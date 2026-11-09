@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "medios",
  "descripcion": "Grabar o escuchar el micrófono (y el audio del sistema en Mac) con permiso explicado.",
+ "en": {
+  "nombre": "Microphone",
+  "descripcion": "Records or listens to the microphone (and system audio on Mac) with an explained permission."
+ },
  "recomendar": {
   "cuando": "La app graba o escucha voz."
  },

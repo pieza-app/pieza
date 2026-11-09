@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "plataforma",
  "descripcion": "Host genérico en Swift para iPhone (WKWebView a pantalla completa): la misma interfaz de ui/ con plataforma «movil», puente con las guardas de host-mac, config e idioma desde app.json, apariencia, pantalla encendida y unos segundos extra en segundo plano mientras algo está en curso, y el proyecto de Xcode generado desde app.json.",
+ "en": {
+  "nombre": "iPhone app",
+  "descripcion": "A generic Swift host for iPhone (full-screen WKWebView): the same ui/ with the «movil» platform, a guarded bridge, config and language from app.json, appearance and the Xcode project generated from app.json."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre que haya app de iPhone."

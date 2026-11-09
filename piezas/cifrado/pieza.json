@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "datos",
  "descripcion": "Cifrar con una frase de la persona (PBKDF2-SHA256 600.000 + AES-256-GCM con AAD), nombres de archivo opacos con HMAC, verificador de frase y archivos con versión.",
+ "en": {
+  "nombre": "Encryption",
+  "descripcion": "Encrypts with the person's passphrase (PBKDF2-SHA256 600,000 + AES-256-GCM with AAD), opaque file names with HMAC, a passphrase check and versioned files."
+ },
  "recomendar": {
   "cuando": "Datos personales salen del computador (respaldo, celular, nube)."
  },

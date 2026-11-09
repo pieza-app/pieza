@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "interfaz",
  "descripcion": "Primer uso por pasos, con el idioma SIEMPRE primero; cada pieza puede sumar su paso.",
+ "en": {
+  "nombre": "Welcome",
+  "descripcion": "First use in steps, with the language ALWAYS first; each piece can add its own step."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre."

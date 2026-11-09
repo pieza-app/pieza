@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "repo",
  "descripcion": "Antes de cada commit busca nombres, correos y rutas reales (lista local nunca versionada).",
+ "en": {
+  "nombre": "Privacy check",
+  "descripcion": "Before each commit it looks for real names, emails and paths (a local list, never committed)."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre: el repo es público."

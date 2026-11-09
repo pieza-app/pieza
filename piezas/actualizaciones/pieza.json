@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "plataforma",
  "descripcion": "Avisa dentro de la app, descarga solo de los Releases del repo, verifica sha256 y actualiza en un clic sin tocar los datos.",
+ "en": {
+  "nombre": "Updates",
+  "descripcion": "Tells you inside the app, downloads only from the repo's Releases, checks sha256 and updates in one click without touching the data."
+ },
  "recomendar": {
   "siempre": true,
   "cuando": "Siempre en escritorio."

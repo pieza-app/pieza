@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "interfaz",
  "descripcion": "Mundos que cambian los colores (un tema) y los textos que la app deja cambiar. Tres de base (Espacio, Bosque, Neón) y los de la comunidad por el catálogo, validados: solo datos.",
+ "en": {
+  "nombre": "Universes",
+  "descripcion": "Worlds that change the colors (a theme) and the texts the app lets you change. Three to start (Space, Forest, Neon) and the community's through the catalog, validated: data only."
+ },
  "recomendar": {
   "cuando": "Quieres que la app sea entretenida y personalizable por temas.",
   "palabras": [

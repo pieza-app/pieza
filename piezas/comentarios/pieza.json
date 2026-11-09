@@ -8,6 +8,10 @@
  "licencia": "MPL-2.0",
  "categoria": "interfaz",
  "descripcion": "Formulario que abre un issue en GitHub prellenado con versión, sistema e IA. Nunca obligatorio.",
+ "en": {
+  "nombre": "Send feedback",
+  "descripcion": "A form that opens a GitHub issue prefilled with version, system and AI. Never required."
+ },
  "recomendar": {
   "cuando": "La app es abierta y quieres ideas y errores de la gente sin que tengan que ir a GitHub."
  },
