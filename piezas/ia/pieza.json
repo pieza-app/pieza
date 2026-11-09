@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "ia",
- "version": "0.7.1",
+ "version": "0.7.2",
  "estado": "lista",
  "nombre": "Tu IA",
  "icono": "icono.svg",
@@ -101,6 +101,11 @@
  },
  "red_nota": "La app no sale a internet: la IA de la persona se conecta a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
  "cambios": [
+  {
+   "version": "0.7.2",
+   "tipo": "mejora",
+   "resumen": "preguntar_vivo cuenta los tokens que la IA dice haber usado: {\"t\": \"uso\", \"entrada\", \"cache\", \"salida\"} (Claude al final; Codex por turno). Así la app muestra el gasto real y no una estimación."
+  },
   {
    "version": "0.7.1",
    "tipo": "mejora",

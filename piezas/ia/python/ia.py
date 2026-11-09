@@ -425,6 +425,25 @@ def preguntar(prompt, **opciones):
 
 # ── En vivo: lo que lee y «Detener» ──────────────────────────────────────────────────────────────────────────────────────────
 
+def _numero(v):
+    return v if isinstance(v, int) and not isinstance(v, bool) and 0 <= v < 10**10 else 0
+
+
+def _uso(u, al_evento):
+    """Los tokens que la IA dice haber usado → `al_evento({"t": "uso", "entrada", "cache", "salida"})`. «entrada» es lo nuevo que
+    leyó (con lo que guardó en caché), «cache» lo que reusó de la caché y «salida» lo que escribió. Claude da el total al final;
+    Codex, uno por turno (se suman)."""
+    if not isinstance(u, dict):
+        return
+    entrada = _numero(u.get("input_tokens")) + _numero(u.get("cache_creation_input_tokens"))
+    cache = _numero(u.get("cache_read_input_tokens")) + _numero(u.get("cached_input_tokens"))
+    if u.get("cached_input_tokens") is not None:
+        entrada = max(0, entrada - _numero(u.get("cached_input_tokens")))  # en Codex, input_tokens ya incluye lo de la caché
+    salida = _numero(u.get("output_tokens"))
+    if entrada or cache or salida:
+        al_evento({"t": "uso", "entrada": entrada, "cache": cache, "salida": salida})
+
+
 def _evento_claude(linea, al_evento):
     """Una línea de `claude -p --output-format stream-json --verbose`: lo que lee (Read/Glob/Grep) va a `al_evento`; la línea final
     {"type": "result"} trae la respuesta. Devuelve (texto, es_error) si es la final; si no, None."""
@@ -435,6 +454,7 @@ def _evento_claude(linea, al_evento):
     if not isinstance(x, dict):
         return None
     if x.get("type") == "result":
+        _uso(x.get("usage"), al_evento)
         return str(x.get("result") or ""), bool(x.get("is_error"))
     if x.get("type") == "assistant" and isinstance(x.get("message"), dict):
         for c in x["message"].get("content") or []:
@@ -462,6 +482,9 @@ def _evento_codex(linea, al_evento):
     except ValueError:
         return
     if not isinstance(x, dict):
+        return
+    if x.get("type") == "turn.completed":
+        _uso(x.get("usage"), al_evento)
         return
     item = x.get("item") if isinstance(x.get("item"), dict) else x.get("msg") if isinstance(x.get("msg"), dict) else x
     if str(x.get("type") or item.get("type") or "") in ("item.completed", "exec_command_end"):
@@ -506,7 +529,8 @@ def detenido(error):
 def preguntar_vivo(prompt, *, ia=None, timeout=600, archivos=(), leer=None, no_leer=(), modelo=None, al_evento=None, detener=None,
                    escribir=None):
     """Como `preguntar`, pero cuenta lo que la IA va haciendo: `al_evento({"t": "lee" | "busca" | "escribe", …})` por cada archivo
-    que lee, búsqueda que hace o archivo que cambia (con `escribir`) (Claude y Codex; Gemini no lo cuenta). `detener()`: si devuelve True, se corta la IA. Devuelve (texto, error)
+    que lee, búsqueda que hace o archivo que cambia (con `escribir`), y `{"t": "uso", "entrada", "cache", "salida"}` con los tokens
+    que la IA dice haber usado (Claude y Codex; Gemini no lo cuenta). `detener()`: si devuelve True, se corta la IA. Devuelve (texto, error)
     con error None o {codigo, plantilla, valores}; codigo "detenido" si se detuvo (ver `detenido(error)`)."""
     ia = ia or elegida()
     error = _errores(ia)

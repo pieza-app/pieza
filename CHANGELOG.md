@@ -1,6 +1,7 @@
 # Cambios
 
 ## Sin publicar
+- **`ia` 0.7.2 (mejora):** `preguntar_vivo` cuenta los tokens reales que la IA dice haber usado (`{"t": "uso", "entrada", "cache", "salida"}`).
 - **`host-tauri` 0.1.3, `actualizaciones` 0.5.1 y `catalogo` 0.3.1 (arreglo):** ureq 3, sha2 0.11 y opener 0.9 (#27). `rfd` queda en 0.15.
 - **`ia` 0.7.1 (mejora):** `preguntar_vivo(..., escribir=carpeta)` cuenta en vivo los archivos que la IA cambia (`{"t": "escribe"}`).
 - **`actualizaciones` 0.5.0 (mejora): versiones firmadas con Ed25519 en Rust** (rehace #13). Con llaves en `app.json`, la
