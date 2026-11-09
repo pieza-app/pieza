@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "actualizaciones",
- "version": "0.5.1",
+ "version": "0.5.2",
  "estado": "lista",
  "nombre": "Actualizaciones",
  "icono": "icono.svg",
@@ -58,6 +58,11 @@
  "permisos": {},
  "red_nota": "Solo pregunta a GitHub por la última versión del repo de la app (al abrir y cada 6 horas) y baja de sus Releases; GitHub redirige la descarga a su almacenamiento. Sin datos de la persona.",
  "cambios": [
+  {
+   "version": "0.5.2",
+   "tipo": "arreglo",
+   "resumen": "En Mac, si la app corre desde una copia temporal de macOS (AppTranslocation, por abrirla sin moverla desde Descargas), no intenta reemplazarla: pide moverla a Aplicaciones (código «mover»)."
+  },
   {
    "version": "0.5.1",
    "tipo": "arreglo",

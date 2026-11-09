@@ -38,6 +38,7 @@ pub fn texto(codigo: &str) -> &'static str {
         "errorBajar" => "No pude descargar la versión nueva. Revisa tu conexión e intenta de nuevo.",
         "sinDescarga" => "No encontré la descarga de la versión nueva.",
         "firma" => "La versión nueva no trae una firma válida. {app} sigue igual que antes: no la instalé por seguridad.",
+        "mover" => "Para actualizar, mueve {app} a la carpeta Aplicaciones y ábrela desde ahí. Ahora macOS la abre desde una copia temporal que no se puede cambiar.",
         _ => "No pude preparar la versión nueva. {app} sigue igual que antes; intenta de nuevo más tarde.",
     }
 }
@@ -172,6 +173,12 @@ pub enum Instalacion {
     Tar { destino: PathBuf },
 }
 impl Instalacion {
+    /// En Mac, una app que se abrió sin moverla (con la marca de cuarentena) corre desde /…/AppTranslocation/…, de solo lectura:
+    /// ahí no se puede reemplazar.
+    pub fn traslocada(&self) -> bool {
+        matches!(self, Instalacion::Mac { app } if app.to_string_lossy().contains("/AppTranslocation/"))
+    }
+
     pub fn archivo(&self, base: &str) -> String {
         match self {
             Instalacion::Mac { .. } => format!("{base}-macOS.zip"),
@@ -322,6 +329,10 @@ impl Actualizador for Actualizaciones {
     fn instalar(&self, host: &Host, avisar: &dyn Fn(Value)) {
         let urls = self.urls.lock().ok().and_then(|u| u.clone());
         let (Some(i), Some((url, url_huella, version))) = (self.inst(), urls) else { return avisar(self.aviso("error", "sinDescarga")) };
+        if i.traslocada() {
+            // Abierta sin moverla (por ejemplo, desde Descargas): macOS la corre desde una copia de solo lectura.
+            return avisar(self.aviso("error", "mover"));
+        }
         if !es_descarga_nuestra(&url, &self.repo) || !es_descarga_nuestra(&url_huella, &self.repo) {
             return avisar(self.aviso("error", "sinDescarga"));
         }
@@ -507,6 +518,15 @@ mod pruebas {
         assert!(!es_descarga_nuestra("https://github.com/otro/ana/releases/download/v1/x", r));
         assert!(!es_descarga_nuestra("https://github.com/ana-app/ana/releases/download/../x", r));
         assert!(!es_descarga_nuestra("https://github.com/ana-app/ana/releases/download/v1/x?y=1", r));
+    }
+
+    #[test]
+    fn traslocada_no_se_puede_reemplazar() {
+        let t = Instalacion::Mac { app: PathBuf::from("/private/var/folders/x/T/AppTranslocation/ABC/d/Ana.app") };
+        assert!(t.traslocada());
+        assert!(!Instalacion::Mac { app: PathBuf::from("/Applications/Ana.app") }.traslocada());
+        assert!(!Instalacion::Windows { exe: PathBuf::from("C:/Ana/ana.exe") }.traslocada());
+        assert!(texto("mover").contains("Aplicaciones"));
     }
 
     #[test]
