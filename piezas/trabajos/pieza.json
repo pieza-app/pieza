@@ -3,7 +3,7 @@
  "icono": "icono.svg",
  "licencia": "MPL-2.0",
  "id": "trabajos",
- "version": "0.2.2",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "Trabajos largos",
  "categoria": "datos",
@@ -35,7 +35,8 @@
   "python/trabajos.py": "bin/trabajos.py",
   "mac/LectorProgreso.swift": "app/Sources/PiezaTrabajos/LectorProgreso.swift",
   "escritorio/progreso.js": "escritorio/src/progreso.js",
-  "tauri/progreso.rs": "escritorio/src/pieza/progreso.rs"
+  "tauri/progreso.rs": "escritorio/src/pieza/progreso.rs",
+  "tauri/trabajos.rs": "escritorio/src/pieza/trabajos.rs"
  },
  "solo": {
   "mac/LectorProgreso.swift": [
@@ -68,6 +69,14 @@
   "nucleo": ">=0.7.0 <1.0.0"
  },
  "cambios": [
+  {
+   "version": "0.3.0",
+   "tipo": "mejora",
+   "resumen": "La pieza también viene en Rust (`tauri/trabajos.rs`, con host-tauri): `Trabajos::nuevos(datos, emitir)`, `crear`, `cargar`, `del_proyecto`, `esperando`, `detener`, y en cada `Trabajo` `etapa`, `poner_item`, `leyo`, `busco`, `latir`, `esperar`, `seguir`, `terminar` y `vista`. El mismo formato en disco que `trabajos.py` (`formato: 1`): los trabajos de antes se siguen viendo. Los eventos van directo a la interfaz con `emitir`, sin archivo de progreso.",
+   "migrar": [
+    "Nada obligatorio. Para usarla desde Rust: `#[path = \"pieza/trabajos.rs\"] mod trabajos;` en `escritorio/src/main.rs`."
+   ]
+  },
   {
    "version": "0.2.2",
    "tipo": "mejora",
@@ -110,6 +119,9 @@
   ],
   "escritorio/progreso.js": [
    "host-escritorio"
+  ],
+  "tauri/trabajos.rs": [
+   "host-tauri"
   ]
  }
 }

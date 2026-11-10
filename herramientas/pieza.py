@@ -314,7 +314,15 @@ def errores_accion(nombre, a, scripts=None):
         e.append(f"{donde}: nombre raro (letras y números, empieza con letra)")
     if not isinstance(a, dict):
         return e + [f"{donde}: no es un objeto"]
-    if not SCRIPT.match(a.get("script", "") if isinstance(a.get("script"), str) else ""):
+    # Una acción en Rust («rust»: true) la atiende una función de la app (`host.funcion`), sin script ni argumentos: el host
+    # valida igual sus datos y le pasa la entrada en el mismo proceso (docs/rust.md, fase 2).
+    rust = a.get("rust") is True
+    if "rust" in a and not rust:
+        e.append(f"{donde}: «rust» solo puede ser true")
+    if rust:
+        if "script" in a or a.get("args") or "entrada" in a:
+            e.append(f"{donde}: una acción en Rust no lleva «script», «args» ni «entrada»")
+    elif not SCRIPT.match(a.get("script", "") if isinstance(a.get("script"), str) else ""):
         e.append(f"{donde}: «script» debe ser nombre.py")
     elif scripts is not None and a["script"] not in scripts and not a.get("scriptDeLaApp"):
         e.append(f"{donde}: el script {a['script']} no viene en la pieza (o marca scriptDeLaApp)")
@@ -349,7 +357,7 @@ def errores_accion(nombre, a, scripts=None):
     else:
         e += [f"{donde}: «{k}» lo pone el host: no puede venir también en «datos»" for k in inyectar if k in datos]
         por_archivo += list(inyectar)
-    if por_archivo and a.get("entrada") != "archivo":
+    if por_archivo and a.get("entrada") != "archivo" and not rust:
         e.append(f"{donde}: {', '.join(por_archivo)} no van en args: necesita \"entrada\": \"archivo\"")
     if a.get("entrada") not in (None, "archivo"):
         e.append(f"{donde}: «entrada» es \"archivo\" o null")
@@ -1176,7 +1184,7 @@ def armar_acciones(app, forzar=False):
             if pid != "app" and nombre in sin:
                 continue
             e = errores_accion(nombre, accion, scripts_app if pid == "app" else None)
-            if pid == "app" and not e and accion["script"] not in scripts_app:
+            if pid == "app" and not e and not accion.get("rust") and accion["script"] not in scripts_app:
                 e.append(f"acción «{nombre}»: no está bin/{accion['script']}")
             if nombre in todas_a:
                 e.append(f"acción «{nombre}»: la declaran {origen[nombre]} y {pid}")

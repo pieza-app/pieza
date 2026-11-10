@@ -522,6 +522,8 @@ pub fn dentro(base: &Path, relativa: &str, extensiones: Option<&[&str]>) -> Opti
 pub struct Accion {
     pub nombre: String,
     pub script: String,
+    /// La atiende una función Rust de la app (`Host::funcion`), no un script.
+    pub rust: bool,
     pub datos: Map<String, Value>,
     pub args: Vec<String>,
     pub entrada_archivo: bool,
@@ -545,7 +547,16 @@ pub fn errores_accion(nombre: &str, a: &Value) -> Vec<String> {
         e.push(format!("{donde}: nombre raro"));
     }
     let Some(a) = a.as_object() else { return vec![format!("{donde}: no es un objeto")] };
-    if !a.get("script").and_then(Value::as_str).is_some_and(es_script) {
+    // Una acción en Rust («rust»: true) la atiende una función de la app (`Host::funcion`), sin script ni argumentos.
+    let rust = a.get("rust") == Some(&Value::Bool(true));
+    if a.contains_key("rust") && !rust {
+        e.push(format!("{donde}: «rust» solo puede ser true"));
+    }
+    if rust {
+        if a.contains_key("script") || a.get("args").and_then(Value::as_array).is_some_and(|l| !l.is_empty()) || a.contains_key("entrada") {
+            e.push(format!("{donde}: una acción en Rust no lleva «script», «args» ni «entrada»"));
+        }
+    } else if !a.get("script").and_then(Value::as_str).is_some_and(es_script) {
         e.push(format!("{donde}: «script» debe ser nombre.py"));
     }
     let vacio_o = json!({});
@@ -612,7 +623,7 @@ pub fn errores_accion(nombre: &str, a: &Value) -> Vec<String> {
     }
     let entrada = a.get("entrada");
     let es_archivo = entrada.and_then(Value::as_str) == Some("archivo");
-    if !por_archivo.is_empty() && !es_archivo {
+    if !por_archivo.is_empty() && !es_archivo && !rust {
         e.push(format!("{donde}: {} no van en args: necesita \"entrada\": \"archivo\"", por_archivo.join(", ")));
     }
     if entrada.is_some_and(|x| !x.is_null() && !es_archivo) {
@@ -756,7 +767,8 @@ pub fn cargar_acciones(recursos: &Path) -> (BTreeMap<String, Accion>, Vec<String
     for (nombre, a) in lista.expect("acciones") {
         let mut e = errores_accion(nombre, a);
         let script = a.get("script").and_then(Value::as_str).unwrap_or("");
-        if e.is_empty() && !recursos.join("bin").join(script).exists() {
+        let rust = a.get("rust") == Some(&Value::Bool(true));
+        if e.is_empty() && !rust && !recursos.join("bin").join(script).exists() {
             e.push(format!("acción «{nombre}»: no está bin/{script}"));
         }
         if !e.is_empty() {
@@ -772,6 +784,7 @@ pub fn cargar_acciones(recursos: &Path) -> (BTreeMap<String, Accion>, Vec<String
             Accion {
                 nombre: nombre.clone(),
                 script: script.into(),
+                rust,
                 datos: a.get("datos").and_then(Value::as_object).cloned().unwrap_or_default(),
                 args: lista_txt("args"),
                 entrada_archivo: txt("entrada").as_deref() == Some("archivo"),
@@ -982,6 +995,16 @@ mod pruebas {
         let (mut a, e) = cargar_acciones(&dir);
         assert!(e.is_empty(), "{e:?}");
         a.remove("a").unwrap()
+    }
+
+    #[test]
+    fn accion_en_rust_sin_script() {
+        assert!(errores_accion("a", &json!({"rust": true, "datos": {"t": {"tipo": "texto", "max": 9}}, "limite": 5})).is_empty());
+        for malo in [json!({"rust": true, "script": "x.py", "limite": 5}), json!({"rust": true, "args": ["x"], "limite": 5}),
+            json!({"rust": true, "entrada": "archivo", "limite": 5}), json!({"rust": "si", "script": "x.py", "limite": 5})] {
+            assert!(!errores_accion("a", &malo).is_empty(), "{malo}");
+        }
+        assert!(accion(json!({"rust": true, "limite": 5})).rust);
     }
 
     #[test]

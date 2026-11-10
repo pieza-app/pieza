@@ -250,6 +250,30 @@ pub enum Inyectado {
 }
 
 type Registrada = Arc<dyn Fn(Value, &Host, Ctx) + Send + Sync>;
+type FuncionRust = Arc<dyn Fn(Map<String, Value>, &Avance) -> Value + Send + Sync>;
+const TEXTO_SIN_FUNCION: &str = "Esta acción todavía no está lista en la app.";
+const TEXTO_LIMITE: &str = "Esto tardó demasiado y lo detuve.";
+const TEXTO_FALLO_RUST: &str = "Algo falló dentro de la app. Inténtalo de nuevo.";
+
+/// Lo que recibe una acción en Rust además de su entrada: avisar el avance a la interfaz (su función de «progreso») y saber si
+/// el host la cortó por su límite (`cortado()`: la función debe terminar pronto; a la IA se le pasa como `detener`).
+pub struct Avance {
+    emitir: Box<dyn Fn(Vec<Value>) + Send + Sync>,
+    cortado: Arc<std::sync::atomic::AtomicBool>,
+}
+
+impl Avance {
+    pub fn emitir(&self, evento: Value) {
+        (self.emitir)(vec![evento]);
+    }
+    pub fn cortado(&self) -> bool {
+        self.cortado.load(std::sync::atomic::Ordering::SeqCst)
+    }
+    /// Para pruebas: un avance que guarda lo que se emite.
+    pub fn de_prueba(emitir: impl Fn(Vec<Value>) + Send + Sync + 'static) -> Self {
+        Avance { emitir: Box::new(emitir), cortado: Arc::default() }
+    }
+}
 type Inyector = Arc<dyn Fn(&Map<String, Value>, &Host) -> Inyectado + Send + Sync>;
 type Resolver = Arc<dyn Fn(&str, &Host) -> Option<PathBuf> + Send + Sync>;
 type Gancho = Arc<dyn Fn(&Host) + Send + Sync>;
@@ -288,6 +312,7 @@ pub struct Interno {
     pub errores: Vec<String>,
     opciones: Opciones,
     registradas: RwLock<HashMap<String, Registrada>>,
+    funciones: RwLock<HashMap<String, FuncionRust>>,
     inyectores: RwLock<HashMap<String, Inyector>>,
     medios: RwLock<HashMap<String, Resolver>>,
     ganchos: RwLock<Ganchos>,
@@ -359,6 +384,7 @@ impl Host {
                 declaradas,
                 errores,
                 registradas: RwLock::new(HashMap::new()),
+                funciones: RwLock::new(HashMap::new()),
                 inyectores: RwLock::new(HashMap::new()),
                 medios: RwLock::new(HashMap::new()),
                 ganchos: RwLock::new(Ganchos::default()),
@@ -448,6 +474,13 @@ impl Host {
     pub fn registrar(&self, nombre: &str, f: impl Fn(Value, &Host, Ctx) + Send + Sync + 'static) {
         assert!(e::es_accion(nombre), "acción rara: {nombre}");
         self.registradas.write().expect("registradas").insert(nombre.into(), Arc::new(f));
+    }
+    /// La función Rust de una acción declarada con `"rust": true` en app.json (docs/rust.md, fase 2). El host hace lo mismo que
+    /// con un script: valida los datos, inyecta, respeta la fila, el límite (avisa con `Avance::cortado`), el eco y «después».
+    /// Devuelve lo que la acción responde (`{ok, …}`).
+    pub fn funcion(&self, nombre: &str, f: impl Fn(Map<String, Value>, &Avance) -> Value + Send + Sync + 'static) {
+        assert!(e::es_accion(nombre), "acción rara: {nombre}");
+        self.funciones.write().expect("funciones").insert(nombre.into(), Arc::new(f));
     }
     /// Un valor para el `inyectar` de las acciones (lo tuyo gana sobre lo del host).
     pub fn inyector(&self, fuente: &str, f: impl Fn(&Map<String, Value>, &Host) -> Inyectado + Send + Sync + 'static) {
@@ -655,7 +688,9 @@ impl Host {
             if let (Some(r), Some(v), true) = (&ruta, v, escribe) {
                 v.conocer(r, entrada.get("texto").and_then(Value::as_str));
             }
-            let r = if def.entrada_archivo {
+            let r = if def.rust {
+                self.correr_rust(def, entrada.clone(), o)
+            } else if def.entrada_archivo {
                 self.procesador.con_entrada(&def.script, &args, Value::Object(entrada.clone()), o)
             } else {
                 self.procesador.correr_json(&def.script, &args, o)
@@ -681,6 +716,33 @@ impl Host {
             }
         }
         r
+    }
+
+    /// Una acción en Rust: corre su función en un hilo; si pasa del límite, responde «limite» y le avisa que pare.
+    fn correr_rust(&self, def: &Accion, entrada: Map<String, Value>, o: OpcionesScript) -> Value {
+        let error = |codigo: &str, texto: &str| json!({"ok": false, "codigo": codigo, "texto": texto, "valores": {}, "error": self.t(texto)});
+        let Some(f) = self.funciones.read().ok().and_then(|x| x.get(&def.nombre).cloned()) else {
+            return error("fallo", TEXTO_SIN_FUNCION);
+        };
+        let cortado: Arc<std::sync::atomic::AtomicBool> = Arc::default();
+        let progreso = o.progreso;
+        let avance = Avance { emitir: Box::new(move |ev| { if let Some(p) = &progreso { p(ev) } }), cortado: cortado.clone() };
+        let (tx, rx) = std::sync::mpsc::channel();
+        std::thread::spawn(move || {
+            let _ = tx.send(std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| f(entrada, &avance))).ok());
+        });
+        let r = match o.limite {
+            Some(s) => rx.recv_timeout(std::time::Duration::from_secs(s)).ok(),
+            None => rx.recv().ok(), // «trabajo»: sin tope (la función late con la pieza «trabajos»)
+        };
+        match r {
+            Some(Some(r)) => r,
+            Some(None) => error("fallo", TEXTO_FALLO_RUST), // la función se cayó (panic): la app sigue
+            None => {
+                cortado.store(true, std::sync::atomic::Ordering::SeqCst);
+                error("limite", TEXTO_LIMITE)
+            }
+        }
     }
 
     /// Lo que trae el host (capacidades comunes). true si la atendió.
@@ -1695,12 +1757,44 @@ mod pruebas {
         std::fs::write(
             d.join("acciones.json"),
             r#"{"formato": 1, "acciones": {"eco": {"script": "eco.py", "datos": {"t": {"tipo": "texto", "max": 5}}, "inyectar": {"idioma": "idiomaUI"},
-                "entrada": "archivo", "limite": 10, "responde": "eco"}}}"#,
+                "entrada": "archivo", "limite": 10, "responde": "eco"},
+                "sumar": {"rust": true, "datos": {"a": {"tipo": "entero", "min": 0, "max": 100}}, "inyectar": {"idioma": "idiomaUI"},
+                "limite": 1, "progreso": "avance", "responde": "sumado"},
+                "lento": {"rust": true, "limite": 1},
+                "falta": {"rust": true, "limite": 5}}}"#,
         )
         .unwrap();
         let op = Opciones { datos: Some(d.join("datos")), python: Some("python3".into()), ..Default::default() };
         let h = Host::nuevo(op, d.clone(), "cl.ana.prueba").unwrap();
         (d, h)
+    }
+
+    #[test]
+    fn accion_en_rust_por_el_mismo_camino() {
+        let (_d, h) = app();
+        assert!(h.errores.is_empty(), "{:?}", h.errores);
+        let avisos: Arc<std::sync::Mutex<Vec<Value>>> = Arc::default();
+        let v = avisos.clone();
+        h.funcion("sumar", move |d, a| {
+            a.emitir(json!({"t": "fase", "fase": "sumar"}));
+            v.lock().unwrap().push(json!(d.get("idioma")));
+            json!({"ok": true, "r": d["a"].as_i64().unwrap_or(0) + 1})
+        });
+        h.funcion("lento", |_, a| {
+            while !a.cortado() {
+                std::thread::sleep(std::time::Duration::from_millis(20));
+            }
+            json!({"ok": true})
+        });
+        let def = |n: &str| h.declaradas.get(n).cloned().unwrap();
+        let r = h.correr_declarada(&def("sumar"), json!({"a": 41}), Ctx::default());
+        assert_eq!(r["r"], 42);
+        assert_eq!(avisos.lock().unwrap().as_slice(), &[json!("es")], "inyecta igual que a un script");
+        assert_eq!(h.correr_declarada(&def("sumar"), json!({"a": 500}), Ctx::default())["codigo"], "datos", "valida igual");
+        assert_eq!(h.correr_declarada(&def("lento"), json!({}), Ctx::default())["codigo"], "limite");
+        assert_eq!(h.correr_declarada(&def("falta"), json!({}), Ctx::default())["codigo"], "fallo");
+        h.funcion("falta", |_, _| panic!("se cae"));
+        assert_eq!(h.correr_declarada(&def("falta"), json!({}), Ctx::default())["codigo"], "fallo", "un panic no tumba la app");
     }
 
     #[test]

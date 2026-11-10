@@ -1245,6 +1245,23 @@ class HostGenerico(unittest.TestCase):
                                 cwd=os.path.join(BASE, "pruebas", "tauri"), capture_output=True, text=True)
             self.assertEqual(rs.returncode, 0, rs.stderr[-2000:])
             self.assertEqual(py, json.loads(rs.stdout))
+        # Acciones en Rust («rust»: true, host-tauri 0.2.0): solo Python y Rust (los hosts retirados no las conocen).
+        casos_rust = [
+            {"rust": True, "limite": 5},
+            {"rust": True, "limite": 5, "datos": {"t": {"tipo": "texto", "max": 9}}},
+            {"rust": True, "limite": 5, "script": "a.py"},
+            {"rust": True, "limite": 5, "args": ["x"]},
+            {"rust": True, "limite": 5, "entrada": "archivo"},
+            {"rust": "si", "limite": 5, "script": "a.py"},
+            {"rust": True},
+        ]
+        py_rust = [not pieza.errores_accion("x", c, None) for c in casos_rust]
+        self.assertEqual(py_rust, [True, True, False, False, False, False, False])
+        if shutil.which("cargo"):
+            rs = subprocess.run(["cargo", "run", "--quiet", "--bin", "reglas", "--", json.dumps(casos_rust)],
+                                cwd=os.path.join(BASE, "pruebas", "tauri"), capture_output=True, text=True)
+            self.assertEqual(rs.returncode, 0, rs.stderr[-2000:])
+            self.assertEqual(py_rust, json.loads(rs.stdout))
         # Swift no compila aquí: al menos las mismas frases (lo que ve quien escribe una acción) y los mismos tipos.
         swift = open(os.path.join(BASE, "piezas", "host-mac", "mac", "Enchufe.swift"), encoding="utf-8").read()
         for frase in ("solo puede ser un campo enum o entero", "lo pone el host", "«limite» es obligatorio: segundos (1 a 3600)",
@@ -1541,7 +1558,7 @@ class Generar(unittest.TestCase):
         # Lo que la IA de la app completa queda marcado.
         for doc in ("AGENTS.md", "CONTRIBUTING.md", "SECURITY.md", ".claude/agents/ana-revisor.md"):
             self.assertIn("<!-- La app:", self.leer(app, doc), doc)
-        self.assertIn("| `host-tauri` | 0.1", self.leer(app, "AGENTS.md"))
+        self.assertIn("| `host-tauri` | 0.2", self.leer(app, "AGENTS.md"))
         self.assertIn("ofrece su marketplace", self.leer(app, "CONTRIBUTING.md"))
         self.assertEqual(json.loads(self.leer(app, ".claude/settings.json")),
                          {"extraKnownMarketplaces": {"pieza": {"source": {"source": "github", "repo": "pieza-app/pieza"}}}})

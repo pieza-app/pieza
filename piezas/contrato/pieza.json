@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "contrato",
- "version": "0.1.3",
+ "version": "0.1.4",
  "estado": "lista",
  "nombre": "Contrato del puente",
  "icono": "icono.svg",
@@ -35,6 +35,11 @@
  "pantallas": [],
  "tareas_persona": [],
  "cambios": [
+  {
+   "version": "0.1.4",
+   "tipo": "mejora",
+   "resumen": "Una acción en Rust (`\"rust\": true`, host-tauri 0.2.0) no lleva script: el contrato revisa que `escritorio/src` la registre con `host.funcion(\"nombre\", …)`."
+  },
   {
    "version": "0.1.3",
    "tipo": "mejora",

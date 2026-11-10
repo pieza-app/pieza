@@ -5,6 +5,11 @@
   una fase a la vez (plan en `docs/rust.md`). **`ia` 0.8.0 (mejora)** es la primera: `tauri/ia.rs` con las mismas protecciones
   que `ia.py` (carpeta temporal, sin MCP ni memoria, el pedido por la entrada estándar, sin las variables de la app), en vivo
   (lee, busca, escribe, tokens) y con `detener`. Se prueba con CLIs falsos en `pruebas/tauri` (`cargo test`).
+  **`red` 0.3.0** (`tauri/red.rs`: solo https a sus dominios, sin redirecciones, topes, subidas por partes; probada con un servidor
+  falso) y **`trabajos` 0.3.0** (`tauri/trabajos.rs`: el mismo formato en disco, latido, detener, esperar y seguir; los eventos
+  van directo a la interfaz) completan la fase 1. **`host-tauri` 0.2.0** abre la fase 2: una acción de `app.json` puede ser
+  una función Rust (`"rust": true` + `host.funcion`) por el mismo camino que un script (validar, inyectar, fila, límite, eco).
+  **`contrato` 0.1.4** revisa que cada acción en Rust esté registrada en `escritorio/src`.
 - **`tema` 0.4.0 y `componentes` 0.4.0 (mejora): el estilo de Pieza para toda la familia.** Neutros cálidos, radios de 14 px,
   títulos firmes y una barra lateral oscura (tokens `--barra-lateral*`). `componentes` suma el marco (`.pz-marco`, `.pz-lateral`,
   `.pz-contenido`), `.pz-tarjeta`, `.pz-cifras`, `.pz-oscuro`, `.pz-etapas` y `.pz-dos-columnas`. Cada app pone solo su acento.
