@@ -52,3 +52,14 @@ Nada que cambiar. **Corta** puede borrar la línea `signal.signal(signal.SIGTERM
 
 ## Si venías de la 0.1.0 o 0.1.1
 Nada que cambiar: 0.2.0 solo suma el latido para el host, y desde 0.1.1 `terminar` con un error de la IA raro (valores que no son texto) ya no se cae.
+
+## En Rust (0.3.0)
+Con host-tauri, también en `escritorio/src/pieza/trabajos.rs`, con el mismo formato en disco que `trabajos.py`:
+
+```rust
+let ts = trabajos::Trabajos::nuevos(&carpeta_datos, Arc::new(move |e| avisar_interfaz(e)));
+let t = ts.crear("resumir", &carpeta, &["leer", "escribir"], json!({}))?;
+t.latir();
+// … t.etapa("escribir"); t.leyo(ruta); t.poner_item(ruta, campos, None); con `detener: &|| t.detenido()` en la IA
+t.terminar("listo", None);
+```

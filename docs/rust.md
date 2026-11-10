@@ -12,8 +12,8 @@ Python.
 
 | Fase | Qué | Estado |
 |---|---|---|
-| 1 | Piezas de base en Rust: `ia` (`tauri/ia.rs`), `nucleo` (ya vive en `host-tauri/enchufe.rs`), `red`, `trabajos` | `ia` lista (0.8.0) |
-| 2 | Acciones en Rust: una acción de `app.json` puede ser una función Rust (`host.registrar`) en vez de un script | por hacer |
+| 1 | Piezas de base en Rust: `ia` (`tauri/ia.rs`), `nucleo` (ya vive en `host-tauri/enchufe.rs`), `red` (`tauri/red.rs`), `trabajos` (`tauri/trabajos.rs`) | lista: `ia` 0.8.0, `red` 0.3.0, `trabajos` 0.3.0 |
+| 2 | Acciones en Rust: `"rust": true` en `app.json` y `host.funcion(nombre, |entrada, avance| …)` en vez de un script, por el mismo camino (validar, inyectar, fila, límite, eco, después) | lista: `host-tauri` 0.2.0 |
 | 3 | La lógica del programa Pieza (`proyectos`, `publicar`, `requisitos`, `piezas`) en Rust | por hacer |
 | 4 | Lo que crea Pieza: el esqueleto, las reglas para la IA y las pruebas (`cargo test`) en Rust | por hacer |
 | 5 | Las herramientas: un binario `pieza` en Rust reemplaza `pieza.py` y los scripts de prueba | por hacer |

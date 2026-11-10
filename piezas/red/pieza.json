@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "red",
- "version": "0.2.0",
+ "version": "0.3.0",
  "estado": "lista",
  "nombre": "Red segura",
  "icono": "icono.svg",
@@ -25,7 +25,8 @@
  ],
  "origen": "alcancia/bin/red.py (sin redirecciones, dominios de cada conector, servidor falso solo en 127.0.0.1 y nunca dentro de la app, frases claras por estado). Nuevo: tope de tamaño cortado al leer y de tiempo del pedido entero, sin puerto raro ni usuario:clave en la URL, errores con código y plantilla para traducir, nada de la app adentro (agente y variable de prueba salen de app.json).",
  "archivos": {
-  "python/red.py": "bin/red.py"
+  "python/red.py": "bin/red.py",
+  "tauri/red.rs": "escritorio/src/pieza/red.rs"
  },
  "config": {},
  "acciones": {},
@@ -48,6 +49,14 @@
  },
  "cambios": [
   {
+   "version": "0.3.0",
+   "tipo": "mejora",
+   "resumen": "La pieza también viene en Rust (`tauri/red.rs`, con host-tauri): `Red::nueva(hosts, servicio, agente)`, `get`, `json`, `pedir`, `subir` por partes y `ErrorRed` con código, plantilla y valores. Las mismas reglas que `red.py`: solo https a los dominios permitidos, nunca redirecciones, tope de tamaño y de tiempo, User-Agent en ASCII.",
+   "migrar": [
+    "Nada obligatorio. Para usarla desde Rust: `#[path = \"pieza/red.rs\"] mod red;` en `escritorio/src/main.rs`."
+   ]
+  },
+  {
    "version": "0.2.0",
    "tipo": "mejora",
    "resumen": "Arreglo: un nombre de app fuera de latin-1 (un emoji, letras de otros alfabetos) rompía el pedido en el User-Agent: ahora va en ASCII («Alcancía» → «Alcancia»), y «repo» de app.json solo entra si es «dueño/repo». Nuevo: subir(url, archivo, parte, avance) sube un archivo grande por partes con Content-Range (subidas «resumable»: retoma desde lo que el servicio dice tener con 308 + Range) y pedir(datos=bytes, tipo=) para un cuerpo tal cual.",
@@ -62,5 +71,10 @@
    "seguridad": true,
    "resumen": "Primera versión, desde Alcancía: suma tope de tamaño y de tiempo y errores traducibles."
   }
- ]
+ ],
+ "solo_con": {
+  "tauri/red.rs": [
+   "host-tauri"
+  ]
+ }
 }

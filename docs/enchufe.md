@@ -85,6 +85,7 @@ completa antes de crearla. Agregar una pieza (o un campo nuevo a una) la hace ap
 | Campo | Regla |
 |---|---|
 | `script` | `nombre.py`, dentro de `bin/`. Si es de la app y no de la pieza: `"scriptDeLaApp": true`. |
+| `rust` | `true` en vez de `script`: la atiende una función Rust de la app (`host.funcion("nombre", |entrada, avance| …)` en `main.rs`; `docs/rust.md`, fase 2). Sin `script`, `args` ni `entrada`. El host hace lo mismo que con un script: valida `datos`, inyecta, respeta `cola`, `eco`, `despues` y `limite` (al pasar, responde `codigo: "limite"` y `avance.cortado()` queda en true); `avance.emitir(evento)` va a `progreso`. Sin la función registrada, o si se cae, responde `codigo: "fallo"` y la app sigue. |
 | `args` | Literales, o `$campo` **solo si el campo es `enum` o `entero`** ya validado. |
 | `entrada` | `"archivo"` si hay datos que no van en `args`: el host los escribe en un JSON temporal y lo pasa antes de la salida. |
 | `datos` | Esquema cerrado de lo que manda la UI. Tipos: `texto{max, recortar?}`, `enum{valores}`, `bool`, `entero{min?,max?}`, `rutaRelativa{extensiones?}` (relativa, sin `..`), `base64{maxBytes}`, `lista{max?, de?}` (sin `de`: textos de hasta 2000). `"requerido": true` en cualquiera; un campo de `args` siempre lo es. Un valor que no calza **no corre** el script (responde `codigo: "datos"`); `recortar` corta un texto largo en vez de rechazarlo. Lo no declarado se descarta (salvo `"*": "pasar"`, cuando el script valida todo). |

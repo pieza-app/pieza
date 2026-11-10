@@ -33,3 +33,13 @@ pase a la pieza `youtube`.
 igual (misma frase en español); para traducir, mandar `e.como_dict()` y en la interfaz `Tp(r.plantilla, r.valores)`. La variable
 de pruebas sigue siendo `ALCANCIA_RED_PRUEBA` (sale de `app.json`). Nuevo: tope de 10 MB por defecto (`maximo=` si un conector
 baja más) y de 60 s del pedido entero. El User-Agent pasa a «<Nombre> (<repo de app.json>)»: poner `"repo"` en `app.json`.
+
+## En Rust (0.3.0)
+Con host-tauri, también en `escritorio/src/pieza/red.rs`. Mismas reglas que `red.py`:
+
+```rust
+let r = red::Red::nueva(&["api.ejemplo.com"], "Banco Ejemplo", &red::agente("Alcancía", Some("alcancia-app/alcancia")))?;
+let saldo = r.get("https://api.ejemplo.com/v1/saldo", &[("Authorization", &format!("Bearer {llave}"))])?;  // Err(ErrorRed)
+```
+
+`ErrorRed::json()` da `{ok: false, codigo, plantilla, valores, error}`. `subir(...)` sube por partes y retoma desde el 308.

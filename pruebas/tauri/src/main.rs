@@ -14,6 +14,12 @@ mod actualizaciones;
 #[path = "../../../piezas/ia/tauri/ia.rs"]
 #[allow(dead_code)]
 mod ia;
+#[path = "../../../piezas/red/tauri/red.rs"]
+#[allow(dead_code)]
+mod red;
+#[path = "../../../piezas/trabajos/tauri/trabajos.rs"]
+#[allow(dead_code)]
+mod trabajos;
 
 use serde_json::json;
 
