@@ -1184,7 +1184,7 @@ def armar_acciones(app, forzar=False):
             if pid != "app" and nombre in sin:
                 continue
             e = errores_accion(nombre, accion, scripts_app if pid == "app" else None)
-            if pid == "app" and not e and accion["script"] not in scripts_app:
+            if pid == "app" and not e and not accion.get("rust") and accion["script"] not in scripts_app:
                 e.append(f"acción «{nombre}»: no está bin/{accion['script']}")
             if nombre in todas_a:
                 e.append(f"acción «{nombre}»: la declaran {origen[nombre]} y {pid}")

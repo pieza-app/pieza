@@ -9,6 +9,7 @@
   falso) y **`trabajos` 0.3.0** (`tauri/trabajos.rs`: el mismo formato en disco, latido, detener, esperar y seguir; los eventos
   van directo a la interfaz) completan la fase 1. **`host-tauri` 0.2.0** abre la fase 2: una acción de `app.json` puede ser
   una función Rust (`"rust": true` + `host.funcion`) por el mismo camino que un script (validar, inyectar, fila, límite, eco).
+  **`contrato` 0.1.4** revisa que cada acción en Rust esté registrada en `escritorio/src`.
 - **`tema` 0.4.0 y `componentes` 0.4.0 (mejora): el estilo de Pieza para toda la familia.** Neutros cálidos, radios de 14 px,
   títulos firmes y una barra lateral oscura (tokens `--barra-lateral*`). `componentes` suma el marco (`.pz-marco`, `.pz-lateral`,
   `.pz-contenido`), `.pz-tarjeta`, `.pz-cifras`, `.pz-oscuro`, `.pz-etapas` y `.pz-dos-columnas`. Cada app pone solo su acento.

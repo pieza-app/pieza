@@ -360,8 +360,20 @@ class Contrato:
                 self.problema("acciones-json", n, f"acciones.json no está al día en «{n}»: python3 <pieza>/herramientas/pieza.py acciones .")
         for n in sorted(sin & self.acciones):
             self.problema("sin-acciones", n, f"app.json → sin_acciones deja fuera «{n}» y la interfaz la pide")
+        rust_app = ""
+        base_rs = self.ruta(os.path.join("escritorio", "src"))
+        for raiz, _, nombres in os.walk(base_rs):
+            if os.path.relpath(raiz, base_rs).split(os.sep)[0] == "pieza":
+                continue
+            for nombre in nombres:
+                if nombre.endswith(".rs"):
+                    rust_app += self.leer(os.path.relpath(os.path.join(raiz, nombre), self.raiz)) or ""
         for n, d in sorted(self.declaradas.items()):
-            if not self.existe(os.path.join("bin", d.get("script", ""))) or not re.fullmatch(r"\w+\.py", d.get("script", "")):
+            if d.get("rust") is True:
+                # Una acción en Rust: su función tiene que estar registrada en la app (host.funcion("n", …)).
+                if not re.search(r'\.funcion\(\s*"' + re.escape(n) + '"', rust_app):
+                    self.problema("funcion-rust", n, f"La acción «{n}» es en Rust y escritorio/src no la registra con host.funcion(\"{n}\", …)")
+            elif not self.existe(os.path.join("bin", d.get("script", ""))) or not re.fullmatch(r"\w+\.py", d.get("script", "")):
                 self.problema("script", n, f"La acción declarada «{n}» usa bin/{d.get('script')}, que no existe")
             if not d.get("limite"):
                 self.problema("limite", n, f"La acción declarada «{n}» no tiene límite de tiempo")
