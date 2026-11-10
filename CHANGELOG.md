@@ -1,6 +1,10 @@
 # Cambios
 
 ## Sin publicar
+- **Todo en Rust (empieza).** Pieza y sus apps son Rust + Tauri: las piezas, la lógica de Pieza y las apps que crea van a Rust,
+  una fase a la vez (plan en `docs/rust.md`). **`ia` 0.8.0 (mejora)** es la primera: `tauri/ia.rs` con las mismas protecciones
+  que `ia.py` (carpeta temporal, sin MCP ni memoria, el pedido por la entrada estándar, sin las variables de la app), en vivo
+  (lee, busca, escribe, tokens) y con `detener`. Se prueba con CLIs falsos en `pruebas/tauri` (`cargo test`).
 - **`tema` 0.4.0 y `componentes` 0.4.0 (mejora): el estilo de Pieza para toda la familia.** Neutros cálidos, radios de 14 px,
   títulos firmes y una barra lateral oscura (tokens `--barra-lateral*`). `componentes` suma el marco (`.pz-marco`, `.pz-lateral`,
   `.pz-contenido`), `.pz-tarjeta`, `.pz-cifras`, `.pz-oscuro`, `.pz-etapas` y `.pz-dos-columnas`. Cada app pone solo su acento.

@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "ia",
- "version": "0.7.2",
+ "version": "0.8.0",
  "estado": "lista",
  "nombre": "Tu IA",
  "icono": "icono.svg",
@@ -47,7 +47,8 @@
  ],
  "tareas_persona": [],
  "archivos": {
-  "python/ia.py": "bin/ia.py"
+  "python/ia.py": "bin/ia.py",
+  "tauri/ia.rs": "escritorio/src/pieza/ia.rs"
  },
  "config": {
   "ia": [
@@ -101,6 +102,14 @@
  },
  "red_nota": "La app no sale a internet: la IA de la persona se conecta a su proveedor (Anthropic, OpenAI o Google) con su propia cuenta.",
  "cambios": [
+  {
+   "version": "0.8.0",
+   "tipo": "mejora",
+   "resumen": "La pieza también viene en Rust (`tauri/ia.rs`, con host-tauri): `Ia::nueva(Contexto)`, `preguntar`, `preguntar_vivo` (eventos, tokens y `detener`), `probar`, `lista`, `puede_leer`, `puede_escribir`. Las mismas protecciones que `ia.py`: carpeta temporal, sin MCP ni memoria, el pedido por la entrada estándar, sin las variables de la app. Es el primer paso para que las apps de Pieza sean solo Rust.",
+   "migrar": [
+    "Nada obligatorio. Para usarla desde Rust: `#[path = \"pieza/ia.rs\"] mod ia;` en `escritorio/src/main.rs`."
+   ]
+  },
   {
    "version": "0.7.2",
    "tipo": "mejora",
@@ -165,5 +174,10 @@
    "seguridad": true,
    "resumen": "Primera versión: une lo mejor de las cinco apps y nunca corre la IA sin protecciones."
   }
- ]
+ ],
+ "solo_con": {
+  "tauri/ia.rs": [
+   "host-tauri"
+  ]
+ }
 }

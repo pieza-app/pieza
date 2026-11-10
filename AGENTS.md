@@ -34,7 +34,8 @@ menos tokens: elegir piezas, no reescribirlas.
 
 ## Las reglas que no se negocian (heredadas de las apps)
 
-- **Solo biblioteca estándar** en Python; sin dependencias ni CDN en la UI.
+- **Todo en Rust** (`docs/rust.md`): lo nuevo de una pieza, de Pieza o de una app se escribe en Rust (`piezas/<id>/tauri/`, con sus
+  pruebas). Lo que queda en Python es solo biblioteca estándar y se pasa a Rust por fases. Sin dependencias ni CDN en la UI.
 - **La IA es la de la persona**, con su cuenta, sin herramientas ni memoria, y el pedido **nunca** como argumento del proceso.
 - **Lo que escribe la persona nunca va como argumento** de un proceso: va por archivo de entrada o por la entrada estándar.
 - **Todo lo que viene de afuera se valida** (catálogos, traducciones, respuestas de la IA) y se escapa antes de mostrarse.
