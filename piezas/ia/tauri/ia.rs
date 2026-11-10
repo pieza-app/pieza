@@ -431,12 +431,15 @@ impl Temporal {
                 x.finish()
             };
             let p = std::env::temp_dir().join(format!("{prefijo}-ia-{h:016x}"));
-            let mut b = fs::DirBuilder::new();
             #[cfg(unix)]
-            {
+            let b = {
                 use std::os::unix::fs::DirBuilderExt;
+                let mut b = fs::DirBuilder::new();
                 b.mode(0o700);
-            }
+                b
+            };
+            #[cfg(not(unix))]
+            let b = fs::DirBuilder::new();
             match b.create(&p) {
                 Ok(()) => return Ok(Temporal(p)),
                 Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
