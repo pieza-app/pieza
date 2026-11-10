@@ -28,6 +28,21 @@ protecciones para que un CLI viejo funcione.
 
 Acciones que declara: `probarIA` → `iaProbada`, `listaIA` → `iaLista`. Requiere `nucleo`.
 
+## En Rust (0.8.0)
+Con host-tauri, la pieza también se instala en `escritorio/src/pieza/ia.rs` (`#[path = "pieza/ia.rs"] mod ia;` en `main.rs`).
+Mismas protecciones y mismos errores que `ia.py`:
+
+```rust
+let ia = ia::Ia::nueva(ia::Contexto { app_id: "recetas".into(), app_nombre: "Recetas".into(), prefijo: "RECETAS".into(),
+                                      datos: carpeta_datos, ayuda: "Revisa en Ajustes → Tu IA.".into() });
+let mut o = ia::Opciones::de("claude");
+o.escribir = Some(carpeta_app);                       // opcional: editar solo ahí
+let texto = ia.preguntar_vivo(&pedido, &o, &mut |e| avisar(e.json()), &|| detenido())?;  // Err(ErrorIa) con codigo/plantilla/valores
+```
+
+`ErrorIa::detenido()` dice si se cortó con `detener`. `Evento::json()` da lo mismo que `al_evento` en Python
+(`{"t": "lee" | "busca" | "escribe" | "uso", …}`).
+
 ## Pasar una app a esta pieza
 
 Las apps hoy tienen su propio `bin/ia.py`, así que `pieza.py agregar ia` no lo pisa y avisa. Para pasarla:

@@ -11,6 +11,9 @@ mod catalogo;
 #[path = "../../../piezas/actualizaciones/tauri/actualizaciones.rs"]
 #[allow(dead_code)]
 mod actualizaciones;
+#[path = "../../../piezas/ia/tauri/ia.rs"]
+#[allow(dead_code)]
+mod ia;
 
 use serde_json::json;
 
