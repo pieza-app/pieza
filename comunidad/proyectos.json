@@ -78,7 +78,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#17151c\"/><rect x=\"12\" y=\"15\" width=\"40\" height=\"28\" rx=\"5\" fill=\"none\" stroke=\"#b9b0ff\" stroke-width=\"4\"/><circle cx=\"21\" cy=\"44\" r=\"10\" fill=\"#6d5dfc\" stroke=\"#17151c\" stroke-width=\"3\"/><circle cx=\"44\" cy=\"22\" r=\"3.2\" fill=\"#ff5d5d\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-10T01:51:14Z",
+   "actualizado": "2026-11-10T23:55:10Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -108,11 +108,11 @@
    "descripcion": "Pieza: crea apps paso a paso, con piezas ya hechas.",
    "url": "https://github.com/pieza-app/estudio",
    "pagina": "https://pieza-app.github.io/pieza/",
-   "commit": "f45c1a6928a2e6e2ca1b88213f8861bb505fc447",
+   "commit": "63920bd4768344559496fe322ec4cc7a0b3d0bdd",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
    "encontrado": "2026-11-09",
-   "actualizado": "2026-11-10T17:01:39Z",
+   "actualizado": "2026-11-11T17:06:26Z",
    "revision": {
     "estado": "sin-revisar"
    }
@@ -123,15 +123,30 @@
    "descripcion": "Framework abierto para apps que viven en tu computador: piezas probadas que se enchufan en vez de escribirse de cero.",
    "url": "https://github.com/pieza-app/pieza",
    "pagina": "https://pieza-app.github.io/pieza/",
-   "commit": "f1628a6de41cc0aee55075f962ff2990897271bc",
+   "commit": "feee6ba3a7ee72d2d135e462113bbe175acd223e",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-09T22:22:38Z",
+   "actualizado": "2026-11-10T22:44:17Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
     "nota": "App de la familia Pieza, revisada por quien mantiene Pieza."
+   }
+  },
+  {
+   "repo": "pilota-app/pilota",
+   "nombre": "pilota",
+   "descripcion": "Robot de trading de cripto que puntúa cada oportunidad de 0 a 100 y opera BTC y ETH en modo manual, semiautomático o automático, sin quedar nunca en bancarrota. Tiene modo prueba con dinero ficticio y modo real. Una mascota explica cada decisión.",
+   "url": "https://github.com/pilota-app/pilota",
+   "pagina": "https://pilota-app.github.io/pilota/",
+   "commit": "d16aa72aef9d6f7b8217ce61ba4ede502266f55d",
+   "icono": "docs/favicon.svg",
+   "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#2f5fd0\"/><path d=\"M18 22h28M18 32h28M18 42h18\" stroke=\"#ffffff\" stroke-width=\"5\" stroke-linecap=\"round\" fill=\"none\"/></svg>\n",
+   "encontrado": "2026-11-11",
+   "actualizado": "2026-11-11T14:38:59Z",
+   "revision": {
+    "estado": "sin-revisar"
    }
   },
   {
