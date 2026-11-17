@@ -1,6 +1,8 @@
 # Cambios
 
 ## Sin publicar
+- **`github` 0.3.2 (arreglo): Pieza al día vuelve a abrir su PR.** El job que publica empujaba con `AUTHORIZATION: bearer`,
+  que git por https no acepta («could not read Username»). Ahora usa `basic x-access-token`, como `actions/checkout`.
 - **Todo en Rust (empieza).** Pieza y sus apps son Rust + Tauri: las piezas, la lógica de Pieza y las apps que crea van a Rust,
   una fase a la vez (plan en `docs/rust.md`). **`ia` 0.8.0 (mejora)** es la primera: `tauri/ia.rs` con las mismas protecciones
   que `ia.py` (carpeta temporal, sin MCP ni memoria, el pedido por la entrada estándar, sin las variables de la app), en vivo
