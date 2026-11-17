@@ -1,7 +1,7 @@
 {
  "formato": 1,
  "id": "github",
- "version": "0.3.1",
+ "version": "0.3.2",
  "estado": "lista",
  "nombre": "Repo listo para la comunidad",
  "icono": "icono.svg",
@@ -114,6 +114,11 @@
   "Crear la wiki una vez: pestaña «Wiki» → «Create the first page» → «Save» (después se publica sola desde docs/wiki/)"
  ],
  "cambios": [
+  {
+   "version": "0.3.2",
+   "tipo": "arreglo",
+   "resumen": "Pieza al día: el job que publica empuja la rama con «basic x-access-token», como actions/checkout. Con «bearer» git fallaba («could not read Username») y el PR nunca llegaba."
+  },
   {
    "version": "0.3.1",
    "tipo": "arreglo",
