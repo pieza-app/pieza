@@ -78,7 +78,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#17151c\"/><rect x=\"12\" y=\"15\" width=\"40\" height=\"28\" rx=\"5\" fill=\"none\" stroke=\"#b9b0ff\" stroke-width=\"4\"/><circle cx=\"21\" cy=\"44\" r=\"10\" fill=\"#6d5dfc\" stroke=\"#17151c\" stroke-width=\"3\"/><circle cx=\"44\" cy=\"22\" r=\"3.2\" fill=\"#ff5d5d\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-17T13:29:50Z",
+   "actualizado": "2026-11-17T23:55:15Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -91,11 +91,11 @@
    "descripcion": "Loom Business Video Screen Recorder Repack Version 2026 Silent Screen Meeting Capture Enterprise Cloud Streaming Corporate Web Capture Tool Remote Workflow Optimizer",
    "url": "https://github.com/GuardThrasherSpirit/Loom-Business-Latest-Version",
    "pagina": "",
-   "commit": "73ee211b4a1061f18a84bee0782dedaf8537c552",
+   "commit": "8b883be28d678964bbbb9d1cec052969c72476be",
    "icono": "",
    "icono_svg": "",
    "encontrado": "2026-11-17",
-   "actualizado": "2026-11-17T14:18:15Z",
+   "actualizado": "2026-11-18T15:07:18Z",
    "revision": {
     "estado": "sin-revisar"
    }
@@ -123,11 +123,11 @@
    "descripcion": "Pieza: crea apps paso a paso, con piezas ya hechas.",
    "url": "https://github.com/pieza-app/estudio",
    "pagina": "https://pieza-app.github.io/pieza/",
-   "commit": "31c26243186c9c3ee014108c2ea08a918d981cf9",
+   "commit": "d9ac9f338f97786186fd338efeb20609850b64cb",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
    "encontrado": "2026-11-09",
-   "actualizado": "2026-11-17T18:32:55Z",
+   "actualizado": "2026-11-18T18:10:30Z",
    "revision": {
     "estado": "sin-revisar"
    }
@@ -138,11 +138,11 @@
    "descripcion": "Framework abierto para apps que viven en tu computador: piezas probadas que se enchufan en vez de escribirse de cero.",
    "url": "https://github.com/pieza-app/pieza",
    "pagina": "https://pieza-app.github.io/pieza/",
-   "commit": "65c0cd1f06d3e0471591719a03ae740f638344aa",
+   "commit": "a86e80c585f2c26781b1132ad56882066bc6d8cd",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-17T14:32:16Z",
+   "actualizado": "2026-11-17T18:39:04Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
