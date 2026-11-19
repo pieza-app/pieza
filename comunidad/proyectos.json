@@ -91,11 +91,11 @@
    "descripcion": "Loom Business Video Screen Recorder Repack Version 2026 Silent Screen Meeting Capture Enterprise Cloud Streaming Corporate Web Capture Tool Remote Workflow Optimizer",
    "url": "https://github.com/GuardThrasherSpirit/Loom-Business-Latest-Version",
    "pagina": "",
-   "commit": "8b883be28d678964bbbb9d1cec052969c72476be",
+   "commit": "1654d878ce24be2fdbc7af27069ea1c669c0ef59",
    "icono": "",
    "icono_svg": "",
    "encontrado": "2026-11-17",
-   "actualizado": "2026-11-18T15:07:18Z",
+   "actualizado": "2026-11-19T15:06:59Z",
    "revision": {
     "estado": "sin-revisar"
    }
@@ -123,11 +123,11 @@
    "descripcion": "Pieza: crea apps paso a paso, con piezas ya hechas.",
    "url": "https://github.com/pieza-app/estudio",
    "pagina": "https://pieza-app.github.io/pieza/",
-   "commit": "d9ac9f338f97786186fd338efeb20609850b64cb",
+   "commit": "4e5e5dbe64f7bc5d1e6ab69e5573200a5a4709c9",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
    "encontrado": "2026-11-09",
-   "actualizado": "2026-11-18T18:10:30Z",
+   "actualizado": "2026-11-19T18:16:50Z",
    "revision": {
     "estado": "sin-revisar"
    }
@@ -138,11 +138,11 @@
    "descripcion": "Framework abierto para apps que viven en tu computador: piezas probadas que se enchufan en vez de escribirse de cero.",
    "url": "https://github.com/pieza-app/pieza",
    "pagina": "https://pieza-app.github.io/pieza/",
-   "commit": "a86e80c585f2c26781b1132ad56882066bc6d8cd",
+   "commit": "1fe5ba61ee03ce0987b678d7963c8e3a82d3f9e8",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-17T18:39:04Z",
+   "actualizado": "2026-11-18T18:10:52Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
