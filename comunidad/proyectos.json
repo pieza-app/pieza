@@ -74,11 +74,11 @@
    "descripcion": "Graba tu pantalla con tu cámara y tu IA te deja notas, guion para YouTube, capítulos y subtítulos. Gratis, open source y privado.",
    "url": "https://github.com/graba-app/graba",
    "pagina": "https://graba-app.github.io/graba/",
-   "commit": "ea3921ecba03c49bc479f962bcc31fdd26007dc2",
+   "commit": "e3d0576ee603e8d8572ec50fd10b82e2cd7aed73",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#17151c\"/><rect x=\"12\" y=\"15\" width=\"40\" height=\"28\" rx=\"5\" fill=\"none\" stroke=\"#b9b0ff\" stroke-width=\"4\"/><circle cx=\"21\" cy=\"44\" r=\"10\" fill=\"#6d5dfc\" stroke=\"#17151c\" stroke-width=\"3\"/><circle cx=\"44\" cy=\"22\" r=\"3.2\" fill=\"#ff5d5d\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-17T23:55:15Z",
+   "actualizado": "2026-11-24T14:31:53Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -91,11 +91,11 @@
    "descripcion": "Loom Business Video Screen Recorder Repack Version 2026 Silent Screen Meeting Capture Enterprise Cloud Streaming Corporate Web Capture Tool Remote Workflow Optimizer",
    "url": "https://github.com/GuardThrasherSpirit/Loom-Business-Latest-Version",
    "pagina": "",
-   "commit": "33ae9a6a0f60471817a25765441a46df98427cfe",
+   "commit": "83cdaf3d8764c1515e6f9b74b454a3f9ddb56d64",
    "icono": "",
    "icono_svg": "",
    "encontrado": "2026-11-17",
-   "actualizado": "2026-11-23T21:00:08Z",
+   "actualizado": "2026-11-24T15:14:22Z",
    "revision": {
     "estado": "sin-revisar"
    }
@@ -110,7 +110,7 @@
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"15\" fill=\"#14131b\"/><circle cx=\"32\" cy=\"32\" r=\"19\" fill=\"none\" stroke=\"#ff6b4a\" stroke-opacity=\".35\" stroke-width=\"7\"/><circle cx=\"32\" cy=\"32\" r=\"11\" fill=\"#ff6b4a\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-17T15:55:32Z",
+   "actualizado": "2026-11-24T15:55:35Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
@@ -123,11 +123,11 @@
    "descripcion": "Pieza: crea apps paso a paso, con piezas ya hechas.",
    "url": "https://github.com/pieza-app/estudio",
    "pagina": "https://pieza-app.github.io/pieza/",
-   "commit": "4a92facd8c512d5dd2aa8a6b965447eca1c37cfd",
+   "commit": "d3a48be4d94076f461855a016461c1af0677ae20",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
    "encontrado": "2026-11-09",
-   "actualizado": "2026-11-23T21:17:19Z",
+   "actualizado": "2026-11-24T20:09:24Z",
    "revision": {
     "estado": "sin-revisar"
    }
@@ -138,11 +138,11 @@
    "descripcion": "Framework abierto para apps que viven en tu computador: piezas probadas que se enchufan en vez de escribirse de cero.",
    "url": "https://github.com/pieza-app/pieza",
    "pagina": "https://pieza-app.github.io/pieza/",
-   "commit": "033594208c0108f4d9f4197c2fe2e2b53ded8046",
+   "commit": "d5475dba9a704403525e426a1ed956cb33fc7738",
    "icono": "docs/favicon.svg",
    "icono_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" rx=\"14\" fill=\"#1f1b2e\"/><path fill=\"#ffb020\" d=\"M14 22h13a5.5 5.5 0 1 1 10 0h13v11a5.5 5.5 0 1 0 0 10v7H14V39a5.5 5.5 0 1 0 0-10z\"/></svg>\n",
    "encontrado": "2026-10-30",
-   "actualizado": "2026-11-22T17:14:11Z",
+   "actualizado": "2026-11-23T21:31:52Z",
    "revision": {
     "estado": "revisado",
     "fecha": "2026-10-30",
