@@ -49,18 +49,20 @@ Fija la revisión a ese commit y a la huella de cada archivo. Haz commit de `com
 
 ## Tu app en la página («Hecho con Pieza»)
 
-Si hiciste una app con Pieza, aparece sola en la [página](https://pieza-app.github.io/pieza/#proyectos), con su ícono:
+Si hiciste una app con Pieza, aparece en la [página](https://pieza-app.github.io/pieza/#proyectos), con su ícono, cuando alguien la revisa:
 
 1. Ponle el topic **`hecho-con-pieza`** al repo (público).
 2. Su ícono: el que diga `"icono"` en su `app.json` o, si no, `docs/favicon.svg`, `favicon.svg` o `ui/favicon.svg`. Puede tener
    sus colores, pero solo formas y hasta 8 KB (las mismas reglas de seguridad que el ícono de una pieza). Sin uno válido se
    muestra una pieza genérica.
-3. Una vez al día el workflow `comunidad` la encuentra (`comunidad/proyectos.json`) y la página la muestra como **«Sin
-   revisar»**. Cuando quien mantiene Pieza la mira, pasa a **«Aprobada por la comunidad ✓»**.
+3. Una vez al día el workflow `comunidad` la encuentra y la anota en `comunidad/proyectos.json` como **«Sin revisar»**. Así
+   todavía **no** sale en la página: cualquiera puede ponerle el topic a un repo, también para colgar spam. Cuando quien
+   mantiene Pieza la mira, pasa a **«Aprobada por la comunidad ✓»** y recién ahí aparece.
 
 Aprobar un proyecto dice que **es una app hecha con Pieza, que cumple el manifiesto y que no engaña** (no es una revisión
 línea por línea de todo su código, como la de una pieza). Se aprueba el proyecto, no un commit; pero si cambia su nombre o el
-enlace a su página, vuelve a «Sin revisar» (y la página solo enlaza el sitio de los aprobados). Uno rechazado no aparece.
+enlace a su página, vuelve a «Sin revisar» y sale de la página hasta que alguien la vuelva a mirar. Uno rechazado no aparece.
+Las apps de la familia (las organizaciones de Pieza) se muestran siempre, salvo que se rechacen.
 
 ```bash
 python3 herramientas/comunidad.py proyecto <dueño/repo> aprobar

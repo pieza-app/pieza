@@ -80,7 +80,7 @@ python3 herramientas/pieza.py actualizar ~/MiApp           # trae lo nuevo sin p
 
 - **Tu pieza:** publícala en tu repo con el topic `pieza-comunidad`. Aparece en la página como «Sin revisar». Después de la
   revisión, se instala como segura ([cómo](docs/comunidad.md)).
-- **Tu app hecha con Pieza:** ponle el topic `hecho-con-pieza` a su repo. Aparece en la [página](https://pieza-app.github.io/pieza/).
+- **Tu app hecha con Pieza:** ponle el topic `hecho-con-pieza` a su repo. Cuando alguien la revisa, aparece en la [página](https://pieza-app.github.io/pieza/).
 - **El sello:** [![Hecho con Pieza](https://pieza-app.github.io/pieza/sello.svg)](https://pieza-app.github.io/pieza/)
 
 Pieza no tiene fines de lucro, cuentas ni telemetría. [Lee el manifiesto](MANIFIESTO.md) y súmate.

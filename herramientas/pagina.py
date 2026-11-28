@@ -99,16 +99,20 @@ def skills():
 
 
 def proyectos():
-    """Los proyectos del registro (sin los rechazados): la familia primero, después los aprobados y al final los sin revisar."""
+    """Los proyectos que se muestran: los de la familia y los aprobados por quien mantiene Pieza (la familia primero).
+    Un proyecto sin revisar NO se publica: cualquiera puede ponerle el topic a su repo, también para colgar spam o malware
+    en esta página (pasó el 2026-11-17). Aparece recién cuando alguien lo revisa con `comunidad.py proyecto ... aprobar`."""
     sys.path.insert(0, os.path.join(BASE, "herramientas"))
     import comunidad
     reg = comunidad.leer_proyectos()
     lista = []
     for e in reg.get("proyectos", []):
         estado = e.get("revision", {}).get("estado", "sin-revisar")
-        if estado == "rechazado" or not re.match(r"^[\w.-]+/[\w.-]+$", e.get("repo", "")):
+        if not re.match(r"^[\w.-]+/[\w.-]+$", e.get("repo", "")):
             continue
         dueno = e["repo"].split("/")[0].lower()
+        if estado != "revisado" and not (dueno in FAMILIA and estado != "rechazado"):
+            continue
         lista.append({"nombre": comunidad.texto(e.get("nombre"), 80), "repo": e["repo"],
                       "descripcion": comunidad.texto(e.get("descripcion"), 280), "url": f"https://github.com/{e['repo']}",
                       "pagina": comunidad.https(e.get("pagina")), "actualizado": comunidad.texto(e.get("actualizado"), 25),

@@ -8,8 +8,8 @@ una app y revisar aportes. Hay lugar para cualquiera, programes o no. *(English 
 
 ## Sin programar
 - **Haz una app con Pieza y cuéntanos cómo te fue:** qué pieza te faltó, qué paso del flujo te confundió, qué permiso o qué salida a
-  internet no estaba bien contada en la ficha. Ese relato vale oro. Ponle el topic `hecho-con-pieza` y aparece sola en la
-  página, con su ícono ([cómo](docs/comunidad.md#tu-app-en-la-página-hecho-con-pieza)).
+  internet no estaba bien contada en la ficha. Ese relato vale oro. Ponle el topic `hecho-con-pieza` y, cuando alguien la
+  revise, aparece en la página con su ícono ([cómo](docs/comunidad.md#tu-app-en-la-página-hecho-con-pieza)).
 - **Dibuja íconos:** cada pieza tiene uno (`piezas/<id>/icono.svg`) para que el catálogo se entienda mirando. Si uno no se
   entiende, propón uno mejor (reglas en [`docs/enchufe.md`](docs/enchufe.md#el-ícono-toda-pieza-oficial-o-de-la-comunidad)).
 - **Prueba una pieza en tu sistema** (sobre todo Windows y Linux): los issues con la etiqueta
@@ -113,7 +113,7 @@ Al participar aceptas el [código de conducta](CODE_OF_CONDUCT.md).
 - **No code needed:** build an app with Pieza and tell us how it went, test a piece on your system (label `probar`, fictional data
   only), propose a piece in words with the [“Propose a piece”](https://github.com/pieza-app/pieza/issues/new?template=pieza.yml)
   form, chat in [Discussions](https://github.com/pieza-app/pieza/discussions), report bugs or ideas, improve the English texts or
-  draw a better icon for a piece. Built an app with Pieza? Add the `hecho-con-pieza` topic and it shows up on the page with its icon.
+  draw a better icon for a piece. Built an app with Pieza? Add the `hecho-con-pieza` topic and, once someone reviews it, it shows up on the page with its icon.
 - **Code (with or without AI):** read [`AGENTS.md`](AGENTS.md) and [`docs/enchufe.md`](docs/enchufe.md), fork, branch, run
   `bash pruebas/correr.sh` and open a pull request. Claude Code: `/plugin marketplace add pieza-app/pieza` and
   `/plugin install pieza@pieza`. Gemini CLI: `gemini extensions install https://github.com/pieza-app/pieza`. Codex: skills in
