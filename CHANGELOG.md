@@ -1,6 +1,12 @@
 # Cambios
 
 ## Sin publicar
+- **Seguridad: la página ya no muestra proyectos sin revisar.** Cualquiera podía ponerle el topic `hecho-con-pieza` a un repo
+  y salir en la página con su descripción y un enlace. El 2026-11-17 entró así un repo de spam que ofrecía un programa
+  pirateado («repack»), que suele traer malware. Ahora la página muestra solo los proyectos aprobados y los de la familia, y
+  ese repo quedó rechazado (`comunidad/proyectos.json`).
+- **`ia` 0.8.1 (arreglo):** `tauri/ia.rs` pasa la revisión nueva de clippy en Windows (`needless_bool`), que hacía fallar
+  todos los PR. No cambia lo que hace.
 - **`github` 0.3.2 (arreglo): Pieza al día vuelve a abrir su PR.** El job que publica empujaba con `AUTHORIZATION: bearer`,
   que git por https no acepta («could not read Username»). Ahora usa `basic x-access-token`, como `actions/checkout`.
 - **Todo en Rust (empieza).** Pieza y sus apps son Rust + Tauri: las piezas, la lógica de Pieza y las apps que crea van a Rust,

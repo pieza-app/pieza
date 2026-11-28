@@ -48,7 +48,9 @@
    "encontrado": "2026-11-06",
    "actualizado": "2026-11-10T01:48:31Z",
    "revision": {
-    "estado": "sin-revisar"
+    "estado": "revisado",
+    "fecha": "2026-11-28",
+    "nota": "App de la familia Pieza, revisada por quien mantiene Pieza."
    }
   },
   {
@@ -97,7 +99,9 @@
    "encontrado": "2026-11-17",
    "actualizado": "2026-11-27T15:08:22Z",
    "revision": {
-    "estado": "sin-revisar"
+    "estado": "rechazado",
+    "fecha": "2026-11-28",
+    "nota": "Spam: no es una app hecha con Pieza. Ofrece un programa pirateado (repack), patrón típico de malware."
    }
   },
   {

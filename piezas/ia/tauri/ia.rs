@@ -244,16 +244,15 @@ pub fn buscar(nombre: &str) -> Option<PathBuf> {
 
 fn es_ejecutable(p: &Path) -> bool {
     let Ok(m) = fs::metadata(p) else { return false };
-    if !m.is_file() {
-        return false;
-    }
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;
-        m.permissions().mode() & 0o111 != 0
+        m.is_file() && m.permissions().mode() & 0o111 != 0
     }
     #[cfg(not(unix))]
-    true
+    {
+        m.is_file()
+    }
 }
 
 fn info(ia: &str) -> Option<(&'static [&'static str], &'static str)> {

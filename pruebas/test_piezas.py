@@ -812,6 +812,7 @@ class Comunidad(unittest.TestCase):
         self.repos["ana/fea"] = {"commit": "b" * 40, "versiones": {"b" * 40: {"docs/favicon.svg": "<svg><script/></svg>",
                                                                              "favicon.svg": svg}}}
         self.repos["pieza-app/pieza"] = {"commit": "c" * 40, "versiones": {"c" * 40: {}}}
+        self.repos["beto/repack"] = {"commit": "d" * 40, "versiones": {"d" * 40: {}}}
         resumen = " ".join(self.c.buscar_proyectos(self.red, hoy="2026-10-30"))
         self.assertIn("+ ana/notas", resumen)
         reg = {e["repo"]: e for e in self.c.leer_proyectos()["proyectos"]}
@@ -827,7 +828,8 @@ class Comunidad(unittest.TestCase):
         self.c.buscar_proyectos(self.red)
         reg = {e["repo"]: e for e in self.c.leer_proyectos()["proyectos"]}
         self.assertEqual(reg["ana/notas"]["revision"]["estado"], "revisado")
-        # La página: sin los rechazados, la familia primero, íconos copiados.
+        self.assertEqual(reg["beto/repack"]["revision"]["estado"], "sin-revisar")
+        # La página: solo la familia y los aprobados (ni rechazados ni sin revisar), la familia primero, íconos copiados.
         antes = (pagina.DATOS, pagina.ICONOS)
         pagina.DATOS, pagina.ICONOS = os.path.join(self.tmp.name, "datos"), os.path.join(self.tmp.name, "iconos")
         try:
